@@ -27,11 +27,12 @@ import static org.joml.Math.sin;
 import static org.lwjgl.assimp.Assimp.*;
 
 /**
+ *
  * Model
  *
  * <ul>
  * <li>Model</li>
- * Model defaults
+ * Model class and methods
  * </ul>
  *
  * @since 0.0.1
@@ -52,8 +53,8 @@ public class Model {
      *
      * @since 0.0.1
      */
-    public Model() {
-        type = ModelType.EMPTY;
+    Model() {
+        type = ModelType.TEXT;
         vertices = new Vertex[] {new Vertex()};
         indices = new Integer[] {0};
         length = 1;

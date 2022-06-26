@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.*;
 
 /**
+ *
  * Vertex
  *
  * <ul>
@@ -20,6 +21,7 @@ public class Vertex {
     public Vector2f uv;
 
     /**
+     *
      * Create an empty vertex object
      *
      * @since 0.0.1
@@ -30,6 +32,7 @@ public class Vertex {
     }
 
     /**
+     *
      * Create a vertex object
      *
      * @param position The positions of the vertex
@@ -43,6 +46,7 @@ public class Vertex {
     }
 
     /**
+     *
      * Create a vertex object with calculated UV map positions
      *
      * @param position The positions of the vertex

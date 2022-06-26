@@ -20,8 +20,6 @@ import java.util.Iterator;
 public class Items implements Iterable<Item> {
 
     private ArrayList<Item> items;
-    private ArrayList<Item> delete;
-    private boolean update = false;
 
     /**
      *
@@ -31,7 +29,6 @@ public class Items implements Iterable<Item> {
      */
     public Items() {
         items = new ArrayList<>();
-        delete = new ArrayList<>();
     }
 
     /**
@@ -43,8 +40,6 @@ public class Items implements Iterable<Item> {
      * @since 0.0.1
      */
     public boolean add(@NotNull Item item) {
-        update = true;
-        item.create();
         return items.add(item);
     }
 
@@ -57,46 +52,7 @@ public class Items implements Iterable<Item> {
      * @since 0.0.1
      */
     public void remove(@NotNull Item item) {
-        update = true;
-        delete.add(item);
         items.remove(item);
-    }
-
-    /**
-     *
-     * Destroy items flagged for deletion
-     *
-     * @since 0.0.1
-     */
-    public void delete() {
-        for (Item item : delete) item.destroy();
-        delete = new ArrayList<>();
-        update = false;
-    }
-    /**
-     *
-     * @return Whether command buffers need to be updated
-     *
-     * @since 0.0.1
-     */
-    public boolean update() {
-        // check if any of the items have changed
-        for (Item item : items) if(item.update()) {
-            update = true;
-            item.updateBuffers();
-            break;
-        }
-        return update;
-    }
-
-    /**
-     *
-     * @param update Whether command buffers need to be updated
-     *
-     * @since 0.0.1
-     */
-    public void update(boolean update) {
-        this.update = update;
     }
 
     /**
@@ -141,7 +97,7 @@ public class Items implements Iterable<Item> {
      */
     public void destroy() {
         for (Item item: items) item.destroy();
-        items = null;
+        items = new ArrayList<>();
     }
 
 }

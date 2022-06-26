@@ -1,7 +1,8 @@
 package es.optocom.jovp.engine.structures;
 
 /**
- * Experimental paradigm
+ *
+ * Paradigm
  *
  * @since 0.0.1
  */

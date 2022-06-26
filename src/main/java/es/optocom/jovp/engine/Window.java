@@ -9,6 +9,7 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
+ *
  * Window
  *
  * <ul>
@@ -37,6 +38,7 @@ public class Window {
     private boolean resized = false;
 
     /**
+     *
      * Creates a window
      *
      * @since 0.0.1
@@ -105,6 +107,7 @@ public class Window {
     }
 
     /**
+     *
      * Focus on current window
      *
      * @since 0.0.1
@@ -114,6 +117,7 @@ public class Window {
     }
 
     /**
+     *
      * Updates window content
      *
      * @since 0.0.1
@@ -123,6 +127,7 @@ public class Window {
     }
 
     /**
+     *
      * Close window and clean up
      *
      * @since 0.0.1
@@ -135,6 +140,7 @@ public class Window {
     }
 
     /**
+     *
      * @return The monitor manager
      *
      * @since 0.0.1
@@ -144,6 +150,7 @@ public class Window {
     }
 
     /**
+     *
      * @return The monitor
      *
      * @since 0.0.1
@@ -153,6 +160,7 @@ public class Window {
     }
 
     /**
+     *
      * @param monitor The monitor to set for the window
      *
      * @since 0.0.1
@@ -168,24 +176,47 @@ public class Window {
     }
 
     /**
+     *
      * @return The window width in screen coordinates
      *
      * @since 0.0.1
      */
     public int getWidth() {
-        return (int) (xscale * width);
+        return width;
     }
 
     /**
+     *
+     * @return The window width in screen coordinates
+     *
+     * @since 0.0.1
+     */
+    public float getScaledWidth() {
+        return xscale * width;
+    }
+
+    /**
+     *
      * @return The window height in screen coordinates
      *
      * @since 0.0.1
      */
     public int getHeight() {
-        return (int) (yscale * height);
+        return height;
     }
 
     /**
+     *
+     * @return The window height in screen coordinates
+     *
+     * @since 0.0.1
+     */
+    public float getScaledHeight() {
+        return yscale * height;
+    }
+
+    /**
+     *
      * @return The window width in screen coordinates
      *
      * @since 0.0.1
@@ -195,6 +226,7 @@ public class Window {
     }
 
     /**
+     *
      * @return The aspect ratio between x and y pixel sizes
      *
      * @since 0.0.1
@@ -204,6 +236,7 @@ public class Window {
     }
 
     /**
+     *
      * @return The window height in screen coordinates
      *
      * @since 0.0.1
@@ -213,6 +246,7 @@ public class Window {
     }
 
     /**
+     *
      * Change to full-screen mode on demand
      *
      * @since 0.0.1
@@ -229,6 +263,7 @@ public class Window {
     }
 
     /**
+     *
      * Change to windowed mode on demand
      *
      * @since 0.0.1
@@ -247,6 +282,7 @@ public class Window {
     }
 
     /**
+     *
      * @return The window handle
      *
      * @since 0.0.1
@@ -256,6 +292,7 @@ public class Window {
     }
 
     /**
+     *
      * Sets window settings and updates window dimensions
      *
      * @since 0.0.1
@@ -267,6 +304,7 @@ public class Window {
     }
 
     /**
+     *
      * Sets window position relative to the current monitor
      *
      * @param x The x position in pixels
@@ -282,6 +320,7 @@ public class Window {
     }
 
     /**
+     *
      * Gets the window position (x, y) in pixels relative to Monitor
      *
      * @since 0.0.1

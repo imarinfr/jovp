@@ -17,6 +17,7 @@ import static org.lwjgl.system.Configuration.DEBUG;
 import static org.lwjgl.vulkan.VK13.vkDeviceWaitIdle;
 
 /**
+ *
  * PsychoEngine
  *
  * <ul>
@@ -43,35 +44,66 @@ public class PsychoEngine {
     private long maxMemory;
     private long totalMemory;
 
-    private Eye eye;
+    private ViewMode viewMode;
     private Paradigm paradigm;
     private boolean loop;
 
     /**
+     *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param eye Viewing eye
-     * @param distance Viewing distance of the observer in mm. Uses default input (Keypad) and paradigm (2AFC)
+     * @param distance Viewing distance of the observer in mm
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, Eye eye, int distance) {
-        this(psychoLogic, eye, distance, Input.KEYPAD, Paradigm.M2AFC_HORIZONTAL);
+    public PsychoEngine(PsychoLogic psychoLogic, int distance) {
+        this(psychoLogic, distance, ViewMode.MONO, Input.KEYPAD, Paradigm.M2AFC_HORIZONTAL,
+                VALIDATION_LAYERS, API_DUMP);
     }
 
     /**
-     * @param eye Viewing eye
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param viewMode Viewing viewMode
+     * @param distance Viewing distance of the observer in mm
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode) {
+        this(psychoLogic, distance, viewMode, Input.KEYPAD, Paradigm.M2AFC_HORIZONTAL,
+                VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param viewMode Viewing viewMode
+     * @param distance Viewing distance of the observer in mm
+     * @param input Input to use as input for observer's input
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input) {
+        this(psychoLogic, distance, viewMode, input, Paradigm.M2AFC_HORIZONTAL, VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param viewMode Viewing viewMode
      * @param distance Viewing distance of the observer in mm
      * @param input Input to use as input for observer's input
      * @param paradigm The psychophysical paradigm to use
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, Eye eye, int distance, Input input, Paradigm paradigm) {
-        this(psychoLogic, eye, distance, input, paradigm, VALIDATION_LAYERS, API_DUMP);
+    public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input, Paradigm paradigm) {
+        this(psychoLogic, distance, viewMode, input, paradigm, VALIDATION_LAYERS, API_DUMP);
     }
 
     /**
-     * @param eye Viewing eye
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param viewMode Viewing viewMode
      * @param distance Viewing distance of the observer in mm
      * @param input Input to use as input for observer's input
      * @param paradigm The psychophysical paradigm to use
@@ -80,12 +112,12 @@ public class PsychoEngine {
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, Eye eye, int distance, Input input, Paradigm paradigm,
+    public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input, Paradigm paradigm,
                         boolean validationLayers, boolean apiDump) {
         glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
         if(!glfwInit()) throw new RuntimeException("Cannot initialize GLFW");
         this.psychoLogic = psychoLogic;
-        this.eye = eye;
+        this.viewMode = viewMode;
         this.paradigm = paradigm;
         window = new Window();
         vulkanManager = new VulkanManager(window, distance, validationLayers, apiDump);
@@ -126,8 +158,8 @@ public class PsychoEngine {
      */
     public void start(VkPhysicalDevice physicalDevice) {
         try {
-            vulkanManager.start(physicalDevice, psychoLogic.items);
             init();
+            vulkanManager.start(physicalDevice, viewMode, psychoLogic.items);
             psychoLoop();
             vkDeviceWaitIdle(vulkanManager.getDevice());
         } catch (Exception e) {
@@ -172,6 +204,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * Instruct the engine to finish the loop
      *
      * @since 0.0.1
@@ -181,6 +214,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * Clean up after use
      *
      * @since 0.0.1
@@ -211,22 +245,25 @@ public class PsychoEngine {
     public VulkanManager getVulkanManager() {
         return vulkanManager;
     }
+
     /**
-     * @param eye The viewing eye
+     *
+     * @param viewMode The viewing viewMode
      *
      * @since 0.0.1
      */
-    public void setEye(Eye eye) {
-        this.eye = eye;
+    public void setViewMode(ViewMode viewMode) {
+        this.viewMode = viewMode;
     }
 
     /**
-     * @return The viewing eye
+     *
+     * @return The viewing viewMode
      *
      * @since 0.0.1
      */
-    public Eye getEye() {
-        return eye;
+    public ViewMode getViewMode() {
+        return viewMode;
     }
 
     /**
@@ -250,6 +287,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @param paradigm The psychophysics paradigm
      *
      * @since 0.0.1
@@ -259,6 +297,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @return The psychophysics paradigm
      *
      * @since 0.0.1
@@ -286,7 +325,7 @@ public class PsychoEngine {
     public void setView() { // TODO
         Vector3f eye = new Vector3f(0.0f, 0.0f, 0.0f);
         Vector3f center = new Vector3f(0.0f, 0.0f, 1.0f);
-        Vector3f up = new Vector3f(0.0f, -1.0f, 0.0f);
+        Vector3f up = new Vector3f(0.0f, -1f, 0.0f);
         Matrix4f view = new Matrix4f();
         view.lookAt(eye, center, up);
         System.out.println(view);
@@ -325,6 +364,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @param width Monitor width in pixels
      * @param height Monitor height in pixels
      *
@@ -335,6 +375,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * Set full-screen mode to current monitor
      *
      * @since 0.0.1
@@ -344,6 +385,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * Set windowed mode to current monitor
      *
      * @since 0.0.1
@@ -353,6 +395,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @return The command from the controller
      *
      * @since 0.0.1
@@ -362,6 +405,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @return The start time in ms
      *
      * @since 0.0.1
@@ -371,6 +415,7 @@ public class PsychoEngine {
     }
 
     /**
+     *
      * @return Elapse time in ms
      *
      * @since 0.0.1

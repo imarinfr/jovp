@@ -12,10 +12,10 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 /**
+ *
  * Text
  *
  * <ul>
@@ -100,6 +100,7 @@ public class Text extends Item {
             throw new RuntimeException(e);
         }
         createFontTexture(rgba);
+        model = new Model();
     }
 
     /**
@@ -116,15 +117,15 @@ public class Text extends Item {
         final Vertex[] vertices = new Vertex[4 * text.length()];
         final Integer[] indices = new Integer[6 * text.length()];
         GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
-        double width = glyphVector.getLogicalBounds().getWidth();
+        double charWidth = glyphVector.getLogicalBounds().getWidth();
         char[] chars = text.toCharArray();
         for (int i = 0; i < glyphVector.getNumGlyphs(); i++) {
             glyphVector.getGlyphCode(i);
             Point2D pos = glyphVector.getGlyphPosition(i);
             Rectangle2D bounds = glyphVector.getGlyphMetrics(i).getBounds2D();
             CharInfo charInfo = map.get(chars[i]);
-            float xmin = (float) ((pos.getX() + bounds.getMinX()) / width);
-            float xmax = (float) ((pos.getX() + bounds.getMaxX()) / width);
+            float xmin = (float) ((pos.getX() + bounds.getMinX()) / charWidth);
+            float xmax = (float) ((pos.getX() + bounds.getMaxX()) / charWidth);
             float x0 = charInfo.x;
             float x1 = x0 + charInfo.width;
             vertices[4 * i] = new Vertex(new Vector3f(xmin, -1.0f, 0.0f), new Vector2f(x0, 1.0f));
@@ -139,8 +140,10 @@ public class Text extends Item {
             indices[6 * i + 5] = 4 * i;
             this.width += map.get(chars[i]).width();
         }
-        updateModel(vertices, indices);
-        setSize();
+        model.setVertices(vertices);
+        model.setIndices(indices);
+        size(FONT_SIZE * width / 2 * height, height, 1);
+        update = true;
     }
 
     /**
@@ -149,13 +152,8 @@ public class Text extends Item {
      *
      * @since 0.0.1
      */
-    public void setSize(double height) {
+    public void size(double height) {
         this.height = height;
-        setSize();
-    }
-
-    // Set size
-    private void setSize() {
         size(FONT_SIZE * width / 2 * height, height, 1);
     }
 
@@ -172,24 +170,24 @@ public class Text extends Item {
         // Find the image regions to fill
         boolean[] fill = new boolean[width * height];
         for (int glyph = 0; glyph < glyphs.getNumGlyphs(); glyph++) {
-            float charWidth = (int) glyphs.getGlyphMetrics(glyph).getBounds2D().getWidth();
-            int advance = (int) glyphs.getGlyphMetrics(glyph).getAdvanceX();
+            double charWidth = glyphs.getGlyphMetrics(glyph).getAdvanceX();
+            int advance = (int) charWidth;
             boolean[] glyphFill = getFillRegion(glyphs.getGlyphOutline(glyph), advance, height, ascent);
             for (int i = 0; i < height; i++) for (int j = 0; j < advance; j++)
                 fill[i * width + x + j] = glyphFill[i * advance + j];
             // Add map to the catalog
-            map.put(text.charAt(glyph), new CharInfo(x / (float) width, charWidth / (float) width));
+            map.put(text.charAt(glyph), new CharInfo(x / (float) width, (float) charWidth / width));
             x += advance;
         }
         // Colors for the texture
-        byte[] color = new byte[4 * width * height];
+        float[] pixels = new float[4 * width * height];
         for (int i = 0; i < fill.length; i++) {
             if (fill[i]) for (int pos = 0; pos < 4; pos++) // Fill regions with value -1
-                color[4 * i + pos] = (byte) (255.0f * rgba[pos]);
+                pixels[4 * i + pos] = 1.0f;
             else for (int pos = 0; pos < 4; pos++)
-                color[4 * i + pos] = (byte) 0;
+                pixels[4 * i + pos] = 0.0f;
         }
-        updateTexture(width, height, ByteBuffer.wrap(color));
+        texture = new Texture(rgba, pixels, width, height);
     }
 
     // Get fill region for a character for rendering

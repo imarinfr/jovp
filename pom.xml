@@ -41,22 +41,15 @@
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-assimp</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-jawt</artifactId></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-openal</artifactId></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-spvc</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-shaderc</artifactId></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-vma</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-vulkan</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-assimp</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-glfw</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-openal</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-stb</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-shaderc</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
-        <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-vma</artifactId><classifier>${lwjgl.natives}</classifier></dependency>
         <dependency><groupId>org.joml</groupId><artifactId>joml</artifactId><version>1.10.4</version></dependency>
-        <dependency><groupId>org.lwjglx</groupId><artifactId>lwjgl3-awt</artifactId><version>0.1.8</version></dependency>
         <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>23.0.0</version><scope>compile</scope></dependency>
         <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.8.2</version><scope>test</scope></dependency>
     </dependencies>

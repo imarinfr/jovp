@@ -3,7 +3,7 @@ package es.optocom.jovp.portability;
 import es.optocom.jovp.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.structures.Command;
-import es.optocom.jovp.engine.structures.Eye;
+import es.optocom.jovp.engine.structures.ViewMode;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -25,7 +25,7 @@ public class PortabilityTests {
      */
     @Test
     public void portabilityDesktop() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500) ;
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500) ;
         psychoEngine.cleanup();
     }
 
@@ -36,7 +36,7 @@ public class PortabilityTests {
      */
     @Test
     public void portabilityMacOS() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500) ;
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500) ;
         psychoEngine.cleanup();
     }
 
@@ -47,7 +47,7 @@ public class PortabilityTests {
      */
     @Test
     public void portabilityIOS() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500) ;
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500) ;
         psychoEngine.cleanup();
     }
 
@@ -58,7 +58,7 @@ public class PortabilityTests {
      */
     @Test
     public void portabilityMinimumVulkan() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500) ;
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500) ;
         psychoEngine.cleanup();
     }
 
@@ -69,7 +69,7 @@ public class PortabilityTests {
      */
     @Test
     public void specMinimumVulkan() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500) ;
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500) ;
         psychoEngine.cleanup();
     }
 

@@ -2,23 +2,24 @@ package es.optocom.jovp.engine.rendering;
 
 import es.optocom.jovp.engine.structures.Vertex;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static es.optocom.jovp.engine.rendering.VulkanSettings.*;
+import static es.optocom.jovp.engine.rendering.VulkanSetup.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
- * VulkanBuffers
+ *
+ * ItemBuffers
  *
  * <ul>
  * <li>Vulkan Objects</li>
@@ -27,7 +28,7 @@ import static org.lwjgl.vulkan.VK13.*;
  *
  * @since 0.0.1
  */
-class VulkanBuffers {
+class ItemBuffers {
 
     Item item;
     long commandPool;
@@ -45,13 +46,14 @@ class VulkanBuffers {
     List<Long> descriptorSets;
 
     /**
+     *
      * Create Vulkan objects for an item
      *
      * @param item The item to render
      *
      * @since 0.0.1
      */
-    VulkanBuffers(@NotNull Item item) {
+    ItemBuffers(@NotNull Item item) {
         this.item = item;
         commandPool = createCommandPool();
         createModelObjects(item.model);
@@ -59,14 +61,15 @@ class VulkanBuffers {
         createDescriptorObjects();
     }
 
-    // Update model objects
+    /**
+     *
+     * Update buffers for the model on request
+     *
+     * @since 0.0.1
+     */
     void update() {
-        destroyDescriptorObjects();
-        destroyTextureObjects();
         destroyModelObjects();
         createModelObjects(item.model);
-        createTextureObjects(item.texture);
-        createDescriptorObjects();
     }
 
     /**
@@ -127,7 +130,6 @@ class VulkanBuffers {
 
     // Create vertex buffer
     private void createVertexBuffer(@NotNull Model model) {
-        VkDevice device = logicalDevice.device;
         try (MemoryStack stack = stackPush()) {
             long bufferSize = (long) MODEL_SIZEOF * model.length;
             LongBuffer pBuffer = stack.mallocLong(1);
@@ -138,24 +140,23 @@ class VulkanBuffers {
             long stagingBuffer = pBuffer.get(0);
             long stagingBufferMemory = pBufferMemory.get(0);
             PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, data);
+            vkMapMemory(logicalDevice.device, stagingBufferMemory, 0, bufferSize, 0, data);
             {
-                verticesToBuffers(model.vertices, data.getByteBuffer(0, (int) bufferSize));
+                verticesToBuffer(model.vertices, data.getByteBuffer(0, (int) bufferSize));
             }
-            vkUnmapMemory(device, stagingBufferMemory);
+            vkUnmapMemory(logicalDevice.device, stagingBufferMemory);
             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                     VK_MEMORY_HEAP_DEVICE_LOCAL_BIT, pBuffer, pBufferMemory);
             vertexBuffer = pBuffer.get(0);
             vertexBufferMemory = pBufferMemory.get(0);
             copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-            vkDestroyBuffer(device, stagingBuffer, null);
-            vkFreeMemory(device, stagingBufferMemory, null);
+            vkDestroyBuffer(logicalDevice.device, stagingBuffer, null);
+            vkFreeMemory(logicalDevice.device, stagingBufferMemory, null);
         }
     }
 
     // Create index buffer
     private void createIndexBuffer(@NotNull Model model) {
-        VkDevice device = logicalDevice.device;
         try (MemoryStack stack = stackPush()) {
             long bufferSize = (long) Integer.BYTES * model.length;
             LongBuffer pBuffer = stack.mallocLong(1);
@@ -166,57 +167,52 @@ class VulkanBuffers {
             long stagingBuffer = pBuffer.get(0);
             long stagingBufferMemory = pBufferMemory.get(0);
             PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, data);
+            vkMapMemory(logicalDevice.device, stagingBufferMemory, 0, bufferSize, 0, data);
             {
                 indicesToBuffer(model.indices, data.getByteBuffer(0, (int) bufferSize));
             }
-            vkUnmapMemory(device, stagingBufferMemory);
+            vkUnmapMemory(logicalDevice.device, stagingBufferMemory);
             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                     VK_MEMORY_HEAP_DEVICE_LOCAL_BIT, pBuffer, pBufferMemory);
             indexBuffer = pBuffer.get(0);
             indexBufferMemory = pBufferMemory.get(0);
             copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-            vkDestroyBuffer(device, stagingBuffer, null);
-            vkFreeMemory(device, stagingBufferMemory, null);
+            vkDestroyBuffer(logicalDevice.device, stagingBuffer, null);
+            vkFreeMemory(logicalDevice.device, stagingBufferMemory, null);
         }
     }
 
     // Create texture image
     private void createTextureImage(@NotNull Texture texture) {
-        int size = texture.getSize();
-        int width = texture.getWidth();
-        int height = texture.getHeight();
-        int mipLevels = texture.getMipLevels();
-        VkDevice device = logicalDevice.device;
         try (MemoryStack stack = stackPush()) {
             LongBuffer pStagingBuffer = stack.mallocLong(1);
             LongBuffer pStagingBufferMemory = stack.mallocLong(1);
-            createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            createBuffer(texture.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     pStagingBuffer, pStagingBufferMemory);
             PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(device, pStagingBufferMemory.get(0), 0, size, 0, data);
+            vkMapMemory(logicalDevice.device, pStagingBufferMemory.get(0), 0, texture.size, 0, data);
             {
-                memcpy(data.getByteBuffer(0, size), texture.getPixels(), size);
+                textureToBuffer(texture.getPixels(), data.getByteBuffer(0, texture.size));
             }
-            vkUnmapMemory(device, pStagingBufferMemory.get(0));
+            vkUnmapMemory(logicalDevice.device, pStagingBufferMemory.get(0));
             LongBuffer pTextureImage = stack.mallocLong(1);
             LongBuffer pTextureImageMemory = stack.mallocLong(1);
-            createImage(width, height, mipLevels,
-                    VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+            createImage(texture.width, texture.height, texture.mipLevels,
+                    VK_SAMPLE_COUNT_1_BIT, COLOR_FORMAT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     pTextureImage, pTextureImageMemory);
             textureImage = pTextureImage.get(0);
             textureImageMemory = pTextureImageMemory.get(0);
-            transitionImageLayout(commandPool, textureImage, VK_FORMAT_R8G8B8A8_SRGB,
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-            copyBufferToImage(pStagingBuffer.get(0), textureImage, width, height);
-            generateMipmaps(logicalDevice, textureImage, width, height, mipLevels);
-            vkDestroyBuffer(device, pStagingBuffer.get(0), null);
-            vkFreeMemory(device, pStagingBufferMemory.get(0), null);
+            transitionImageLayout(commandPool, textureImage, COLOR_FORMAT,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture.mipLevels);
+            copyBufferToImage(pStagingBuffer.get(0), textureImage, texture.width, texture.height);
+            generateMipmaps(logicalDevice, texture, textureImage);
+            vkDestroyBuffer(logicalDevice.device, pStagingBuffer.get(0), null);
+            vkFreeMemory(logicalDevice.device, pStagingBufferMemory.get(0), null);
         }
-        textureImageView = createImageView(device, textureImage, VK_FORMAT_R8G8B8A8_SRGB,
-                VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+        textureImageView = createImageView(logicalDevice.device, textureImage, COLOR_FORMAT,
+                VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
     }
 
     // Create texture sampler
@@ -224,18 +220,18 @@ class VulkanBuffers {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                    .magFilter(VK_FILTER_NEAREST)
-                    .minFilter(VK_FILTER_NEAREST)
-                    .addressModeU(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                    .addressModeV(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                    .addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT)
+                    .magFilter(SAMPLER_FILTER)
+                    .minFilter(SAMPLER_FILTER)
+                    .addressModeU(SAMPLER_ADDRESS_MODE)
+                    .addressModeV(SAMPLER_ADDRESS_MODE)
+                    .addressModeW(SAMPLER_ADDRESS_MODE)
                     .anisotropyEnable(true)
                     .maxAnisotropy(16.0f)
-                    .borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+                    .borderColor(SAMPLER_BORDER_COLOR)
                     .unnormalizedCoordinates(false)
                     .compareEnable(false)
                     .compareOp(VK_COMPARE_OP_ALWAYS)
-                    .mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    .mipmapMode(SAMPLER_MIPMAP_MODE)
                     .minLod(0) // Optional
                     .maxLod((float) texture.getMipLevels())
                     .mipLodBias(0); // Optional
@@ -336,40 +332,11 @@ class VulkanBuffers {
         }
     }
 
-    // Copy vertices to buffer
-    private void verticesToBuffers(Vertex @NotNull [] vertices, ByteBuffer buffer) {
-        for (Vertex vertex : vertices) {
-            buffer.putFloat(vertex.position.x())
-                    .putFloat(vertex.position.y())
-                    .putFloat(vertex.position.z())
-                    .putFloat(vertex.uv.x())
-                    .putFloat(vertex.uv.y());
-        }
-    }
-
-    // Copy indices to buffer
-    private void indicesToBuffer(Integer @NotNull [] indices, ByteBuffer buffer) {
-        for(int index : indices) buffer.putInt(index);
-        buffer.rewind();
-    }
-
-    // Copy buffer
-    private void copyBuffer(long srcBuffer, long dstBuffer, long size) {
-        try (MemoryStack stack = stackPush()) {
-            VkCommandBuffer commandBuffer = beginCommand(commandPool);
-            VkBufferCopy.Buffer copyRegion = VkBufferCopy.calloc(1, stack);
-            copyRegion.size(size);
-            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, copyRegion);
-            endCommand(commandPool, commandBuffer);
-        }
-    }
-
     // Generate mipmaps
-    private void generateMipmaps(@NotNull LogicalDevice logicalDevice, long image,
-                                 int width, int height, int mipLevels) {
+    private void generateMipmaps(@NotNull LogicalDevice logicalDevice, Texture texture, long image) {
         try (MemoryStack stack = stackPush()) {
             VkFormatProperties formatProperties = VkFormatProperties.malloc(stack);
-            vkGetPhysicalDeviceFormatProperties(logicalDevice.device.getPhysicalDevice(), VK_FORMAT_R8G8B8A8_SRGB,
+            vkGetPhysicalDeviceFormatProperties(logicalDevice.device.getPhysicalDevice(), COLOR_FORMAT,
                     formatProperties);
             if ((formatProperties.optimalTilingFeatures() & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) == 0)
                 throw new RuntimeException("Texture image format does not support linear blitting");
@@ -384,9 +351,9 @@ class VulkanBuffers {
                     .baseArrayLayer(0)
                     .layerCount(1)
                     .levelCount(1);
-            int mipWidth = width;
-            int mipHeight = height;
-            for (int i = 1; i < mipLevels; i++) {
+            int mipWidth = texture.width;
+            int mipHeight = texture.height;
+            for (int i = 1; i < texture.mipLevels; i++) {
                 barrier.subresourceRange().baseMipLevel(i - 1);
                 barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                         .newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
@@ -419,13 +386,121 @@ class VulkanBuffers {
                 if (mipWidth > 1) mipWidth /= 2;
                 if (mipHeight > 1) mipHeight /= 2;
             }
-            barrier.subresourceRange().baseMipLevel(mipLevels - 1);
+            barrier.subresourceRange().baseMipLevel(texture.mipLevels - 1);
             barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                     .newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                     .srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
                     .dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                     0, null, null, barrier);
+            endCommand(commandPool, commandBuffer);
+        }
+    }
+
+    // Vertices to buffer
+    private void verticesToBuffer(Vertex @NotNull [] vertices, ByteBuffer buffer) {
+        for (Vertex vertex : vertices)
+            buffer.putFloat(vertex.position.x())
+                    .putFloat(vertex.position.y())
+                    .putFloat(vertex.position.z())
+                    .putFloat(vertex.uv.x())
+                    .putFloat(vertex.uv.y());
+        buffer.rewind();
+    }
+
+    // Indices to buffer
+    private void indicesToBuffer(Integer @NotNull [] indices, ByteBuffer buffer) {
+        for(int index : indices) buffer.putInt(index);
+        buffer.rewind();
+    }
+
+    // Texture to buffer
+    private static void textureToBuffer(float @NotNull [] pixels, ByteBuffer buffer) {
+        for(float pixel : pixels) buffer.putFloat(pixel);
+        buffer.rewind();
+    }
+
+    /**
+     *
+     * Update uniforms for the image to be rendered
+     *
+     * @param imageIndex Image to be rendered
+     *
+     * @since 0.0.1
+     */
+    void updateUniforms(int imageIndex) {
+        // Settings
+        final Vector4i settings = new Vector4i(0, 0, 0, 0);
+        // Type of texture
+        switch(item.getTexture().type) {
+            case FLAT -> settings.x = 0;
+            case TEXT -> settings.x = 2;
+            case IMAGE -> settings.x = 3;
+            default -> settings.x = 1;
+        }
+        final Matrix4f transform = new Matrix4f();
+        // Convert from degrees of visual angle to distances
+        Vector3f position = new Vector3f((float) (item.position.z * Math.tan(item.position.x)),
+                (float) (item.position.z * Math.tan(item.position.y)), (float) item.position.z);
+        Vector3f size = new Vector3f((float) (item.position.z * Math.tan(item.size.x)),
+                (float) (item.position.z * Math.tan(item.size.y)), (float) item.size.z);
+        transform.translation(position).rotate((float) item.rotation, item.rotationAxis).scale(size);
+        // Spatial frequency of stimuli
+        Vector4f spatial = new Vector4f(
+                (float) Math.toDegrees(item.size.x) * 2 * item.frequency.x,
+                (float) Math.toDegrees(item.size.y) * 2 * item.frequency.y,
+                item.frequency.z, item.frequency.w);
+        Vector4f rotation = new Vector4f((float) item.texRotation, item.texPivot[0], item.texPivot[1], 0);
+        // Post-processing: envelope and Gaussian defocus
+        final Vector4f envelope = new Vector4f(0, 0, 0, 0);
+        switch (item.post.envelope) {
+            case SQUARE -> envelope.x = 1;
+            case CIRCLE -> envelope.x = 2;
+            case GAUSSIAN -> envelope.x = 3;
+            default -> envelope.x = 0; // No envelope
+        }
+        envelope.y = (float) (item.post.envelopeParams[0] / item.size.x); // SD x
+        envelope.z = (float) (item.post.envelopeParams[1] / item.size.y); // SD y
+        envelope.w = item.post.envelopeParams[2]; // angle
+        try(MemoryStack stack = stackPush()) {
+            PointerBuffer data = stack.mallocPointer(1);
+            vkMapMemory(logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0, UNIFORM_SIZEOF, 0, data);
+            {
+                uniformsToBuffer(data.getByteBuffer(0, UNIFORM_SIZEOF), settings,
+                        transform, spatial, rotation, item.rgba0(), item.rgba1(),
+                        item.contrast, envelope);
+            }
+            vkUnmapMemory(logicalDevice.device, uniformBuffersMemory.get(imageIndex));
+        }
+    }
+
+    // Uniforms to buffer
+    private void uniformsToBuffer(ByteBuffer buffer, @NotNull Vector4i settings,
+                                  @NotNull Matrix4f transform, @NotNull Vector4f frequency, @NotNull Vector4f rotation,
+                                  @NotNull Vector4f rgba0, @NotNull Vector4f rgba1, @NotNull Vector4f contrast,
+                                  @NotNull Vector4f envelope) {
+        final int mat4Size = 16 * Float.BYTES;
+        final int vec4Size = 4 * Float.BYTES;
+        settings.get(0, buffer);
+        transform.get(vec4Size, buffer);
+        lens.get(mat4Size + vec4Size, buffer);
+        view.get(2 * mat4Size + vec4Size, buffer);
+        projection.get(3 * mat4Size + vec4Size, buffer);
+        frequency.get(4 * mat4Size + vec4Size, buffer);
+        rotation.get(4 * mat4Size + 2 * vec4Size, buffer);
+        rgba0.get(4 * mat4Size + 3 * vec4Size, buffer);
+        rgba1.get(4 * mat4Size + 4 * vec4Size, buffer);
+        contrast.get(4 * mat4Size + 5 * vec4Size, buffer);
+        envelope.get(4 * mat4Size + 6 * vec4Size, buffer);
+    }
+
+    // Copy buffer
+    private void copyBuffer(long srcBuffer, long dstBuffer, long size) {
+        try (MemoryStack stack = stackPush()) {
+            VkCommandBuffer commandBuffer = beginCommand(commandPool);
+            VkBufferCopy.Buffer copyRegion = VkBufferCopy.calloc(1, stack);
+            copyRegion.size(size);
+            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, copyRegion);
             endCommand(commandPool, commandBuffer);
         }
     }
@@ -447,58 +522,6 @@ class VulkanBuffers {
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region);
             endCommand(commandPool, commandBuffer);
         }
-    }
-
-    // Copy to memory
-    private static void memcpy(@NotNull ByteBuffer dst, @NotNull ByteBuffer src, long size) {
-        src.limit((int) size);
-        dst.put(src);
-        src.limit(src.capacity()).rewind();
-    }
-
-    /**
-     *
-     * Update uniforms for the image to be rendered
-     *
-     * @param image Image to be rendered
-     * @param projection Projection matrix
-     * @param view view matrix
-     *
-     * @since 0.0.1
-     */
-    void updateUniforms(int image, Matrix4f projection, Matrix4f view) {
-        final Matrix4f transform = new Matrix4f();
-        // Convert from degrees of visual angle to distances
-        Vector3f position = new Vector3f(Z_FAR * (float) Math.tan(item.position.x),
-                Z_FAR * (float) Math.tan(item.position.y), (float) item.position.z);
-        Vector3f size = new Vector3f(Z_FAR * (float) Math.tan(item.size.x),
-                Z_FAR * (float) Math.tan(item.size.y), (float) item.size.z);
-        transform.translation(position).scale(size).rotate((float) item.rotation, item.axis);
-        try(MemoryStack stack = stackPush()) {
-            PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(logicalDevice.device, uniformBuffersMemory.get(image), 0, UNIFORM_SIZEOF, 0, data);
-            {
-                memcpy(data.getByteBuffer(0, UNIFORM_SIZEOF), projection, view, transform);
-            }
-            vkUnmapMemory(logicalDevice.device, uniformBuffersMemory.get(image));
-        }
-    }
-
-    // UBO to byte buffer
-    private void memcpy(ByteBuffer buffer, @NotNull Matrix4f projection,
-                        @NotNull Matrix4f view, @NotNull Matrix4f transform) {
-        final int mat4Size = 16 * Float.BYTES;
-        transform.get(0, buffer);
-        view.get(alignas(mat4Size, alignof(view)), buffer);
-        projection.get(alignas(mat4Size * 2, alignof(view)), buffer);
-    }
-
-    // Alignments for copying to memory
-    private static int alignof(Object obj) {
-        return obj == null ? 0 : SIZEOF_CACHE.getOrDefault(obj.getClass(), Integer.BYTES);
-    }
-    private static int alignas(int offset, int alignment) {
-        return offset % alignment == 0 ? offset : ((offset - 1) | (alignment - 1)) + 1;
     }
 
 }

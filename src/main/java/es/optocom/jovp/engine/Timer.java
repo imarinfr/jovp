@@ -1,6 +1,7 @@
 package es.optocom.jovp.engine;
 
 /**
+ *
  * Timer
  *
  * <ul>
@@ -16,6 +17,7 @@ public class Timer {
     private double startTime;
 
     /**
+     *
      * Create timer
      *
      * @since 0.0.1
@@ -25,6 +27,7 @@ public class Timer {
     }
 
     /**
+     *
      * Initialize timer
      *
      * @since 0.0.1
@@ -34,6 +37,7 @@ public class Timer {
     }
 
     /**
+     *
      * @return Time start time in ms
      *
      * @since 0.0.1
@@ -43,6 +47,7 @@ public class Timer {
     }
 
     /**
+     *
      * @return Elapsed time in ms
      *
      * @since 0.0.1

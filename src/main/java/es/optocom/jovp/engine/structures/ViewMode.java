@@ -2,12 +2,11 @@ package es.optocom.jovp.engine.structures;
 
 /**
  *
- * Input
+ * ViewMode
  *
  * @since 0.0.1
  */
-public enum Input {
-    NONE,
-    KEYPAD,
-    MOUSE
+public enum ViewMode {
+    MONO,
+    STEREO
 }

@@ -27,6 +27,7 @@ import static org.lwjgl.vulkan.EXTDebugReport.VK_ERROR_VALIDATION_FAILED_EXT;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
 import static org.lwjgl.vulkan.EXTSwapchainColorspace.*;
 import static org.lwjgl.vulkan.KHRDisplaySwapchain.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR;
+import static org.lwjgl.vulkan.KHRMultiview.VK_KHR_MULTIVIEW_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
@@ -37,7 +38,7 @@ import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
- * VulkanSettings
+ * VulkanSetup
  *
  * <ul>
  * <li>Vulkan Settings</li>
@@ -46,7 +47,7 @@ import static org.lwjgl.vulkan.VK13.*;
  *
  * @since 0.0.1
  */
-class VulkanSettings {
+class VulkanSetup {
 
     // General settings
     static final String TITLE = "JOVP Vulkan Engine";
@@ -58,13 +59,68 @@ class VulkanSettings {
     static final int UINT32_MAX = 0xFFFFFFFF;
     static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
     static final int MODEL_SIZEOF = (3 + 2) * Float.BYTES;
-    static final int UNIFORM_SIZEOF = 3 * 16 * Float.BYTES;
+    // Uniform size: 4 blocks for type
+    // Spatial properties in vertex shader: 4 4x4 model transforms + 1 4x1 texture transform + 1 3x1 texture rotation
+    // Color modulation in fragment shader: 4 4x1: min and max colors, level, and contrast
+    static final int UNIFORM_SIZEOF = Float.BYTES * (4 + 4 * 16 + 7 * 4);
     static final int POSITION_OFFSET = 0;
     static final int TEXTURE_OFFSET = 3 * Float.BYTES;
     static final int MAX_FRAMES_IN_FLIGHT = 2;
-    static final float Z_NEAR = 0.1f;
-    static final float Z_FAR = 100.0f;
-
+    public static final float Z_NEAR = 0.1f;
+    public static final float Z_FAR = 100.0f;
+    static final int SAMPLER_FILTER = VK_FILTER_NEAREST;
+    static final int SAMPLER_ADDRESS_MODE = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    static final int SAMPLER_MIPMAP_MODE = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    static final int COLOR_FORMAT = VK_FORMAT_R32G32B32A32_SFLOAT;
+    static final boolean SAMPLER_ANISOTROPY = true;
+    static final boolean SAMPLE_RATE_SHADING = true;
+    static final int MIP_LEVELS = 1;
+    static final int STENCIL_LOAD_OPERATION = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    static final int STENCIL_STORE_OPERATION = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    static final int COLOR_ATTACHMENT_SAMPLES = VK_SAMPLE_COUNT_1_BIT;
+    static final int INITIAL_LAYOUT = VK_IMAGE_LAYOUT_UNDEFINED;
+    static final int COLOR_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    static final int COLOR_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    static final int COLOR_ATTACHMENT_RESOLVE_FINAL_LAYOUT = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    static final int COLOR_ATTACHMENT_RESOLVE_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    static final int DEPTH_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    static final int DEPTH_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    static final int PIPELINE_STAGE_COLOR_ATTACHMENT = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    static final boolean PRIMITIVE_RESTART_ENABLE = false;
+    static final float VIEWPORT_X = 0.0f;
+    static final float VIEWPORT_Y = 0.0f;
+    static final float VIEWPORT_MIN_DEPTH = 0.0f;
+    static final float VIEWPORT_MAX_DEPTH = 1.0f;
+    static final int SCISSOR_OFFSET_X = 0;
+    static final int SCISSOR_OFFSET_Y = 0;
+    static final boolean DEPTH_CLAMP_ENABLE = false;
+    static final boolean RASTERIZER_DISCARD_ENABLE = false;
+    static final int POLYGON_MODE = VK_POLYGON_MODE_FILL;
+    static final float LINE_WIDTH = 1.0f;
+    static final int CULL_MODE = VK_CULL_MODE_BACK_BIT;
+    static final int FRONT_FACE = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    static final boolean DEPTH_BIAS_ENABLE = false;
+    static final boolean SAMPLE_SHADING_ENABLE = true;
+    static final float MIN_SAMPLE_SHADING = 0.2f;
+    static final boolean DEPTH_TEST_ENABLE = true;
+    static final boolean DEPTH_WRITE_ENABLE = true;
+    static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
+    static final boolean DEPTH_BOUNDS_TEST_ENABLE = false;
+    static final float MIN_DEPTH_BOUNDS = 0.0f;
+    static final float MAX_DEPTH_BOUNDS = 1.0f;
+    static final boolean STENCIL_TEST_ENABLE = false;
+    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    static final boolean BLEND_ENABLE = false;
+    static final boolean LOGIC_OPERATION_ENABLE = false;
+    static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
+    static final float BLEND_CONSTANTS_X = 0.0f;
+    static final float BLEND_CONSTANTS_Y = 0.0f;
+    static final float BLEND_CONSTANTS_Z = 0.0f;
+    static final float BLEND_CONSTANTS_W = 0.0f;
     static VkInstance instance;
     static boolean validationLayers;
     static boolean apiDump;
@@ -74,9 +130,15 @@ class VulkanSettings {
     static VkPhysicalDevice physicalDevice;
     static LogicalDevice logicalDevice;
     static SwapChain swapChain;
-    static long commandPool;
-    static List<VkCommandBuffer> commandBuffers;
-    private static long messenger;
+    static VulkanCommands commandPool;
+    static int distance; // in mm
+    static float fovx; // in radians;
+    static float fovy; // in radians;
+    static boolean stereoView; // whether mono or stereo mode
+    static final Matrix4f projection = new Matrix4f();
+    static final Matrix4f view = new Matrix4f();
+    static final Matrix4f lens = new Matrix4f();
+    static long messenger;
 
     // Result translator
     static String translateVulkanResult(int result) {
@@ -275,7 +337,8 @@ class VulkanSettings {
     static final Set<String> DEVICE_EXTENSIONS = Stream.of(
             new String[]{
                     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                    VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
+                    VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME,
+                    VK_KHR_MULTIVIEW_EXTENSION_NAME
             }
     ).collect(toSet());
 
@@ -324,7 +387,7 @@ class VulkanSettings {
                 .messageType(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
-                .pfnUserCallback(VulkanSettings::debugCallback);
+                .pfnUserCallback(VulkanSetup::debugCallback);
     }
     static void destroyDebugUtilsMessengerEXT() {
         if(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT") != NULL) {
@@ -375,7 +438,7 @@ class VulkanSettings {
         return indices.isComplete() && extensionsSupported && swapChainAdequate && anisotropySupported;
     }
     static QueueFamilyIndices findQueueFamilies(long surface, VkPhysicalDevice physicalDevice) {
-        VulkanSettings.QueueFamilyIndices indices = new QueueFamilyIndices();
+        VulkanSetup.QueueFamilyIndices indices = new QueueFamilyIndices();
         try (MemoryStack stack = stackPush()) {
             IntBuffer queueFamilyCount = stack.ints(0);
             vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, queueFamilyCount, null);
@@ -417,54 +480,6 @@ class VulkanSettings {
     }
 
     // Logical device, swap chain, render pass, and pipeline parameters and utility functions
-    static final boolean SAMPLER_ANISOTROPY = true;
-    static final boolean SAMPLE_RATE_SHADING = true;
-    static final int MIP_LEVELS = 1;
-    static final int STENCIL_LOAD_OPERATION = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    static final int STENCIL_STORE_OPERATION = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    static final int COLOR_ATTACHMENT_SAMPLES = VK_SAMPLE_COUNT_1_BIT;
-    static final int INITIAL_LAYOUT = VK_IMAGE_LAYOUT_UNDEFINED;
-    static final int COLOR_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    static final int COLOR_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    static final int COLOR_ATTACHMENT_RESOLVE_FINAL_LAYOUT = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    static final int COLOR_ATTACHMENT_RESOLVE_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    static final int DEPTH_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    static final int DEPTH_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    static final int PIPELINE_STAGE_COLOR_ATTACHMENT = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    static final boolean PRIMITIVE_RESTART_ENABLE = false;
-    static final float VIEWPORT_X = 0.0f;
-    static final float VIEWPORT_Y = 0.0f;
-    static final float VIEWPORT_MIN_DEPTH = 0.0f;
-    static final float VIEWPORT_MAX_DEPTH = 1.0f;
-    static final int SCISSOR_OFFSET_X = 0;
-    static final int SCISSOR_OFFSET_Y = 0;
-    static final boolean DEPTH_CLAMP_ENABLE = false;
-    static final boolean RASTERIZER_DISCARD_ENABLE = false;
-    static final int POLYGON_MODE = VK_POLYGON_MODE_FILL;
-    static final float LINE_WIDTH = 1.0f;
-    static final int CULL_MODE = VK_CULL_MODE_BACK_BIT;
-    static final int FRONT_FACE = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    static final boolean DEPTH_BIAS_ENABLE = false;
-    static final boolean SAMPLE_SHADING_ENABLE = true;
-    static final float MIN_SAMPLE_SHADING = 0.2f;
-    static final boolean DEPTH_TEST_ENABLE = true;
-    static final boolean DEPTH_WRITE_ENABLE = true;
-    static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
-    static final boolean DEPTH_BOUNDS_TEST_ENABLE = false;
-    static final float MIN_DEPTH_BOUNDS = 0.0f;
-    static final float MAX_DEPTH_BOUNDS = 1.0f;
-    static final boolean STENCIL_TEST_ENABLE = false;
-    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    static final boolean BLEND_ENABLE = false;
-    static final boolean LOGIC_OPERATION_ENABLE = false;
-    static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
-    static final float BLEND_CONSTANTS_X = 0.0f;
-    static final float BLEND_CONSTANTS_Y = 0.0f;
-    static final float BLEND_CONSTANTS_Z = 0.0f;
-    static final float BLEND_CONSTANTS_W = 0.0f;
     static QueueFamilyIndices queueFamilies() {
         return findQueueFamilies(surface, physicalDevice);
     }
@@ -658,9 +673,11 @@ class VulkanSettings {
             return pCommandPool.get(0);
         }
     }
+
     static void destroyCommandPool(long commandPool) {
         vkDestroyCommandPool(logicalDevice.device, commandPool, null);
     }
+
     static @NotNull VkCommandBuffer beginCommand(long commandPool) {
         try (MemoryStack stack = stackPush()) {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.calloc(stack)

@@ -1,6 +1,7 @@
 package es.optocom.jovp.engine.structures;
 
 /**
+ *
  * Optotype
  *
  * @since 0.0.1

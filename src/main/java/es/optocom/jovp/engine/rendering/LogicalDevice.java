@@ -6,11 +6,22 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
 
-import static es.optocom.jovp.engine.rendering.VulkanSettings.*;
+import static es.optocom.jovp.engine.rendering.VulkanSetup.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK13.*;
 
-// Class to handle the logical device. Needs to be recreated if physical device changes
+
+/**
+ *
+ * LogicalDevice
+ *
+ * <ul>
+ * <li>Logical Device</li>
+ * Class to handle the logical device. Needs to be recreated if physical device changes
+ * </ul>
+ *
+ * @since 0.0.1
+ */
 public class LogicalDevice {
 
     VkDevice device;
@@ -19,14 +30,24 @@ public class LogicalDevice {
     long descriptorSetLayout;
     int msaaSamples;
 
-
+    /**
+     *
+     * Create logical device
+     *
+     * @since 0.0.1
+     */
     LogicalDevice(long surface, VkPhysicalDevice physicalDevice) {
         createLogicalDevice(surface, physicalDevice);
         createDescriptorSetLayout();
         msaaSamples = getMaxUsableSampleCount(physicalDevice);
     }
 
-    // Destroy device and commandPool if they have been created
+    /**
+     *
+     * Destroy logical device
+     *
+     * @since 0.0.1
+     */
     void destroy() {
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, null);
         vkDestroyDevice(device, null);
@@ -35,18 +56,19 @@ public class LogicalDevice {
     // Create Vulkan logical device
     private void createLogicalDevice(long surface, VkPhysicalDevice physicalDevice) {
         try (MemoryStack stack = stackPush()) {
-            VulkanSettings.QueueFamilyIndices indices = findQueueFamilies(surface, physicalDevice);
+            VulkanSetup.QueueFamilyIndices indices = findQueueFamilies(surface, physicalDevice);
             int[] uniqueQueueFamilies = indices.unique();
             VkDeviceQueueCreateInfo.Buffer queueCreateInfos = VkDeviceQueueCreateInfo.calloc(uniqueQueueFamilies.length, stack);
             for (int i = 0; i < uniqueQueueFamilies.length; i++) {
                 VkDeviceQueueCreateInfo queueCreateInfo = queueCreateInfos.get(i);
                 queueCreateInfo.sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO)
                         .queueFamilyIndex(uniqueQueueFamilies[i])
-                        .pQueuePriorities(stack.floats(VulkanSettings.QueueFamilyIndices.PRIORITY));
+                        .pQueuePriorities(stack.floats(VulkanSetup.QueueFamilyIndices.PRIORITY));
             }
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack)
                     .samplerAnisotropy(SAMPLER_ANISOTROPY)
-                    .sampleRateShading(SAMPLE_RATE_SHADING);
+                    .sampleRateShading(SAMPLE_RATE_SHADING)
+                    .multiViewport(true);
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
                     .pQueueCreateInfos(queueCreateInfos)

@@ -1,16 +1,15 @@
 package es.optocom.jovp.engine.rendering;
 
-import es.optocom.jovp.engine.structures.TextureType;
-import es.optocom.jovp.engine.structures.Vertex;
-import org.jetbrains.annotations.NotNull;
+import es.optocom.jovp.engine.structures.PostType;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
-import java.nio.ByteBuffer;
-
-import static es.optocom.jovp.engine.rendering.VulkanSettings.Z_FAR;
+import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_FAR;
+import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_NEAR;
 
 /**
+ *
  * Item
  *
  * <ul>
@@ -25,12 +24,17 @@ public class Item {
     boolean show;
     Model model;
     Texture texture;
-    VulkanBuffers buffers;
-    final Vector3d position = new Vector3d(0, 0, Z_FAR); // radian, radian, mm
-    final Vector3d size = new Vector3d(Math.PI / 180, Math.PI / 180, 1); // radian, radian, mm
-    double rotation = 0; // in radians
-    Vector3f axis = new Vector3f(0, 0, 0);
-    boolean update = false;
+    Vector3d position; // radian, radian, mm
+    Vector3d size; // radian, radian, mm
+    Vector4f frequency;
+    Vector4f contrast;
+    double rotation; // in radians
+    Vector3f rotationAxis;
+    double texRotation; // rotation in radians
+    float[] texPivot;
+    Post post;
+    ItemBuffers buffers;
+    boolean update = false; // Only for text
 
     /**
      *
@@ -42,9 +46,9 @@ public class Item {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
+        this();
         this.model = model;
         this.texture = texture;
-        show = true;
     }
 
     /**
@@ -54,19 +58,11 @@ public class Item {
      * @since 0.0.1
      */
     Item() {
+        position = new Vector3d(0, 0, Z_NEAR);
+        defaults();
         show = true;
-        model = new Model();
-        texture = new Texture();
-    }
-
-    /**
-     *
-     * Create Vulkan buffers
-     *
-     * @since 0.0.1
-     */
-    public void create() {
-        buffers = new VulkanBuffers(this);
+        buffers = null;
+        post = new Post();
     }
 
     /**
@@ -76,15 +72,21 @@ public class Item {
      * @since 0.0.1
      */
     public void destroy() {
+        buffers.destroy();
         model.destroy();
         texture.destroy();
-        if (buffers != null) buffers.destroy();
-        buffers = null;
     }
 
     /**
      *
-     * Set whether to show the item or not
+     * @return Whether to show the item or not
+     *
+     * @since 0.0.1
+     */
+    public boolean show() {
+        return show;
+    }
+    /**
      *
      * @param show Whether to show the item or not
      *
@@ -92,26 +94,6 @@ public class Item {
      */
     public void show(boolean show) {
         this.show = show;
-    }
-
-    /**
-     *
-     * @return Whether item has been updated
-     *
-     * @since 0.0.1
-     */
-    public boolean update() {
-        return update;
-    }
-
-    /**
-     *
-     * @param update Whether item has been updated
-     *
-     * @since 0.0.1
-     */
-    public void update(boolean update) {
-        this.update = update;
     }
 
     /**
@@ -126,14 +108,12 @@ public class Item {
 
     /**
      *
-     * Get texture base color
-     *
-     * @return The RGBA channels to use
+     * @return The texture
      *
      * @since 0.0.1
      */
-    public double[] getColor() {
-        return texture.getColor();
+    public Texture getTexture() {
+        return texture;
     }
 
     /**
@@ -146,6 +126,55 @@ public class Item {
      */
     public void setColor(double[] rgba) {
         texture.setColor(rgba);
+    }
+
+    /**
+     *
+     * Get texture color 1 for grids
+     *
+     * @return The RGBA values of the minimum color
+     *
+     * @since 0.0.1
+     */
+    public Vector4f rgba0() {
+        return texture.rgba0();
+    }
+
+    /**
+     *
+     * Get texture color 2 for grids
+     *
+     * @return The RGBA values of the maximum color
+     *
+     * @since 0.0.1
+     */
+    public Vector4f rgba1() {
+        return texture.rgba1();
+    }
+
+    /**
+     *
+     * Set texture minimum color for grids
+     *
+     * @param rgbaMin The RGBA values of the minimum color
+     * @param rgbaMax The RGBA values of the maximum color
+     *
+     * @since 0.0.1
+     */
+    public void setColors(double[] rgbaMin, double[] rgbaMax) {
+        texture.setColors(rgbaMin, rgbaMax);
+    }
+
+    /**
+     *
+     * Set item size
+     *
+     * @param x Size along the x-axis
+     *
+     * @since 0.0.1
+     */
+    public void size(double x) {
+        size((float) x, (float) x, 1.0f);
     }
 
     /**
@@ -232,6 +261,95 @@ public class Item {
 
     /**
      *
+     * Spatial frequency properties of the texture
+     *
+     * @param xp Phase on the x-axis
+     * @param xf Frequency on the x-axis
+     * @param yp Phase on the y-axis
+     * @param yf Frequency on the y-axis
+     *
+     * @since 0.0.1
+     */
+    public void frequency(float xp, float xf, float yp, float yf) {
+        frequency.x = xf; frequency.y = yf; frequency.z = xp; frequency.w = yp;
+    }
+
+    /**
+     *
+     * Spatial frequency properties of the texture
+     *
+     * @param xp Phase on the x-axis
+     * @param xf Frequency on the x-axis
+     * @param yp Phase on the y-axis
+     * @param yf Frequency on the y-axis
+     *
+     * @since 0.0.1
+     */
+    public void frequency(double xp, double xf, double yp, double yf) {
+        frequency((float) xp, (float) xf, (float) yp, (float) yf);
+    }
+
+    /**
+     *
+     * Spatial frequency properties of the texture 1D
+     *
+     * @param xp Phase on the x-axis
+     * @param xf Frequency on the x-axis
+     *
+     * @since 0.0.1
+     */
+    public void frequency(double xp, double xf) {
+        frequency((float) xp, (float) xf, (float) xp, (float) xf);
+    }
+
+    /**
+     *
+     * Color contrast
+     *
+     * @param r Amplitude for R channel
+     * @param g Amplitude for G channel
+     * @param b Amplitude for B channel
+     * @param a Amplitude for alpha channel
+     *
+     * @since 0.0.1
+     */
+    public void contrast(float r, float g, float b, float a) {
+        if (r < 0) r = 0; if (r > 1) r = 1;
+        if (g < 0) g = 0; if (g > 1) g = 1;
+        if (b < 0) b = 0; if (b > 1) b = 1;
+        if (a < 0) a = 0; if (a > 1) a = 1;
+        contrast.x = r; contrast.y = g; contrast.z = b; contrast.w = a;
+    }
+
+    /**
+     *
+     * Color contrast
+     *
+     * @param r Amplitude for R channel
+     * @param g Amplitude for G channel
+     * @param b Amplitude for B channel
+     * @param a Amplitude for alpha channel
+     *
+     * @since 0.0.1
+     */
+    public void contrast(double r, double g, double b, double a) {
+        contrast((float) r, (float) g, (float) b, (float) a);
+    }
+
+    /**
+     *
+     * Gray contrast
+     *
+     * @param gray Contrast for all channels, except alpha
+     *
+     * @since 0.0.1
+     */
+    public void contrast(double gray) {
+        contrast(gray, gray, gray, gray);
+    }
+
+    /**
+     *
      * Rotate the item
      *
      * @param rotation Angle of rotation in degrees
@@ -253,48 +371,167 @@ public class Item {
      */
     public void rotation(double rotation, Vector3f axis) {
         this.rotation = Math.toRadians(rotation);
-        this.axis = axis;
+        this.rotationAxis = axis;
     }
 
     /**
      *
-     * Update buffers
+     * Rotate the texture inside the model
+     *
+     * @param texRotation Angle of rotation in degrees
      *
      * @since 0.0.1
      */
-    public void updateBuffers() {
-        buffers.update();
-        update = false;
+    public void texRotation(double texRotation) {
+        texRotation(texRotation, new float[] {0.5f, 0.5f});
     }
 
     /**
      *
-     * Update model
+     * Rotate the texture inside the model
      *
-     * @param vertices new vertices
-     * @param indices new indices
+     * @param rotation Angle of rotation in degrees
+     * @param pivot Pivot UV values
      *
      * @since 0.0.1
      */
-    void updateModel(Vertex[] vertices, Integer @NotNull [] indices) {
-        model.setVertices(vertices);
-        model.setIndices(indices);
-        update = true;
+    public void texRotation(double rotation, float[] pivot) {
+        this.texRotation = Math.toRadians(rotation);
+        this.texPivot = pivot;
     }
 
     /**
      *
-     * Update model
+     * Add an envelope
      *
-     * @param width the width of the new texture
-     * @param height the height of the new texture
-     * @param pixels the new pixels of the texture
+     * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
+     * @param sd Standard deviation in degrees for the x- and y-axis
      *
      * @since 0.0.1
      */
-    void updateTexture(int width, int height, ByteBuffer pixels) {
-        texture.update(TextureType.TEXT, width, height, pixels);
-        update = true;
+    public void envelope(PostType type, double sd) {
+        envelope(type, (float) sd, (float) sd, 0);
+    }
+
+    /**
+     *
+     * Add an envelope
+     *
+     * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
+     * @param sdx Standard deviation in degrees for the x-axis
+     * @param sdy Standard deviation in degrees for the y-axis
+     *
+     * @since 0.0.1
+     */
+    public void envelope(PostType type, double sdx, double sdy) {
+        envelope(type, (float) sdx, (float) sdy, 0);
+    }
+
+    /**
+     *
+     * Add an envelope
+     *
+     * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
+     * @param sdx Standard deviation in degrees for the x-axis
+     * @param sdy Standard deviation in degrees for the y-axis
+     * @param angle Angle
+     *
+     * @since 0.0.1
+     */
+    public void envelope(PostType type, double sdx, double sdy, double angle) {
+        post.envelope(type, (float) sdx, (float) sdy, (float) angle);
+    }
+
+    /**
+     *
+     * Add an envelope
+     *
+     * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
+     * @param sdx Standard deviation in degrees for the x-axis
+     * @param sdy Standard deviation in degrees for the y-axis
+     * @param angle Angle
+     *
+     * @since 0.0.1
+     */
+    public void envelope(PostType type, float sdx, float sdy, float angle) {
+        post.envelope(type, sdx, sdy, angle);
+    }
+
+    /**
+     *
+     * Remove the envelope
+     *
+     * @since 0.0.1
+     */
+    public void removeEnvelope() {
+        post.removeEnvelope();
+    }
+
+    /**
+     *
+     * Add Gaussian defocus (only spherical)
+     *
+     * @param dx Defocus in Diopters
+     *
+     * @since 0.0.1
+     */
+    public void defocus(double dx) {
+        defocus((float) dx, (float) dx, 0);
+    }
+
+    /**
+     *
+     * Add Gaussian defocus (spherical and astigmatic defocus)
+     *
+     * @param dx Defocus for the x-axis in Diopters
+     * @param dy Defocus for the x-axis
+     * @param angle Angle
+     *
+     * @since 0.0.1
+     */
+    public void defocus(double dx, double dy, double angle) {
+        post.defocus((float) dx, (float) dy, (float) angle);
+    }
+
+    /**
+     *
+     * Add Gaussian defocus (spherical and astigmatic defocus)
+     *
+     * @param dx Defocus for the x-axis in Diopters
+     * @param dy Defocus for the x-axis
+     * @param angle Angle
+     *
+     * @since 0.0.1
+     */
+    public void defocus(float dx, float dy, float angle) {
+        post.defocus(dx, dy, angle);
+    }
+
+    /**
+     *
+     * Remove the Gaussian defocus
+     *
+     * @since 0.0.1
+     */
+    public void removeDefocus() {
+        post.removeDefocus();
+    }
+
+
+    //
+    void createBuffers() {
+        buffers = new ItemBuffers(this);
+    }
+
+    // Defaults
+    private void defaults() {
+        rotation = 0;
+        rotationAxis = new Vector3f(0, 0, 1);
+        texRotation = 0;
+        texPivot = new float[] {0.5f, 0.5f};
+        size = new Vector3d(Math.PI / 180, Math.PI / 180, 1);
+        frequency = new Vector4f(-1, -1, 0, 0);
+        contrast = new Vector4f(1, 1, 1, 1);
     }
 
 }

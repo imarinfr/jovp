@@ -7,7 +7,8 @@ import es.optocom.jovp.engine.structures.Paradigm;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
- * Input
+ *
+ * Controller
  *
  * <ul>
  * <li>Input input</li>
@@ -24,6 +25,7 @@ public class Controller {
     private Command command = Command.NONE;
 
     /**
+     *
      * @param windowHandle The window handle
      * @param input The input is listening to
      * @param paradigm Preset scheme for the psychophysics paradigm
@@ -37,6 +39,7 @@ public class Controller {
     }
 
     /**
+     *
      * @param command Command to be processed
      *
      * @return The response from the observer
@@ -63,6 +66,7 @@ public class Controller {
     }
 
     /**
+     *
      * @return the last command read from the input
      *
      * @since 0.0.1

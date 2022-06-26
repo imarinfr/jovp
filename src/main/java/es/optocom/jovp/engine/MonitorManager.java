@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *
  * MonitorManager
  *
  * <ul>
@@ -23,6 +24,7 @@ public class MonitorManager {
     private final List<Monitor> monitors = new ArrayList<>();
 
     /**
+     *
      * The monitor manager
      *
      * @since 0.0.1
@@ -35,6 +37,7 @@ public class MonitorManager {
     }
 
     /**
+     *
      * Sets the monitor for the window
      *
      * @param monitor Monitor number

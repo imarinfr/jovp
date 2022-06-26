@@ -17,11 +17,11 @@ Visual Psychophysics are best performed in full screen, but for developing, test
 software can also be used in window mode.
 
 There are two basic display modes: single- and split-screen display. In the split-screen display, the left half of the
-display is used to render stimulus for the left eye and the right half for the right eye. This mode can be used for
+display is used to render stimulus for the left viewMode and the right half for the right viewMode. This mode can be used for
 stereoptic 3D vision.
 
 Future releases will incorporate the distortion effects of optical lenses used by the observer and interactions with
-eye-tracking devices.
+viewMode-tracking devices.
 
 ## Dependencies
 * [Vulkan](https://www.vulkan.org/) - A low-overhead, cross-platform API, open standard for 3D graphics and computing.

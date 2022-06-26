@@ -3,6 +3,7 @@ package es.optocom.jovp.engine;
 import es.optocom.jovp.engine.structures.Command;
 
 /**
+ *
  * PsychoLogic
  *
  * <ul>
@@ -17,6 +18,7 @@ public interface PsychoLogic {
     Items items = new Items();
 
     /**
+     *
      * Initializes the engine
      *
      * @since 0.0.1
@@ -24,6 +26,7 @@ public interface PsychoLogic {
     void init();
 
     /**
+     *
      * Reads input from controller
      *
      * @since 0.0.1
@@ -31,6 +34,7 @@ public interface PsychoLogic {
     void input(Command command, double time);
 
     /**
+     *
      * Updates state
      *
      * @since 0.0.1

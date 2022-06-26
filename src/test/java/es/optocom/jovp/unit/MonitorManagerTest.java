@@ -5,11 +5,11 @@ import es.optocom.jovp.engine.Monitor;
 import es.optocom.jovp.engine.MonitorManager;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.structures.Command;
-import es.optocom.jovp.engine.structures.Eye;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
 
 /**
+ *
  * MonitorTest
  *
  * <ul>
@@ -22,26 +22,28 @@ import org.lwjgl.glfw.GLFWVidMode;
 public class MonitorManagerTest {
 
     /**
+     *
      * Test for collecting all attached monitors
      *
      * @since 0.0.1
      */
     @Test
     public void retrieveMonitors() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
         MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
         System.out.println(monitorManager);
         psychoEngine.cleanup();
     }
 
     /**
+     *
      * Test for retrieving the monitor's information
      *
      * @since 0.0.1
      */
     @Test
     public void setSettingsManually() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
         MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
         Monitor monitor = monitorManager.getMonitor(0);
         monitor.setPhysicalSize(621, 341);
@@ -52,13 +54,14 @@ public class MonitorManagerTest {
     }
 
     /**
+     *
      * Tests for monitor's video modes
      *
      * @since 0.0.1
      */
     @Test
     public void videoModes() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
         MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
         Monitor monitor = monitorManager.getMonitor(0);
         GLFWVidMode videoMode = monitor.getCurrentVideoMode();

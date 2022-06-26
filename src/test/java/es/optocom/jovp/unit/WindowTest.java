@@ -4,12 +4,12 @@ import es.optocom.jovp.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Window;
 import es.optocom.jovp.engine.structures.Command;
-import es.optocom.jovp.engine.structures.Eye;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ *
  * WindowTest
  *
  * <ul>
@@ -22,13 +22,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class WindowTest {
 
     /**
+     *
      * Tests for creating, showing, hiding, resizing, and hiding windows
      *
      * @since 0.0.1
      */
     @Test
     public void showWindowedAndFullScreen() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
         Window window = psychoEngine.getWindow();
         window.show();
         window.hide();
@@ -39,13 +40,14 @@ public class WindowTest {
     }
 
     /**
+     *
      * Tests for updating distance and the fixation point, and for retrieving the field of view of the window
      *
      * @since 0.0.1
      */
     @Test
     public void changeWindowPositionAndSize() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), Eye.BOTH, 500);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
         Window window = psychoEngine.getWindow();
         // position is relative to monitor workspace in the virtual desktop
         psychoEngine.setWindowPosition(10, 10);

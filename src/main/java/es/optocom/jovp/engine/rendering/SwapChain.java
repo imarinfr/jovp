@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static es.optocom.jovp.engine.rendering.VulkanSettings.*;
+import static es.optocom.jovp.engine.rendering.VulkanSetup.*;
 import static es.optocom.jovp.engine.structures.ShaderKind.FRAGMENT_SHADER;
 import static es.optocom.jovp.engine.structures.ShaderKind.VERTEX_SHADER;
 import static java.lang.ClassLoader.getSystemClassLoader;
@@ -31,7 +31,18 @@ import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.KHRSwapchain.vkGetSwapchainImagesKHR;
 import static org.lwjgl.vulkan.VK13.*;
 
-public class SwapChain {
+/**
+ *
+ * SwapChain
+ *
+ * <ul>
+ * <li>SwapChain</li>
+ * SwapChain specifications
+ * </ul>
+ *
+ * @since 0.0.1
+ */
+class SwapChain {
 
     long swapChain;
     long commandPool;
@@ -51,6 +62,12 @@ public class SwapChain {
     List<Long> swapChainFramebuffers;
     float aspect;
 
+    /**
+     *
+     * create SwapChain
+     *
+     * @since 0.0.1
+     */
     SwapChain() {
         commandPool = createCommandPool();
         createSwapChain();
@@ -63,6 +80,12 @@ public class SwapChain {
         createFramebuffers();
     }
 
+    /**
+     *
+     * destroy SwapChain
+     *
+     * @since 0.0.1
+     */
     void destroy() {
         vkDestroyImageView(logicalDevice.device, colorImageView, null);
         vkDestroyImage(logicalDevice.device, colorImage, null);
@@ -82,7 +105,7 @@ public class SwapChain {
     // Create swap chain
     private void createSwapChain() {
         try (MemoryStack stack = stackPush()) {
-            VulkanSettings.SwapChainSupportDetails swapChainSupport = swapChainSupport(stack);
+            VulkanSetup.SwapChainSupportDetails swapChainSupport = swapChainSupport(stack);
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
             int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
             VkExtent2D extent = chooseSwapExtent(window.getHandle(), swapChainSupport.capabilities);
@@ -204,6 +227,15 @@ public class SwapChain {
 
     // Create graphics pipeline
     private void createGraphicsPipeline() {
+        int viewports = 1;
+        int width = swapChainExtent.width();
+        if (stereoView) {
+            viewports++;
+            if (width % 2 == 0)
+                width = width / 2;
+            else
+                width = (width - 1) / 2;
+        }
         try (MemoryStack stack = stackPush()) {
             SPIRV vertShaderSPIRV = compileShaderFile("shaders/shader.vert", VERTEX_SHADER);
             SPIRV fragShaderSPIRV = compileShaderFile("shaders/shader.frag", FRAGMENT_SHADER);
@@ -233,14 +265,14 @@ public class SwapChain {
                     .topology(PRIMITIVE_TOPOLOGY)
                     .primitiveRestartEnable(PRIMITIVE_RESTART_ENABLE);
             // Viewport and scissor
-            VkViewport.Buffer viewport = VkViewport.calloc(1, stack)
+            VkViewport.Buffer viewport = VkViewport.calloc(viewports, stack)
                     .x(VIEWPORT_X)
                     .y(VIEWPORT_Y)
-                    .width(swapChainExtent.width())
+                    .width(width)
                     .height(swapChainExtent.height())
                     .minDepth(VIEWPORT_MIN_DEPTH)
                     .maxDepth(VIEWPORT_MAX_DEPTH);
-            VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
+            VkRect2D.Buffer scissor = VkRect2D.calloc(viewports, stack)
                     .offset(VkOffset2D.calloc(stack).set(SCISSOR_OFFSET_X, SCISSOR_OFFSET_Y))
                     .extent(swapChainExtent);
             VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack)

@@ -1,12 +1,12 @@
 package es.optocom.jovp.engine.structures;
 
 /**
+ *
  * ModelType
  *
  * @since 0.0.1
  */
 public enum ModelType {
-    EMPTY,
     TRIANGLE,
     SQUARE,
     POLYGON,
@@ -18,5 +18,6 @@ public enum ModelType {
     CIRCLE,
     ANNULUS,
     OPTOTYPE,
-    MODEL,
+    TEXT,
+    MODEL
 }
