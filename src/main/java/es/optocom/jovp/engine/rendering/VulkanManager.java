@@ -11,10 +11,7 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static es.optocom.jovp.engine.rendering.VulkanSetup.*;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
@@ -239,6 +236,25 @@ public class VulkanManager {
 
     /**
      *
+     * Get physical device properties
+     *
+     * @param physicalDevice The physical device
+     *
+     * @return A set with all the physical device extensions supported
+     *
+     * @since 0.0.1
+     */
+    public String getPhysicalDeviceDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+        VkPhysicalDeviceProperties deviceProperties = getDeviceProperties(physicalDevice);
+        StringBuilder extensionSupportList = new StringBuilder("Physical device: ");
+        extensionSupportList.append(deviceProperties.deviceNameString()).append("\n");
+        Set<String> extensionSet = listDeviceExtensionSupport(physicalDevice);
+        for (String extension : extensionSet) extensionSupportList.append("\t").append(extension).append("\n");
+        return extensionSupportList.toString();
+    }
+
+    /**
+     *
      * @return A string with the swap chain support
      *
      * @param physicalDevice The physical device
@@ -369,7 +385,7 @@ public class VulkanManager {
     // Create synchronization objects
     private void createSyncObjects() {
         inFlightFrames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-        imagesInFlight = new HashMap<>(swapChain.swapChainImages.size());
+        imagesInFlight = new HashMap<>(swapChain.images.size());
         try (MemoryStack stack = stackPush()) {
             VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);

@@ -90,12 +90,8 @@ class VulkanSetup {
     static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     static final boolean PRIMITIVE_RESTART_ENABLE = false;
-    static final float VIEWPORT_X = 0.0f;
-    static final float VIEWPORT_Y = 0.0f;
     static final float VIEWPORT_MIN_DEPTH = 0.0f;
     static final float VIEWPORT_MAX_DEPTH = 1.0f;
-    static final int SCISSOR_OFFSET_X = 0;
-    static final int SCISSOR_OFFSET_Y = 0;
     static final boolean DEPTH_CLAMP_ENABLE = false;
     static final boolean RASTERIZER_DISCARD_ENABLE = false;
     static final int POLYGON_MODE = VK_POLYGON_MODE_FILL;
@@ -131,10 +127,12 @@ class VulkanSetup {
     static LogicalDevice logicalDevice;
     static SwapChain swapChain;
     static VulkanCommands commandPool;
+    static boolean stereoView; // whether mono or stereo mode
     static int distance; // in mm
     static float fovx; // in radians;
     static float fovy; // in radians;
-    static boolean stereoView; // whether mono or stereo mode
+    float separation = 0.08f; // TODO
+	float focalLength = 0.5f; // TODO
     static final Matrix4f projection = new Matrix4f();
     static final Matrix4f view = new Matrix4f();
     static final Matrix4f lens = new Matrix4f();
@@ -317,7 +315,7 @@ class VulkanSetup {
     }
 
     // Physical device properties
-    private static @NotNull VkPhysicalDeviceProperties getDeviceProperties(VkPhysicalDevice physicalDevice) {
+    static @NotNull VkPhysicalDeviceProperties getDeviceProperties(VkPhysicalDevice physicalDevice) {
         VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.create();
         vkGetPhysicalDeviceProperties(physicalDevice, properties);
         return properties;
@@ -455,18 +453,18 @@ class VulkanSetup {
             return indices;
         }
     }
-    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+    static Set<String> listDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
         try (MemoryStack stack = stackPush()) {
             IntBuffer extensionCount = stack.ints(0);
             vkEnumerateDeviceExtensionProperties(physicalDevice, (String) null, extensionCount, null);
             VkExtensionProperties.Buffer availableExtensions =
                     VkExtensionProperties.malloc(extensionCount.get(0), stack);
             vkEnumerateDeviceExtensionProperties(physicalDevice, (String)null, extensionCount, availableExtensions);
-            return availableExtensions.stream()
-                    .map(VkExtensionProperties::extensionNameString)
-                    .collect(toSet())
-                    .containsAll(DEVICE_EXTENSIONS);
+            return availableExtensions.stream().map(VkExtensionProperties::extensionNameString).collect(toSet());
         }
+    }
+    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+            return listDeviceExtensionSupport(physicalDevice).containsAll(DEVICE_EXTENSIONS);
     }
     static int findMemoryType(int typeFilter, int properties) {
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.malloc();

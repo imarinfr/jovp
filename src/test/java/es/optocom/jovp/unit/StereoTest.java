@@ -29,7 +29,7 @@ public class StereoTest {
      */
     @Test
     public void funWithContrast() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500, ViewMode.MONO);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500, ViewMode.STEREO);
         psychoEngine.getWindow().getMonitor().setPhysicalSize(621, 341);
         psychoEngine.start();
         psychoEngine.cleanup();
@@ -53,27 +53,27 @@ public class StereoTest {
             item.size(1, 1);
             items.add(item);
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
-            stimulus1.position(-8, -4);
-            stimulus1.size(6, 6);
+            stimulus1.position(-4, -4);
+            stimulus1.size(3, 3);
             stimulus1.frequency(0, 0.5);
             stimulus1.rotation(45);
             stimulus1.contrast(0.75);
             items.add(stimulus1);
             stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus2.frequency(0, 2);
-            stimulus2.position(-12, 2);
-            stimulus2.size(6, 3);
+            stimulus2.position(-6, 2);
+            stimulus2.size(3, 2);
             stimulus1.contrast(0.25);
             items.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE));
             stimulus3.frequency(0, 2);
-            stimulus3.position(-3, 0);
+            stimulus3.position(3, 0);
             stimulus3.size(2, 2);
             stimulus1.contrast(0.5);
             items.add(stimulus3);
             // Add title
             Text title = new Text();
-            title.setText("Fun with contrasts");
+            title.setText("Stereoscopic test");
             title.size(1.5);
             title.position(-5, 8);
             items.add(title);
@@ -81,7 +81,7 @@ public class StereoTest {
             text = new Text();
             text.setText("Refresh rate:");
             text.size(0.75);
-            text.position(-15, 7);
+            text.position(-8, 6.5);
             items.add(text);
             // Start timer
             timer.start();

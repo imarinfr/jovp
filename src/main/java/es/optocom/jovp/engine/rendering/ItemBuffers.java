@@ -248,11 +248,11 @@ class ItemBuffers {
     // Create uniform buffers
     private void createUniformBuffers() {
         try (MemoryStack stack = stackPush()) {
-            uniformBuffers = new ArrayList<>(swapChain.swapChainImages.size());
-            uniformBuffersMemory = new ArrayList<>(swapChain.swapChainImages.size());
+            uniformBuffers = new ArrayList<>(swapChain.images.size());
+            uniformBuffersMemory = new ArrayList<>(swapChain.images.size());
             LongBuffer pBuffer = stack.mallocLong(1);
             LongBuffer pBufferMemory = stack.mallocLong(1);
-            for(int i = 0;i < swapChain.swapChainImages.size(); i++) {
+            for(int i = 0; i < swapChain.images.size(); i++) {
                 createBuffer(UNIFORM_SIZEOF, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                         pBuffer, pBufferMemory);
@@ -268,14 +268,14 @@ class ItemBuffers {
             VkDescriptorPoolSize.Buffer poolSizes = VkDescriptorPoolSize.calloc(2, stack);
             VkDescriptorPoolSize uniformBufferPoolSize = poolSizes.get(0);
             uniformBufferPoolSize.type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                    .descriptorCount(swapChain.swapChainImages.size());
+                    .descriptorCount(swapChain.images.size());
             VkDescriptorPoolSize textureSamplerPoolSize = poolSizes.get(1);
             textureSamplerPoolSize.type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                    .descriptorCount(swapChain.swapChainImages.size());
+                    .descriptorCount(swapChain.images.size());
             VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
                     .pPoolSizes(poolSizes)
-                    .maxSets(swapChain.swapChainImages.size());
+                    .maxSets(swapChain.images.size());
             LongBuffer pDescriptorPool = stack.mallocLong(1);
             int result = vkCreateDescriptorPool(logicalDevice.device, poolInfo, null, pDescriptorPool);
             if (result != VK_SUCCESS)
@@ -287,13 +287,13 @@ class ItemBuffers {
     // Create descriptor sets
     private void createDescriptorSets() {
         try (MemoryStack stack = stackPush()) {
-            LongBuffer layouts = stack.mallocLong(swapChain.swapChainImages.size());
+            LongBuffer layouts = stack.mallocLong(swapChain.images.size());
             for (int i = 0; i < layouts.capacity(); i++) layouts.put(i, logicalDevice.descriptorSetLayout);
             VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
                     .descriptorPool(descriptorPool)
                     .pSetLayouts(layouts);
-            LongBuffer pDescriptorSets = stack.mallocLong(swapChain.swapChainImages.size());
+            LongBuffer pDescriptorSets = stack.mallocLong(swapChain.images.size());
             int result = vkAllocateDescriptorSets(logicalDevice.device, allocInfo, pDescriptorSets);
             if (result != VK_SUCCESS)
                 throw new AssertionError("Failed to allocate descriptor sets: " +

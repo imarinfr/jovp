@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.Configuration.DEBUG;
@@ -424,6 +425,27 @@ public class PsychoEngine {
         return timer.getElapsedTime();
     }
 
+    /**
+     *
+     * @since 0.0.1
+     */
+    public String toString() {
+        String freeMemoryTxt = String.format("%.1f", (float) freeMemory / 1048576);
+        String maxMemoryTxt = String.format("%.1f", (float) maxMemory / 1048576);
+        String totalMemoryTxt = String.format("%.1f", (float) totalMemory / 1048576);
+        StringBuilder txt = new StringBuilder("Supported platforms:");
+        for(String platform : getSupportedPlatforms()) {
+            txt.append(" ").append(platform);
+        }
+        txt.append("\n");
+        txt.append("Selected platform: ").append(getPlatform()).append("\n");
+        txt.append("Number of cores: ").append(numberOfCores).append("\n");
+        txt.append("Free memory: ").append(freeMemoryTxt).append(" MB").append("\n");
+        txt.append("Maximum memory: ").append(maxMemoryTxt).append(" MB").append("\n");
+        txt.append("Total memory: ").append(totalMemoryTxt).append(" MB").append("\n");
+        return txt.toString();
+    }
+
     // Get runtime information
     private void getRunTimeInfo() {
         numberOfCores =  Runtime.getRuntime().availableProcessors();
@@ -452,23 +474,6 @@ public class PsychoEngine {
             case GLFW_PLATFORM_NULL -> "No Platform selected";
             default -> "No available Platform";
         };
-    }
-
-    public String toString() {
-        String freeMemoryTxt = String.format("%.1f", (float) freeMemory / 1048576);
-        String maxMemoryTxt = String.format("%.1f", (float) maxMemory / 1048576);
-        String totalMemoryTxt = String.format("%.1f", (float) totalMemory / 1048576);
-        StringBuilder txt = new StringBuilder("Supported platforms:");
-        for(String platform : getSupportedPlatforms()) {
-            txt.append(" ").append(platform);
-        }
-        txt.append("\n");
-        txt.append("Selected platform: ").append(getPlatform()).append("\n");
-        txt.append("Number of cores: ").append(numberOfCores).append("\n");
-        txt.append("Free memory: ").append(freeMemoryTxt).append(" MB").append("\n");
-        txt.append("Maximum memory: ").append(maxMemoryTxt).append(" MB").append("\n");
-        txt.append("Total memory: ").append(totalMemoryTxt).append(" MB").append("\n");
-        return txt.toString();
     }
 
 }

@@ -60,9 +60,8 @@ class VulkanCommands {
             VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
                     .renderPass(swapChain.renderPass);
-            VkRect2D renderArea = VkRect2D.calloc(stack)
-                    .offset(VkOffset2D.calloc(stack).set(0, 0))
-                    .extent(swapChain.swapChainExtent);
+            VkRect2D renderArea = VkRect2D.calloc(stack).offset(VkOffset2D.calloc(stack)
+                    .set(0, 0)).extent(swapChain.extent);
             renderPassInfo.renderArea(renderArea);
             VkClearValue.Buffer clearValues = VkClearValue.calloc(2, stack);
             clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
@@ -73,26 +72,29 @@ class VulkanCommands {
             if (result != VK_SUCCESS)
                 throw new AssertionError("Failed to begin recording command buffers: " +
                         translateVulkanResult(result));
-            renderPassInfo.framebuffer(swapChain.swapChainFramebuffers.get(imageIndex));
+            renderPassInfo.framebuffer(swapChain.frameBuffers.get(imageIndex));
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             {
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, swapChain.graphicsPipeline);
-                for (Item item : items) if(item.show()) {
-                    item.buffers.updateUniforms(imageIndex);
-                    ItemBuffers buffer = item.buffers;
-                    if (item.update) {
-                        buffer.update();
-                        item.update = false;
-                    }
-                    LongBuffer vertexBuffers = stack.longs(buffer.vertexBuffer);
-                    LongBuffer offsets = stack.longs(0);
-                    vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
-                    vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            swapChain.pipelineLayout, 0,
-                            stack.longs(buffer.descriptorSets.get(imageIndex)), null);
-                    vkCmdDrawIndexed(commandBuffer, item.model.length, 1,
-                            0, 0, 0);
+                for (ViewPass viewPass : swapChain.viewPasses) {
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
+                    for (Item item : items)
+                        if (item.show()) {
+                            item.buffers.updateUniforms(imageIndex);
+                            ItemBuffers buffer = item.buffers;
+                            if (item.update) {
+                                buffer.update();
+                                item.update = false;
+                            }
+                            LongBuffer vertexBuffers = stack.longs(buffer.vertexBuffer);
+                            LongBuffer offsets = stack.longs(0);
+                            vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
+                            vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    viewPass.pipelineLayout, 0,
+                                    stack.longs(buffer.descriptorSets.get(imageIndex)), null);
+                            vkCmdDrawIndexed(commandBuffer, item.model.length, 1,
+                                    0, 0, 0);
+                        }
                 }
             }
             vkCmdEndRenderPass(commandBuffer);
@@ -105,14 +107,12 @@ class VulkanCommands {
 
     // Create command buffers for each command pool
     private void createCommandBuffers() {
-        int size = swapChain.swapChainFramebuffers.size();
-        commandBuffers = new ArrayList<>(swapChain.swapChainFramebuffers.size());
+        int size = swapChain.frameBuffers.size();
+        commandBuffers = new ArrayList<>(size);
         try (MemoryStack stack = stackPush()) {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
-                    .commandPool(commandPool)
-                    .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-                    .commandBufferCount(size);
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO).commandPool(commandPool)
+                    .level(VK_COMMAND_BUFFER_LEVEL_PRIMARY).commandBufferCount(size);
             PointerBuffer pCommandBuffers = stack.mallocPointer(size);
             int result = vkAllocateCommandBuffers(logicalDevice.device, allocInfo, pCommandBuffers);
             if (result != VK_SUCCESS)
@@ -121,7 +121,7 @@ class VulkanCommands {
             for (int i = 0; i < size; i++)
                 commandBuffers.add(new VkCommandBuffer(pCommandBuffers.get(i), logicalDevice.device));
         }
-        for (int image = 0; image < swapChain.swapChainFramebuffers.size(); image++) renderPass(image);
+        for (int image = 0; image < size; image++) renderPass(image);
     }
 
     // List to pointer buffer
