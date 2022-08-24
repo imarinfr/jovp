@@ -1,9 +1,8 @@
 package es.optocom.jovp.portability;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.structures.Command;
-import es.optocom.jovp.engine.structures.ViewMode;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -77,7 +76,7 @@ public class PortabilityTests {
     static class Logic implements PsychoLogic {
 
         @Override
-        public void init() {}
+        public void init(PsychoEngine psychoEngine) {}
 
         @Override
         public void input(Command command, double time) {
@@ -85,7 +84,7 @@ public class PortabilityTests {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
         }
 
     }

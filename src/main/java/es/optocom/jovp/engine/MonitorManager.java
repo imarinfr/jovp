@@ -51,7 +51,6 @@ public class MonitorManager {
         return monitors.get(monitor);
     }
 
-
     public String toString() {
         StringBuilder monitorInformation = new StringBuilder("Number of monitors: " + numberOfMonitors + "\n");
         // get string with Monitor's info

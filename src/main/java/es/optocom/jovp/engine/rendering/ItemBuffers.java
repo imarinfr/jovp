@@ -425,10 +425,11 @@ class ItemBuffers {
      * Update uniforms for the image to be rendered
      *
      * @param imageIndex Image to be rendered
+     * @param eye 0 for left eye, 1 for right eye
      *
      * @since 0.0.1
      */
-    void updateUniforms(int imageIndex) {
+    void updateUniforms(int imageIndex, int eye) {
         // Settings
         final Vector4i settings = new Vector4i(0, 0, 0, 0);
         // Type of texture
@@ -442,6 +443,10 @@ class ItemBuffers {
         // Convert from degrees of visual angle to distances
         Vector3f position = new Vector3f((float) (item.position.z * Math.tan(item.position.x)),
                 (float) (item.position.z * Math.tan(item.position.y)), (float) item.position.z);
+        if (stereoView) {
+            if (eye == 0) position.x = position.x + 0.2f; // left eye
+            if (eye == 1) position.x = position.x - 0.2f; // right eye
+        }
         Vector3f size = new Vector3f((float) (item.position.z * Math.tan(item.size.x)),
                 (float) (item.position.z * Math.tan(item.size.y)), (float) item.size.z);
         transform.translation(position).rotate((float) item.rotation, item.rotationAxis).scale(size);

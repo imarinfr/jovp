@@ -188,12 +188,29 @@ public class VulkanManager {
 
     /**
      *
+     * Updates the field of view depending on distance, window size, etc
+     *
+     * @since 0.0.1
+     */
+    public void computeFieldOfView() {
+        double xHalfSize = window.getPixelWidth() * window.getScaledWidth() / 2 / distance;
+        double yHalfSize = window.getPixelHeight() * window.getScaledHeight() / 2 / distance;
+        if(stereoView) {
+            xHalfSize = xHalfSize / 2;
+            if (window.getPixelWidth() % 2 == 1) // if number of pixels odd, then correct
+                xHalfSize = (window.getPixelWidth() - 1) / window.getPixelWidth() * xHalfSize;
+        }
+        VulkanSetup.fovx = (float) (2 * Math.atan(xHalfSize));
+        VulkanSetup.fovy = (float) (2 * Math.atan(yHalfSize));
+    }
+
+    /**
+     *
      * Set view
      *
      * @param eye View eye
      * @param center View center
      * @param up View up
-     *
      *
      * @since 0.0.1
      */
@@ -339,19 +356,6 @@ public class VulkanManager {
             }
         }
         if (physicalDevices.size() == 0) throw new RuntimeException("Failed to find a suitable GPU");
-    }
-
-    // Compute field of view and aspect ratio
-    private void computeFieldOfView() {
-        double xHalfSize = window.getPixelWidth() * window.getScaledWidth() / 2 / distance;
-        double yHalfSize = window.getPixelHeight() * window.getScaledHeight() / 2 / distance;
-        if(stereoView) {
-            xHalfSize = xHalfSize / 2;
-            if (window.getPixelWidth() % 2 == 1) // if number of pixels odd, then correct
-                xHalfSize = (window.getPixelWidth() - 1) / window.getPixelWidth() * xHalfSize;
-        }
-        VulkanSetup.fovx = (float) (2 * Math.atan(xHalfSize));
-        VulkanSetup.fovy = (float) (2 * Math.atan(yHalfSize));
     }
 
     // Compute aspect ratio and set the projection matrix

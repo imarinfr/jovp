@@ -1,12 +1,12 @@
 package es.optocom.jovp.engine.rendering;
 
+import es.optocom.jovp.engine.structures.Eye;
 import es.optocom.jovp.engine.structures.PostType;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_FAR;
-import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_NEAR;
 
 /**
  *
@@ -21,7 +21,7 @@ import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_NEAR;
  */
 public class Item {
 
-    boolean show;
+    Eye eye;
     Model model;
     Texture texture;
     Vector3d position; // radian, radian, mm
@@ -58,9 +58,9 @@ public class Item {
      * @since 0.0.1
      */
     Item() {
-        position = new Vector3d(0, 0, Z_NEAR);
+        eye = Eye.BOTH;
+        position = new Vector3d(0, 0, Z_FAR / 2);
         defaults();
-        show = true;
         buffers = null;
         post = new Post();
     }
@@ -79,21 +79,27 @@ public class Item {
 
     /**
      *
-     * @return Whether to show the item or not
+     * @return Whether to show the item in the Eye
      *
      * @since 0.0.1
      */
-    public boolean show() {
-        return show;
+    public boolean show(int view) {
+        return switch(eye) {
+            case BOTH -> true;
+            case LEFT -> view == 0;
+            case RIGHT -> view == 1;
+            default -> false;
+        };
     }
+
     /**
      *
-     * @param show Whether to show the item or not
+     * @param eye Eye to display
      *
      * @since 0.0.1
      */
-    public void show(boolean show) {
-        this.show = show;
+    public void eye(Eye eye) {
+        this.eye = eye;
     }
 
     /**
@@ -228,7 +234,7 @@ public class Item {
      * @since 0.0.1
      */
     public void position(double x, double y) {
-        position((float) x, (float) y, Z_FAR);
+        position((float) x, (float) y, Z_FAR / 2);
     }
 
     /**

@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.rendering.*;
 import es.optocom.jovp.engine.structures.*;
@@ -72,7 +72,7 @@ public class VulkanManagerTest {
     static class Logic implements PsychoLogic {
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.TRIANGLE), new Texture());
             item.position(0, 0);
             item.size(1, 1);
@@ -85,7 +85,7 @@ public class VulkanManagerTest {
         }
 
         @Override
-        public void update() {}
+        public void update(PsychoEngine psychoEngine) {}
 
     }
 

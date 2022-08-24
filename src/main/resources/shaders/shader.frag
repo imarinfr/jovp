@@ -13,7 +13,6 @@ layout(location = 7) in flat vec4 contrast;
 
 layout(location = 0) out vec4 color;
 
-
 vec2 spatial(vec2 uv, vec4 frequency) {
     if (frequency.x <= 0 || frequency.y <= 0) return(uv);
     uv = (frequency.xy + frequency.zw) * uv;

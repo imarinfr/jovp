@@ -1,6 +1,5 @@
-package es.optocom.jovp;
+package es.optocom.jovp.engine;
 
-import es.optocom.jovp.engine.*;
 import es.optocom.jovp.engine.rendering.*;
 import es.optocom.jovp.engine.structures.*;
 import org.joml.Matrix4f;
@@ -11,7 +10,6 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.Configuration.DEBUG;
@@ -64,8 +62,21 @@ public class PsychoEngine {
     /**
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param viewMode Viewing viewMode
      * @param distance Viewing distance of the observer in mm
+     * @param input Input to use as input for observer's input
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, int distance, Input input) {
+        this(psychoLogic, distance, ViewMode.MONO, input, Paradigm.M2AFC_HORIZONTAL,
+                VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance of the observer in mm
+     * @param viewMode Viewing viewMode
      *
      * @since 0.0.1
      */
@@ -171,7 +182,7 @@ public class PsychoEngine {
     // Initializes the window, controller, timer, and other running parameters
     private void init() {
         window.show();
-        psychoLogic.init();
+        psychoLogic.init(this);
         timer.start();
         loop = true;
     }
@@ -195,7 +206,7 @@ public class PsychoEngine {
 
     // Update and get ready for rendering
     private void update() {
-        psychoLogic.update();
+        psychoLogic.update(this);
     }
 
     // render and update window
@@ -329,7 +340,6 @@ public class PsychoEngine {
         Vector3f up = new Vector3f(0.0f, -1f, 0.0f);
         Matrix4f view = new Matrix4f();
         view.lookAt(eye, center, up);
-        System.out.println(view);
         vulkanManager.setView(eye, center, up);
     }
 
@@ -373,6 +383,7 @@ public class PsychoEngine {
      */
     public void setWindowSize(int width, int height) {
         window.setSize(width, height);
+        vulkanManager.computeFieldOfView();
     }
 
     /**

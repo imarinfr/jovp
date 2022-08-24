@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Window;
 import es.optocom.jovp.engine.structures.Command;
@@ -58,7 +58,6 @@ public class WindowTest {
         window.show();
         psychoEngine.setWindowSize(1000, 800);
         psychoEngine.setWindowPosition(10, 10);
-        window.update();
         psychoEngine.cleanup();
     }
 
@@ -66,7 +65,7 @@ public class WindowTest {
     static class Logic implements PsychoLogic {
 
         @Override
-        public void init() {}
+        public void init(PsychoEngine psychoEngine) {}
 
         @Override
         public void input(Command command, double time) {
@@ -74,7 +73,7 @@ public class WindowTest {
         }
 
         @Override
-        public void update() {}
+        public void update(PsychoEngine psychoEngine) {}
 
     }
 

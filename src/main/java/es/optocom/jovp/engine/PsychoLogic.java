@@ -21,9 +21,11 @@ public interface PsychoLogic {
      *
      * Initializes the engine
      *
+     * @param psychoEngine The engine to retrieve info as required
+     *
      * @since 0.0.1
      */
-    void init();
+    void init(PsychoEngine psychoEngine);
 
     /**
      *
@@ -37,8 +39,10 @@ public interface PsychoLogic {
      *
      * Updates state
      *
+     * @param psychoEngine The engine to retrieve info as required
+     *
      * @since 0.0.1
      */
-    void update();
+    void update(PsychoEngine psychoEngine);
 
 }

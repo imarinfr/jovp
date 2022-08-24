@@ -43,7 +43,7 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public Window() {
+    Window() {
         monitorManager = new MonitorManager();
         monitor = monitorManager.getMonitor(0); // primary monitor
         initWindow();
@@ -78,16 +78,6 @@ public class Window {
 
     /**
      *
-     * @return Whether the window is shown or hidden
-     *
-     * @since 0.0.1
-     */
-    public boolean shown() {
-        return shown;
-    }
-
-    /**
-     *
      * @return Whether the window has been resized or not
      *
      * @since 0.0.1
@@ -112,7 +102,7 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public void focus() {
+    void focus() {
         glfwFocusWindow(window);
     }
 
@@ -122,7 +112,7 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public void update() {
+    void update() {
         glfwPollEvents();
     }
 
@@ -132,11 +122,32 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public void cleanup() {
+    void cleanup() {
         glfwSetWindowShouldClose(window, true);
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
         window = NULL;
+    }
+
+    /**
+     *
+     * @return The window handle
+     *
+     * @since 0.0.1
+     */
+    public long getHandle() {
+        return window;
+    }
+
+    /**
+     *
+     * Gets the window position (x, y) in pixels relative to Monitor
+     *
+     * @since 0.0.1
+     */
+    public int[] getPosition() {
+        int[] workingArea = getWorkingArea(monitor.getHandle());
+        return new int[] {x - workingArea[0], y - workingArea[1]};
     }
 
     /**
@@ -247,11 +258,21 @@ public class Window {
 
     /**
      *
+     * @return Whether the window is shown or hidden
+     *
+     * @since 0.0.1
+     */
+    boolean shown() {
+        return shown;
+    }
+
+    /**
+     *
      * Change to full-screen mode on demand
      *
      * @since 0.0.1
      */
-    public void setFullScreen() {
+    void setFullScreen() {
         if(!fullScreen) {
             fullScreen = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -268,7 +289,7 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public void setWindowed() {
+    void setWindowed() {
         if(fullScreen) {
             fullScreen = false;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -283,24 +304,15 @@ public class Window {
 
     /**
      *
-     * @return The window handle
-     *
-     * @since 0.0.1
-     */
-    public long getHandle() {
-        return window;
-    }
-
-    /**
-     *
      * Sets window settings and updates window dimensions
      *
      * @since 0.0.1
      */
-    public void setSize(int width, int height) {
+    void setSize(int width, int height) {
         this.width = width;
         this.height = height;
         glfwSetWindowSize(window, width, height);
+        resized = true;
     }
 
     /**
@@ -312,22 +324,11 @@ public class Window {
      *
      * @since 0.0.1
      */
-    public void setPosition(int x, int y) {
+    void setPosition(int x, int y) {
         int[] workingArea = getWorkingArea(monitor.getHandle());
         this.x = x + workingArea[0];
         this.y = y + workingArea[1];
         glfwSetWindowPos(window, this.x, this.y);
-    }
-
-    /**
-     *
-     * Gets the window position (x, y) in pixels relative to Monitor
-     *
-     * @since 0.0.1
-     */
-    public int[] getPosition() {
-        int[] workingArea = getWorkingArea(monitor.getHandle());
-        return new int[] {x - workingArea[0], y - workingArea[1]};
     }
 
     // Initialize the window

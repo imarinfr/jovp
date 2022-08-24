@@ -75,11 +75,13 @@ class VulkanCommands {
             renderPassInfo.framebuffer(swapChain.frameBuffers.get(imageIndex));
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             {
-                for (ViewPass viewPass : swapChain.viewPasses) {
+                // For monocular view there is only 1 view pass, for binocular 0 is left eye, 1 is right eye
+                for (int eye = 0; eye < swapChain.viewPasses.size(); eye++) {
+                    ViewPass viewPass = swapChain.viewPasses.get(eye);
                     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
                     for (Item item : items)
-                        if (item.show()) {
-                            item.buffers.updateUniforms(imageIndex);
+                        if (item.show(eye)) { // Check if item is to be shown
+                            item.buffers.updateUniforms(imageIndex, eye);
                             ItemBuffers buffer = item.buffers;
                             if (item.update) {
                                 buffer.update();

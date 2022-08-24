@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Timer;
 import es.optocom.jovp.engine.rendering.*;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  *
- * MovingShapesTest
+ * StressTest
  *
  * <ul>
  * <li>Test playing around with textures</li>
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
  *
  * @since 0.0.1
  */
-public class MovingShapesTest {
+public class StressTest {
 
     /**
      *
@@ -29,7 +29,7 @@ public class MovingShapesTest {
      */
     @Test
     public void movingShapesAround() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 1000);
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 180);
         psychoEngine.start();
         psychoEngine.cleanup();
     }
@@ -40,25 +40,40 @@ public class MovingShapesTest {
         double theta;
         double amplitude = 5;
         double frequency = 1;
-        double rx = 10;
-        double ry = 8;
+        double rx = 18;
+        double ry = 12;
         int iteration = 0;
         int fps = 0;
         Timer timer = new Timer();
         Timer timerFps = new Timer();
         Text text;
         int refreshTime = 1000;
-
+        double leadPosition = -25;
         double[] triangleColor1 = new double[] {1, 1, 1, 1};
         double[] triangleColor2 = new double[] {0, 0, 1, 1};
+        Item circle;
+        double size = 1.5;
+        double ypos = 3;
+        double zpos = 25;
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
             addOptotypes();
-            addCircle();
+            for (int i = 0; i < 15; i++) addPolygon(i);
+            for (int i = 0; i < 20; i++) addCircle(i);
             addTriangle();
             addSquares();
             addText();
+            circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
+            circle.position(0, ypos, zpos);
+            circle.size(size, size);
+            circle.eye(Eye.NONE);
+            items.add(circle);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             timer.start();
             timerFps.start();
         }
@@ -69,7 +84,21 @@ public class MovingShapesTest {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
+            double time = timer.getElapsedTime();
+            if (time > 13425) {
+                //throw myself at public
+                if (time > 14425) circle.position(0, ypos + Math.sin(time / 100), zpos);
+                if (time > 16425) {
+                    size += 2.5;
+                    ypos += 0.6;
+                    zpos -= 0.5;
+                    circle.position(0, ypos, zpos);
+                    circle.size(size, size);
+                }
+                if (zpos < 2) for(Item item: items) item.eye(Eye.NONE);
+                return;
+            }
             iteration++;
             theta -= 5;
             float xpos = -22;
@@ -84,17 +113,33 @@ public class MovingShapesTest {
                 xpos += 1.75;
                 number++;
             }
-            // process circle
+            // process polygons
+            int imageNumber = 0;
+            for (Item item : items) {
+                if(item.getModel().getType() != ModelType.POLYGON) continue;
+                int pos = iteration - 38 * imageNumber;
+                if (pos < 0) pos = 0;
+                item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0), 20);
+                item.rotation(-theta / 5, new Vector3f(0.5f, 0.8f, 1.2f));
+                imageNumber++;
+            }
+            // process circles
+            imageNumber = 0;
             for (Item item : items) {
                 if(item.getModel().getType() != ModelType.CIRCLE) continue;
-                item.position(rx * Math.cos(iteration / 90.0), ry * Math.sin(iteration / 90.0), 6);
-                item.rotation(-theta / 2, new Vector3f(0.5f, 0.8f, 1.2f));
+                if(time < 8000) continue;
+                item.eye(Eye.BOTH);
+                leadPosition += 1 / 60.0;
+                if (imageNumber < 10)
+                    item.position(leadPosition - 5 * imageNumber, 8, 10);
+                if (imageNumber >= 10 & imageNumber < 20)
+                    item.position(-leadPosition + 5 * (imageNumber - 10), -8, 10);
+                imageNumber++;
             }
             // process triangle
             for (Item item : items) {
                 if(item.getModel().getType() != ModelType.TRIANGLE) continue;
-                item.size(5 * Math.sin(iteration / 10.0) + 10, 5 * Math.sin(iteration / 15.0) + 10);
-                item.frequency(0, 1);
+                item.size(4 * Math.sin(iteration / 40.0) + 10, 4 * Math.sin(iteration / 30.0) + 10);
                 item.contrast(0.4 * Math.sin(iteration / 50.0) + 0.6);
             }
             // process squares
@@ -148,9 +193,23 @@ public class MovingShapesTest {
             for (Item optotype : items) optotype.size(1.25, 1.25);
         }
 
-        private void addCircle() {
-            Item circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
-            circle.size(8, 8);
+        private void addPolygon(int i) {
+            String fileName = null;
+            if (i % 3 == 0) fileName = "ecceIvanito.jpeg";
+            if (i % 3 == 1) fileName = "ecceHomo.jpeg";
+            if (i % 3 == 2) fileName = "ecceBill.jpeg";
+            Item polygon = new Item(new Model(12), new Texture(fileName));
+            polygon.size(4, 4);
+            items.add(polygon);
+        }
+
+        private void addCircle(int i) {
+            String fileName = null;
+            if (i % 2 == 0) fileName = "ecceIvanito.jpeg";
+            if (i % 2 == 1) fileName = "ivanito.jpeg";
+            Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
+            circle.size(4.5, 4.5);
+            circle.eye(Eye.NONE);
             items.add(circle);
         }
 
@@ -159,6 +218,7 @@ public class MovingShapesTest {
                     new Texture(TextureType.SINE, triangleColor1, triangleColor2));
             triangle.position(5, 5);
             triangle.size(2, 2);
+            triangle.frequency(0, 1);
             items.add(triangle);
         }
 

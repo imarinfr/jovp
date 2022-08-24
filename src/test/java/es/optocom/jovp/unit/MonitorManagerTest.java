@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.Monitor;
 import es.optocom.jovp.engine.MonitorManager;
 import es.optocom.jovp.engine.PsychoLogic;
@@ -83,7 +83,7 @@ public class MonitorManagerTest {
     static class Logic implements PsychoLogic {
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
         }
 
         @Override
@@ -91,7 +91,7 @@ public class MonitorManagerTest {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
         }
 
     }

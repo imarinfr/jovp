@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Timer;
 import es.optocom.jovp.engine.rendering.*;
@@ -44,10 +44,6 @@ public class ContrastTest {
         double[] green = new double[] {0, 1, 0, 1};
 
         Item stimulus1, stimulus2, stimulus3;
-        Item circle;
-        double size = 1.5;
-        double ypos = 3;
-        double zpos = 25;
 
         Timer timer = new Timer();
         Timer timerFps = new Timer();
@@ -56,7 +52,7 @@ public class ContrastTest {
         int refreshTime = 500;
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1, 1);
             items.add(item);
@@ -99,11 +95,6 @@ public class ContrastTest {
             stimulus3.position(-3, 0);
             stimulus3.size(2, 2);
             items.add(stimulus3);
-            circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
-            circle.position(0, ypos, zpos);
-            circle.size(size, size);
-            circle.show(false);
-            items.add(circle);
             // Add title
             Text title = new Text();
             title.setText("Fun with contrasts");
@@ -127,7 +118,7 @@ public class ContrastTest {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             stimulus1.contrast(0.5 * Math.sin(time / 1000.0) + 0.5);
             stimulus3.contrast(0.4 * Math.sin(time / 500.0) + 0.6);
@@ -135,18 +126,6 @@ public class ContrastTest {
             stimulus1.rotation(time / 10.0);
             stimulus2.rotation(-time / 20.0);
             stimulus2.texRotation(time / 5.0);
-            if (time > 10000 & !circle.show()) circle.show(true);
-            if (time > 12000 & time < 15000) {
-                circle.position(0, ypos + Math.sin(time / 100), zpos);
-            }
-            if (time > 15000) {
-                size += 2.5;
-                ypos += 0.6;
-                zpos -= 0.5;
-                circle.position(0, ypos, zpos);
-                circle.size(size, size);
-            }
-            if (zpos < 2) for(Item item: items) item.show(false);
             if (timerFps.getElapsedTime() <= refreshTime) fps++;
             else { // restart the timer every second
                 timerFps.start();

@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Timer;
 import es.optocom.jovp.engine.rendering.*;
@@ -55,7 +55,7 @@ public class OptotypesTest {
         double[] colorBlue = new double[] {0, 0, 1, 1};
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
             items.add(new Item(new Model(Optotype.A), new Texture(TextureType.SINE, colorBlue, colorYellow)));
             items.add(new Item(new Model(Optotype.B), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
             items.add(new Item(new Model(Optotype.C), new Texture(TextureType.SINE, colorBlue, colorYellow)));
@@ -111,7 +111,7 @@ public class OptotypesTest {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
             theta -= 5;
             float xpos = initialPos;
             float ypos = 0.0f;

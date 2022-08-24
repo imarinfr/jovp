@@ -1,6 +1,6 @@
 package es.optocom.jovp.unit;
 
-import es.optocom.jovp.PsychoEngine;
+import es.optocom.jovp.engine.PsychoEngine;
 import es.optocom.jovp.engine.PsychoLogic;
 import es.optocom.jovp.engine.Timer;
 import es.optocom.jovp.engine.rendering.Item;
@@ -51,7 +51,7 @@ public class PostProcessingTest {
 
         double[] fixation = new double[] {0, 1, 0, 1};
         double[] red = new double[] {1, 0, 0, 1};
-        double[] yellow = new double[] {1, 1, 0, 1};
+        double[] green = new double[] {0, 1, 0, 1};
         double[] blue = new double[] {0, 0, 1, 1};
         boolean inverted = false;
         double envelope1 = 1;
@@ -60,7 +60,7 @@ public class PostProcessingTest {
         double[] envelope4 = new double[] {0.4, 1.2};
 
         @Override
-        public void init() {
+        public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1, 1);
             items.add(item);
@@ -93,7 +93,7 @@ public class PostProcessingTest {
             item.frequency(0.5, 0.5);
             item.defocus(1);
             items.add(item);
-            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, red, yellow));
+            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, green, red));
             item.position(0, -4);
             item.size(3, 3);
             item.frequency(0, 0.5);
@@ -135,7 +135,7 @@ public class PostProcessingTest {
         }
 
         @Override
-        public void update() {
+        public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             items.get(1).rotation(time / 10.0);
             items.get(2).rotation(-time / 10.0);
