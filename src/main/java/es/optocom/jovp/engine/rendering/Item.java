@@ -523,8 +523,7 @@ public class Item {
         post.removeDefocus();
     }
 
-
-    //
+    // Create buffers
     void createBuffers() {
         buffers = new ItemBuffers(this);
     }
