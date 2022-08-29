@@ -30,7 +30,7 @@ viewMode-tracking devices.
   
 ## Licence and Copyright
 The [JOVP](https://github.com/imarinfr/jovp) project is COPYRIGHTED by Marín-Franch I (https://optocom.es), and is
-distributed under the GNU General Public License v3.0. Please read the license information in the attached file.
+distributed under the Apache 2.0 license. Please read the license information in the attached file.
 
 ## More information
 The Vulkan implementation in [JOVP](https://github.com/imarinfr/JOVP/) draws heavily from the following:
