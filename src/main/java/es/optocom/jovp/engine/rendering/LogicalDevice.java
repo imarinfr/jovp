@@ -13,12 +13,7 @@ import static org.lwjgl.vulkan.VK13.*;
 
 /**
  *
- * LogicalDevice
- *
- * <ul>
- * <li>Logical Device</li>
  * Class to handle the logical device. Needs to be recreated if physical device changes
- * </ul>
  *
  * @since 0.0.1
  */

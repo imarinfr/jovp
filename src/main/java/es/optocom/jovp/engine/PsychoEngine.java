@@ -2,6 +2,7 @@ package es.optocom.jovp.engine;
 
 import es.optocom.jovp.engine.rendering.*;
 import es.optocom.jovp.engine.structures.*;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -17,12 +18,7 @@ import static org.lwjgl.vulkan.VK13.vkDeviceWaitIdle;
 
 /**
  *
- * PsychoEngine
- *
- * <ul>
- * <li>PsychoEngine</li>
  * The JOVP engine that manages the Observer, Screens, Window, Input, and Renderer
- * </ul>
  *
  * @since 0.0.1
  */
@@ -49,6 +45,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Main method for the JOVP
+     *
      * @param psychoLogic Logic for the psychophysics experience
      * @param distance Viewing distance of the observer in mm
      *
@@ -60,6 +58,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Main method for the JOVP
      *
      * @param psychoLogic Logic for the psychophysics experience
      * @param distance Viewing distance of the observer in mm
@@ -74,6 +74,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Main method for the JOVP
+     *
      * @param psychoLogic Logic for the psychophysics experience
      * @param distance Viewing distance of the observer in mm
      * @param viewMode Viewing viewMode
@@ -86,6 +88,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Main method for the JOVP
      *
      * @param psychoLogic Logic for the psychophysics experience
      * @param viewMode Viewing viewMode
@@ -100,6 +104,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Main method for the JOVP
+     *
      * @param psychoLogic Logic for the psychophysics experience
      * @param viewMode Viewing viewMode
      * @param distance Viewing distance of the observer in mm
@@ -113,6 +119,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Main method for the JOVP
      *
      * @param psychoLogic Logic for the psychophysics experience
      * @param viewMode Viewing viewMode
@@ -142,6 +150,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get physical devices
+     *
      * @return A list of physical devices
      *
      * @since 0.0.1
@@ -152,7 +162,7 @@ public class PsychoEngine {
 
     /**
      *
-     * Run the psychoEngine in the default physical device
+     * Start the psychoEngine in the default physical device
      *
      * @since 0.0.1
      */
@@ -240,6 +250,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get window
+     *
      * @return The window
      *
      * @since 0.0.1
@@ -249,6 +261,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Get the Vulkan manager
      *
      * @return The Vulkan manager
      *
@@ -260,7 +274,9 @@ public class PsychoEngine {
 
     /**
      *
-     * @param viewMode The viewing viewMode
+     * Set the viewing mode
+     *
+     * @param viewMode The viewing mode
      *
      * @since 0.0.1
      */
@@ -269,6 +285,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Get the viewing mode
      *
      * @return The viewing viewMode
      *
@@ -280,6 +298,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Set observer's distance
+     *
      * @param distance The distance of the observer from the display
      *
      * @since 0.0.1
@@ -289,6 +309,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Get observer's distance
      *
      * @return The distance of the observer from the display
      *
@@ -300,6 +322,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Set the psychophysics paradigm
+     *
      * @param paradigm The psychophysics paradigm
      *
      * @since 0.0.1
@@ -310,6 +334,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get the psychophysics paradigm
+     *
      * @return The psychophysics paradigm
      *
      * @since 0.0.1
@@ -319,6 +345,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Get the field of view
      *
      * @return The field of view (x, y) in degrees
      *
@@ -345,6 +373,7 @@ public class PsychoEngine {
 
     /**
      *
+     * Set the window monitor
      * @param monitor Set the window monitor
      *
      * @since 0.0.1
@@ -354,6 +383,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Set window position
      *
      * @param x Monitor x position in pixels
      * @param y Monitor y position in pixels
@@ -366,6 +397,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get window position
+     *
      * @return The window position (x, y) in pixels relative to the monitor
      *
      * @since 0.0.1
@@ -375,6 +408,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Set window size
      *
      * @param width Monitor width in pixels
      * @param height Monitor height in pixels
@@ -408,6 +443,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get command
+     *
      * @return The command from the controller
      *
      * @since 0.0.1
@@ -417,6 +454,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * Get start time
      *
      * @return The start time in ms
      *
@@ -428,6 +467,8 @@ public class PsychoEngine {
 
     /**
      *
+     * Get elapsed time
+     *
      * @return Elapse time in ms
      *
      * @since 0.0.1
@@ -437,6 +478,8 @@ public class PsychoEngine {
     }
 
     /**
+     *
+     * To String
      *
      * @since 0.0.1
      */
@@ -466,7 +509,7 @@ public class PsychoEngine {
     }
 
     // retrieves all supported platforms
-    public ArrayList<String> getSupportedPlatforms() {
+    private @NotNull ArrayList<String> getSupportedPlatforms() {
         ArrayList<String> supportedPlatform = new ArrayList<>();
         if(glfwPlatformSupported(GLFW_PLATFORM_WIN32)) supportedPlatform.add("WIN32");
         if(glfwPlatformSupported(GLFW_PLATFORM_COCOA)) supportedPlatform.add("COCOA");

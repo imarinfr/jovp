@@ -10,12 +10,7 @@ import static es.optocom.jovp.engine.rendering.VulkanSetup.Z_FAR;
 
 /**
  *
- * Item
- *
- * <ul>
- * <li>Item</li>
  * Item to construct the psychophysical experience
- * </ul>
  *
  * @since 0.0.1
  */
@@ -79,6 +74,9 @@ public class Item {
 
     /**
      *
+     * Show item
+     *
+     * @param view type of view
      * @return Whether to show the item in the Eye
      *
      * @since 0.0.1
@@ -94,6 +92,8 @@ public class Item {
 
     /**
      *
+     * Eye
+     *
      * @param eye Eye to display
      *
      * @since 0.0.1
@@ -104,6 +104,8 @@ public class Item {
 
     /**
      *
+     * Get model
+     *
      * @return The model
      *
      * @since 0.0.1
@@ -113,6 +115,8 @@ public class Item {
     }
 
     /**
+     *
+     * Get texture
      *
      * @return The texture
      *

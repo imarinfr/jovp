@@ -6,18 +6,19 @@ import org.joml.*;
 
 /**
  *
- * Vertex
- *
- * <ul>
- * <li>Vertex</li>
  * Vertex properties of a model
- * </ul>
  *
  * @since 0.0.1
  */
 public class Vertex {
 
+    /**
+     * Vertex position
+     */
     public Vector3f position;
+    /**
+     * Vertex uv coordinates
+     */
     public Vector2f uv;
 
     /**

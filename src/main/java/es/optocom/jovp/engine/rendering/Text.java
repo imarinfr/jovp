@@ -16,12 +16,7 @@ import java.util.HashMap;
 
 /**
  *
- * Text
- *
- * <ul>
- * <li>Text</li>
  * Text manager for rendering text
- * </ul>
  *
  * @since 0.0.1
  */

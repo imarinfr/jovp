@@ -27,7 +27,7 @@ viewMode-tracking devices.
 * [Vulkan](https://www.vulkan.org/) - A low-overhead, cross-platform API, open standard for 3D graphics and computing.
 * [LWJGL](https://www.lwjgl.org/) - Lightweight Java Game Library
 * [JOLM](https://github.com/JOML-CI/JOML/) - Java OpenGL Math Library
-  
+
 ## Licence and Copyright
 The [JOVP](https://github.com/imarinfr/jovp) project is COPYRIGHTED by Marín-Franch I (https://optocom.es), and is
 distributed under the Apache 2.0 license. Please read the license information in the attached file.

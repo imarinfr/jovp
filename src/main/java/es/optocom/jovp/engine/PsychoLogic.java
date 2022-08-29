@@ -4,17 +4,15 @@ import es.optocom.jovp.engine.structures.Command;
 
 /**
  *
- * PsychoLogic
- *
- * <ul>
- * <li>Logic for Psychophysics Experiments</li>
- * Interface with defaults to run psychophysics experiments with the engine
- * </ul>
+ * Logic for Psychophysics Experiments. Interface with defaults to run psychophysics experiments with the engine
  *
  * @since 0.0.1
  */
 public interface PsychoLogic {
 
+    /**
+     * Items for the psychophysics experience
+     */
     Items items = new Items();
 
     /**
@@ -30,6 +28,9 @@ public interface PsychoLogic {
     /**
      *
      * Reads input from controller
+     *
+     * @param command The command received
+     * @param time The time the command was received
      *
      * @since 0.0.1
      */

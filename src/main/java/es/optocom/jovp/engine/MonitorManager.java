@@ -9,12 +9,7 @@ import java.util.List;
 
 /**
  *
- * MonitorManager
- *
- * <ul>
- * <li>Monitor Manager</li>
  * Retrieves all attached monitors and manages them.
- * </ul>
  *
  * @since 0.0.1
  */
@@ -41,6 +36,8 @@ public class MonitorManager {
      * Sets the monitor for the window
      *
      * @param monitor Monitor number
+     *
+     * @return The monitor
      *
      * @since 0.0.1
      */

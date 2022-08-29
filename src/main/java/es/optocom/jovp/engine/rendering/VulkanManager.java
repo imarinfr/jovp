@@ -24,12 +24,7 @@ import static org.lwjgl.vulkan.VK13.*;
 
 /**
  *
- * VulkanManager
- *
- * <ul>
- * <li>Vulkan Manager</li>
  * Manages all things Vulkan: instantiation, physical and logical device, queues, swap chain, views.
- * </ul>
  *
  * @since 0.0.1
  */
@@ -45,6 +40,9 @@ public class VulkanManager {
      * Initiates the Vulkan manager
      *
      * @param window The window for the Vulkan manager
+     * @param distance The observer's distance
+     * @param validationLayers Whether to use validation layers
+     * @param apiDump Whether to echo api dump
      *
      * @since 0.0.1
      */
@@ -66,6 +64,8 @@ public class VulkanManager {
      * Start for a physical device
      *
      * @param physicalDevice The physical device handle
+     * @param viewMode The view mode
+     * @param items The initial items to start the psychophysics experience
      *
      * @since 0.0.1
      */
@@ -157,6 +157,8 @@ public class VulkanManager {
 
     /**
      *
+     * Set viewing distance
+     *
      * @param distance The distance of the observer from the display
      *
      * @since 0.0.1
@@ -168,6 +170,8 @@ public class VulkanManager {
 
     /**
      *
+     * Get viewing distance
+     *
      * @return The distance of the observer from the display
      *
      * @since 0.0.1
@@ -177,6 +181,8 @@ public class VulkanManager {
     }
 
     /**
+     *
+     * Get field of view
      *
      * @return The field of view in x and y directions.
      *
@@ -219,6 +225,9 @@ public class VulkanManager {
     }
 
     /**
+     *
+     * Get list of physical devices
+     *
      * @return The list of physical devices
      *
      * @since 0.0.1
@@ -228,6 +237,8 @@ public class VulkanManager {
     }
 
     /**
+     *
+     * Get the current Vulkan logical device
      *
      * @return The Vulkan logical device
      *
@@ -271,6 +282,8 @@ public class VulkanManager {
     }
 
     /**
+     *
+     * Get swap chain support
      *
      * @return A string with the swap chain support
      *

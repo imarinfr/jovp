@@ -8,12 +8,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 /**
  *
- * Controller
- *
- * <ul>
- * <li>Input input</li>
- * Sets up a input schemes for different psychophysics paradigms
- * </ul>
+ * Input schemes for different psychophysics paradigms
  *
  * @since 0.0.1
  */
@@ -25,6 +20,8 @@ public class Controller {
     private Command command = Command.NONE;
 
     /**
+     *
+     * Controller type and settings
      *
      * @param windowHandle The window handle
      * @param input The input is listening to
@@ -66,6 +63,8 @@ public class Controller {
     }
 
     /**
+     *
+     * Get Command
      *
      * @return the last command read from the input
      *

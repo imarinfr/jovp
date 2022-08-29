@@ -8,12 +8,7 @@ import java.util.Iterator;
 
 /**
  *
- * Items
- *
- * <ul>
- * <li>Items</li>
  * List of items for the psychophysics experience
- * </ul>
  *
  * @since 0.0.1
  */
@@ -37,6 +32,8 @@ public class Items implements Iterable<Item> {
      *
      * @param item The item to add
      *
+     * @return Whether the item was succesfully added
+     *
      * @since 0.0.1
      */
     public boolean add(@NotNull Item item) {
@@ -58,6 +55,8 @@ public class Items implements Iterable<Item> {
     /**
      *
      * Get the number of items
+     *
+     * @return Number of items in the list
      *
      * @since 0.0.1
      */

@@ -18,12 +18,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 /**
  *
- * Texture
- *
- * <ul>
- * <li>Texture</li>
  * Texture class and methods
- * </ul>
  *
  * @since 0.0.1
  */
@@ -162,6 +157,8 @@ public class Texture {
 
     /**
      *
+     * Get texture type
+     *
      * @return The texture type
      *
      * @since 0.0.1
@@ -186,6 +183,8 @@ public class Texture {
 
     /**
      *
+     * Get image size
+     *
      * @return size of the image
      *
      * @since 0.0.1
@@ -196,6 +195,8 @@ public class Texture {
 
     /**
      *
+     * Get mipmap levels
+     *
      * @return mipmap levels of the image
      *
      * @since 0.0.1
@@ -205,6 +206,8 @@ public class Texture {
     }
 
     /**
+     *
+     * Get image pixels
      *
      * @return pixels the image
      *

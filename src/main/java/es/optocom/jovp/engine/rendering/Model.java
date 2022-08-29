@@ -28,12 +28,7 @@ import static org.lwjgl.assimp.Assimp.*;
 
 /**
  *
- * Model
- *
- * <ul>
- * <li>Model</li>
  * Model class and methods
- * </ul>
  *
  * @since 0.0.1
  */
@@ -190,6 +185,8 @@ public class Model {
 
     /**
      *
+     * Get model type
+     *
      * @return model type
      *
      * @since 0.0.1
@@ -200,6 +197,8 @@ public class Model {
 
     /**
      *
+     * Set vertices
+     *
      * @param vertices new model vertices
      *
      * @since 0.0.1
@@ -209,6 +208,8 @@ public class Model {
     }
 
     /**
+     *
+     * Set indices
      *
      * @param indices new model indices
      *

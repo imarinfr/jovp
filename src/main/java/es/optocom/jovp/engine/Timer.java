@@ -2,12 +2,7 @@ package es.optocom.jovp.engine;
 
 /**
  *
- * Timer
- *
- * <ul>
- * <li>Timer</li>
  * Controls the times of PsychoEngine
- * </ul>
  *
  * @since 0.0.1
  */
@@ -38,6 +33,8 @@ public class Timer {
 
     /**
      *
+     * Get start time
+     *
      * @return Time start time in ms
      *
      * @since 0.0.1
@@ -47,6 +44,8 @@ public class Timer {
     }
 
     /**
+     *
+     * get elapse time
      *
      * @return Elapsed time in ms
      *

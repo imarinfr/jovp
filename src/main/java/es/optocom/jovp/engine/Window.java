@@ -10,12 +10,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  *
- * Window
- *
- * <ul>
- * <li>Window</li>
- * Manages the window
- * </ul>
+ * Manages windows
  *
  * @since 0.0.1
  */
@@ -78,6 +73,8 @@ public class Window {
 
     /**
      *
+     * Check whether the window has been resized
+     *
      * @return Whether the window has been resized or not
      *
      * @since 0.0.1
@@ -87,6 +84,8 @@ public class Window {
     }
 
     /**
+     *
+     * Set resized to true
      *
      * @param resized Whether the window has been resized or not
      *
@@ -131,6 +130,8 @@ public class Window {
 
     /**
      *
+     * Get window handle
+     *
      * @return The window handle
      *
      * @since 0.0.1
@@ -141,7 +142,9 @@ public class Window {
 
     /**
      *
-     * Gets the window position (x, y) in pixels relative to Monitor
+     * Get the window position (x, y) in pixels relative to Monitor
+     *
+     * @return The window position (x, y) in pixels relative to Monitor
      *
      * @since 0.0.1
      */
@@ -151,6 +154,8 @@ public class Window {
     }
 
     /**
+     *
+     * Get monitor manager
      *
      * @return The monitor manager
      *
@@ -162,6 +167,8 @@ public class Window {
 
     /**
      *
+     * Get monitor
+     *
      * @return The monitor
      *
      * @since 0.0.1
@@ -171,6 +178,8 @@ public class Window {
     }
 
     /**
+     *
+     * Set monitor
      *
      * @param monitor The monitor to set for the window
      *
@@ -188,6 +197,8 @@ public class Window {
 
     /**
      *
+     * Get window width
+     *
      * @return The window width in screen coordinates
      *
      * @since 0.0.1
@@ -197,6 +208,8 @@ public class Window {
     }
 
     /**
+     *
+     * Get scaled width
      *
      * @return The window width in screen coordinates
      *
@@ -208,6 +221,8 @@ public class Window {
 
     /**
      *
+     * Get height
+     *
      * @return The window height in screen coordinates
      *
      * @since 0.0.1
@@ -217,6 +232,8 @@ public class Window {
     }
 
     /**
+     *
+     * Get scaled height
      *
      * @return The window height in screen coordinates
      *
@@ -228,6 +245,8 @@ public class Window {
 
     /**
      *
+     * Get pixel width
+     *
      * @return The window width in screen coordinates
      *
      * @since 0.0.1
@@ -237,6 +256,8 @@ public class Window {
     }
 
     /**
+     *
+     * Get pixel aspect
      *
      * @return The aspect ratio between x and y pixel sizes
      *
@@ -248,6 +269,8 @@ public class Window {
 
     /**
      *
+     * Get pixel height
+     *
      * @return The window height in screen coordinates
      *
      * @since 0.0.1
@@ -257,6 +280,8 @@ public class Window {
     }
 
     /**
+     *
+     * Return query to whether the window is shown
      *
      * @return Whether the window is shown or hidden
      *

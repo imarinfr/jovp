@@ -7,13 +7,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 /**
  *
- * Monitor
- *
- * <ul>
- * <li>Specifications of an attached monitor</li>
  * Retrieves and stores the monitor capabilities including size in mm, pixel size for the calculation of the
  * observer's field of view.
- * </ul>
  *
  * @since 0.0.1
  */
@@ -47,7 +42,9 @@ public class Monitor {
 
     /**
      *
-     * @return The monitor's handle
+     * Get monitor handle
+     *
+     * @return The monitor handle
      *
      * @since 0.0.1
      */
@@ -57,7 +54,9 @@ public class Monitor {
 
     /**
      *
-     * @return The monitor's name
+     * Get monitor name
+     *
+     * @return The monitor name
      *
      * @since 0.0.1
      */
@@ -67,7 +66,9 @@ public class Monitor {
 
     /**
      *
-     * @return The monitor's width in pixels
+     * Get monitor width
+     *
+     * @return The monitor width in pixels
      *
      * @since 0.0.1
      */
@@ -77,7 +78,9 @@ public class Monitor {
 
     /**
      *
-     * @return The monitor's height in pixels
+     * Get monitor height
+     *
+     * @return The monitor height in pixels
      *
      * @since 0.0.1
      */
@@ -117,6 +120,8 @@ public class Monitor {
 
     /**
      *
+     * Get monitor pixel width
+     *
      * @return The pixel width in mm
      *
      * @since 0.0.1
@@ -126,6 +131,8 @@ public class Monitor {
     }
 
     /**
+     *
+     * Get monitor pixel height
      *
      * @return The pixel height in mm
      *
@@ -137,6 +144,8 @@ public class Monitor {
 
     /**
      *
+     * Get monitor pixel aspect ratio
+     *
      * @return The aspect ratio between x and y pixel sizes
      *
      * @since 0.0.1
@@ -146,6 +155,8 @@ public class Monitor {
     }
 
     /**
+     *
+     * Get pixel density in dots per inch
      *
      * @return The dots per inch
      *
@@ -169,6 +180,8 @@ public class Monitor {
 
     /**
      *
+     * Get refresh rate
+     *
      * @return The refresh rate for full-screen mode
      *
      * @since 0.0.1
@@ -179,7 +192,9 @@ public class Monitor {
 
     /**
      *
-     * @return Get current video mode
+     * Get stored video mode
+     *
+     * @return Get stored video mode
      *
      * @since 0.0.1
      */
@@ -188,6 +203,8 @@ public class Monitor {
     }
 
     /**
+     *
+     * Get current video mode
      *
      * @return Get current video mode
      *
@@ -198,6 +215,8 @@ public class Monitor {
     }
 
     /**
+     *
+     * Get video modes
      *
      * @return Get all possible video modes
      *
