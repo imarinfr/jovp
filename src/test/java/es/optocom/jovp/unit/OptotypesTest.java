@@ -29,7 +29,8 @@ public class OptotypesTest {
     @Test
     public void showAllOptotypes() {
         PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-        psychoEngine.getWindow().getMonitor().setPhysicalSize(621, 341);
+        psychoEngine.setWindowMonitor(1);
+        psychoEngine.setFullScreen();
         psychoEngine.start();
         psychoEngine.cleanup();
     }
