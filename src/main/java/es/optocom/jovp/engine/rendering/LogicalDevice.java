@@ -23,7 +23,7 @@ public class LogicalDevice {
     VkQueue graphicsQueue;
     VkQueue presentQueue;
     long descriptorSetLayout;
-    int msaaSamples;
+    final int msaaSamples;
 
     /**
      *

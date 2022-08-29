@@ -15,11 +15,11 @@ public class Vertex {
     /**
      * Vertex position
      */
-    public Vector3f position;
+    final public Vector3f position;
     /**
      * Vertex uv coordinates
      */
-    public Vector2f uv;
+    final public Vector2f uv;
 
     /**
      *

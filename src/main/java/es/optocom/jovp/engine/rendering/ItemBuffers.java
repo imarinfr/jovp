@@ -30,8 +30,8 @@ import static org.lwjgl.vulkan.VK13.*;
  */
 class ItemBuffers {
 
-    Item item;
-    long commandPool;
+    final Item item;
+    final long commandPool;
     long vertexBuffer;
     long indexBuffer;
     long vertexBufferMemory;

@@ -19,7 +19,7 @@ public class Item {
     Eye eye;
     Model model;
     Texture texture;
-    Vector3d position; // radian, radian, mm
+    final Vector3d position; // radian, radian, mm
     Vector3d size; // radian, radian, mm
     Vector4f frequency;
     Vector4f contrast;
@@ -27,7 +27,7 @@ public class Item {
     Vector3f rotationAxis;
     double texRotation; // rotation in radians
     float[] texPivot;
-    Post post;
+    final Post post;
     ItemBuffers buffers;
     boolean update = false; // Only for text
 

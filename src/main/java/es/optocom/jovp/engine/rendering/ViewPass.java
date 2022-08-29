@@ -24,7 +24,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
 /**
  *
@@ -39,7 +38,7 @@ import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
  */
 class ViewPass {
 
-    VkExtent2D extent;
+    final VkExtent2D extent;
     long pipelineLayout;
     long graphicsPipeline;
 
@@ -49,7 +48,6 @@ class ViewPass {
      *
      * @param renderPass Render pass handle
      * @param extent Port view extent
-     *
      *
      * @since 0.0.1
      */
@@ -64,7 +62,6 @@ class ViewPass {
      * @param renderPass Render pass handle
      * @param offset Offset of the view. For the right eye, it should be the half width of the swap chain
      * @param extent Port view extent
-     *
      *
      * @since 0.0.1
      */

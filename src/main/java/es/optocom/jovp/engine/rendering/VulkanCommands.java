@@ -30,7 +30,7 @@ import static org.lwjgl.vulkan.VK13.*;
 class VulkanCommands {
 
     final Items items;
-    long commandPool;
+    final long commandPool;
     List<VkCommandBuffer> commandBuffers;
 
     /**

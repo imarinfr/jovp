@@ -14,7 +14,6 @@ import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.KHRSwapchain.vkGetSwapchainImagesKHR;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
@@ -30,7 +29,7 @@ import static org.lwjgl.vulkan.VK13.*;
  */
 class SwapChain {
 
-    long commandPool;
+    final long commandPool;
     long swapChain;
     List<Long> images;
     List<Long> imageViews;
@@ -45,7 +44,7 @@ class SwapChain {
     long renderPass;
     List<ViewPass> viewPasses;
     List<Long> frameBuffers;
-    float aspect;
+    final float aspect;
 
     /**
      *

@@ -32,9 +32,7 @@ import static org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EX
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
@@ -385,14 +383,15 @@ class VulkanSetup {
                 .messageType(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
-                .pfnUserCallback(VulkanSetup::debugCallback);
+                .pfnUserCallback((messageSeverity, messageType, pCallbackData, pUserData) -> debugCallback(pCallbackData));
     }
     static void destroyDebugUtilsMessengerEXT() {
         if(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT") != NULL) {
             vkDestroyDebugUtilsMessengerEXT(instance, messenger, null);
         }
     }
-    private static int debugCallback(int messageSeverity, int messageType, long pCallbackData, long pUserData) {
+    @SuppressWarnings("SameReturnValue")
+    private static int debugCallback(long pCallbackData) {
         VkDebugUtilsMessengerCallbackDataEXT callbackData = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData);
         System.err.println("Validation layer: " + callbackData.pMessageString());
         return VK_FALSE;

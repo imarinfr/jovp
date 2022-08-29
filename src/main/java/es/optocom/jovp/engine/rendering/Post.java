@@ -17,8 +17,8 @@ class Post {
 
     PostType envelope;
     boolean defocus;
-    float[] envelopeParams;
-    float[] defocusParams;
+    final float[] envelopeParams;
+    final float[] defocusParams;
 
     /**
      *

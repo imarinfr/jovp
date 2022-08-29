@@ -28,7 +28,7 @@ public class Text extends Item {
 
     private final FontRenderContext fontRenderContext;
     private final Font font;
-    HashMap<Character, CharInfo> map;
+    final HashMap<Character, CharInfo> map;
     String text;
     double width;
     double height = 1;

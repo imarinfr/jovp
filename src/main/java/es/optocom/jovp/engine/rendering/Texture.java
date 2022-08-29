@@ -30,7 +30,7 @@ public class Texture {
     private static final int PIXEL_SIZE = 4 * Float.BYTES;
     private static final int TEXTURE_SIZE = 512;
 
-    TextureType type;
+    final TextureType type;
     int size;
     int width;
     int height;
