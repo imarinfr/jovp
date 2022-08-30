@@ -6,16 +6,20 @@ import es.optocom.jovp.engine.structures.Command;
 import org.junit.jupiter.api.Test;
 
 /**
- * PortabilityTests
  *
- * <ul>
- * <li>Portability test</li>
  * Unitary tests to check portability
- * </ul>
  *
  * @since 0.0.1
  */
 public class PortabilityTests {
+
+    /**
+     *
+     * Unitary tests to check portability
+     *
+     * @since 0.0.1
+     */
+    public PortabilityTests() {}
 
     /**
      * TODO

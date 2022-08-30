@@ -10,16 +10,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * WindowTest
- *
- * <ul>
- * <li>WindowTest Test</li>
  * Unitary tests for window management
- * </ul>
  *
  * @since 0.0.1
  */
 public class WindowTest {
+
+    /**
+     *
+     * Unitary tests for window management
+     *
+     * @since 0.0.1
+     */
+    public WindowTest() {}
 
     /**
      *

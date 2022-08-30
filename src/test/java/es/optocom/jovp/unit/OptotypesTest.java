@@ -9,16 +9,19 @@ import org.junit.jupiter.api.Test;
 
 /**
  *
- * OptotypesTest
- *
- * <ul>
- * <li>OptotypesTest test</li>
  * Unitary tests for the optotype rendering
- * </ul>
  *
  * @since 0.0.1
  */
 public class OptotypesTest {
+
+    /**
+     *
+     * Unitary tests for the optotype rendering
+     *
+     * @since 0.0.1
+     */
+    public OptotypesTest() {}
 
     /**
      *
@@ -29,8 +32,6 @@ public class OptotypesTest {
     @Test
     public void showAllOptotypes() {
         PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-        psychoEngine.setWindowMonitor(1);
-        psychoEngine.setFullScreen();
         psychoEngine.start();
         psychoEngine.cleanup();
     }

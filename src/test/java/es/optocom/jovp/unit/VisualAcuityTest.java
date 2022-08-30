@@ -10,17 +10,19 @@ import java.util.Random;
 
 /**
  *
- * VisualAcuityTest
- *
- * <ul>
- * <li>Visual Acuity test</li>
  * Unitary tests for a visual acuity psychophysical experience
- * </ul>
  *
  * @since 0.0.1
  */
 public class VisualAcuityTest {
 
+    /**
+     *
+     * Unitary tests for a visual acuity psychophysical experience
+     *
+     * @since 0.0.1
+     */
+    public VisualAcuityTest() {}
     /**
      *
      * Performs a visual acuity test

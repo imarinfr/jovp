@@ -10,16 +10,19 @@ import org.junit.jupiter.api.Test;
 
 /**
  *
- * StressTest
- *
- * <ul>
- * <li>Test playing around with textures</li>
  * Unitary tests for different patterns and textures
- * </ul>
  *
  * @since 0.0.1
  */
 public class StressTest {
+
+    /**
+     *
+     * Unitary tests for different patterns and textures
+     *
+     * @since 0.0.1
+     */
+    public StressTest() {}
 
     /**
      *

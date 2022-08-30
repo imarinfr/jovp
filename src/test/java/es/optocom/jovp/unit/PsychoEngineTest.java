@@ -17,17 +17,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
- * PsychoEngineTest
- *
- * <ul>
- * <li>PsychoEngineTest test</li>
  * Unitary tests for the psychophysics engine
- * </ul>
  *
  * @since 0.0.1
  */
 public class PsychoEngineTest {
 
+    /**
+     *
+     * Unitary tests for the psychophysics engine
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngineTest() {}
     /**
      *
      * Gets information about the system and attached devices

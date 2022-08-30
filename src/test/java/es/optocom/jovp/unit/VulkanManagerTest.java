@@ -11,16 +11,19 @@ import java.util.List;
 
 /**
  *
- * VulkanManagerTest
- *
- * <ul>
- * <li>VulkanManagerTest test</li>
  * Unitary tests for the Vulkan manager
- * </ul>
  *
  * @since 0.0.1
  */
 public class VulkanManagerTest {
+
+    /**
+     *
+     * Unitary tests for the Vulkan manager
+     *
+     * @since 0.0.1
+     */
+    public VulkanManagerTest() {}
 
     /**
      *

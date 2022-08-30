@@ -15,17 +15,19 @@ import org.junit.jupiter.api.Test;
 
 /**
  *
- * PostProcessingTest
- *
- * <ul>
- * <li>PostProcessingTest test</li>
  * Unitary tests for item post-processing
- * </ul>
  *
  * @since 0.0.1
  */
 public class PostProcessingTest {
 
+    /**
+     *
+     * Unitary tests for item post-processing
+     *
+     * @since 0.0.1
+     */
+    public PostProcessingTest() {}
     /**
      *
      * Shows optotypes

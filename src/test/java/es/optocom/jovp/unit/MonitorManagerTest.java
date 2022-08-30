@@ -10,16 +10,19 @@ import org.lwjgl.glfw.GLFWVidMode;
 
 /**
  *
- * MonitorTest
- *
- * <ul>
- * <li>Monitor Test</li>
  * Unitary tests for screen manager
- * </ul>
  *
  * @since 0.0.1
  */
 public class MonitorManagerTest {
+
+    /**
+     *
+     * Unitary tests for screen manager
+     *
+     * @since 0.0.1
+     */
+    public MonitorManagerTest() {}
 
     /**
      *

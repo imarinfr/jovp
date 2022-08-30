@@ -9,16 +9,19 @@ import org.junit.jupiter.api.Test;
 
 /**
  *
- * ContrastTest
- *
- * <ul>
- * <li>Contrast Test</li>
  * Unitary tests for different contrasts and changes
- * </ul>
  *
  * @since 0.0.1
  */
 public class ContrastTest {
+
+    /**
+     *
+     * Unitary tests for different contrasts and changes
+     *
+     * @since 0.0.1
+     */
+    public ContrastTest() {}
 
     /**
      *

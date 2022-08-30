@@ -15,12 +15,19 @@ import java.util.Arrays;
 
 /**
  *
- * Testing stereoscopic presentation
+ * Unitary tests for stereoscopic presentation
  *
  * @since 0.0.1
  */
 public class StereoTest {
 
+    /**
+     *
+     * Unitary tests for stereoscopic presentation
+     *
+     * @since 0.0.1
+     */
+    public StereoTest() {}
     /**
      *
      * Patterns and their spatial properties

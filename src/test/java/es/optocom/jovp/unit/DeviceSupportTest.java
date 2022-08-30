@@ -8,16 +8,19 @@ import org.lwjgl.vulkan.VkPhysicalDevice;
 
 /**
  *
- * DeviceSupportTest
- *
- * <ul>
- * <li>Device Support Test</li>
- * Checks the physical and logical device support
- * </ul>
+ * Unitary tests for the physical and logical device support
  *
  * @since 0.0.1
  */
 public class DeviceSupportTest {
+
+    /**
+     *
+     * Unitary tests for the physical and logical device support
+     *
+     * @since 0.0.1
+     */
+    public DeviceSupportTest() {}
 
     /**
      *
