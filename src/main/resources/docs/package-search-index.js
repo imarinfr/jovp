@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"es.optocom.opi.jovp.engine"},{"l":"es.optocom.opi.jovp.engine.rendering"},{"l":"es.optocom.opi.jovp.engine.structures"},{"l":"es.optocom.opi.jovp.portability"},{"l":"es.optocom.opi.jovp.unit"}];updateSearchResults();
