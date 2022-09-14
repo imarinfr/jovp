@@ -11,5 +11,9 @@ public enum Input {
   /** Keypad input */
   KEYPAD,
   /** Mouse input */
-  MOUSE
+  MOUSE,
+  /** Clicker */ // TODO check what this means or if clicker is actually same as gamepad
+  CLICKER,
+  /** Gamepad */ // TODO check if correct
+  GAMEPAD
 }
