@@ -88,7 +88,7 @@ public class VisualAcuityTest {
     }
 
     @Override
-    public void input(Command command, double time) {
+    public void input(Command command) {
       if (command != Command.NONE) {
         if (command == Command.ITEM1)
           nextDeltaSize(180);

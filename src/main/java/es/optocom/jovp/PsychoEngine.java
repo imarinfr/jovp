@@ -34,7 +34,6 @@ public class PsychoEngine {
   private final VulkanManager vulkanManager;
   private final List<VkPhysicalDevice> physicalDevices;
   private final Controller controller;
-  private final Timer timer;
 
   private int numberOfCores;
   private long freeMemory;
@@ -140,7 +139,6 @@ public class PsychoEngine {
     vulkanManager = new VulkanManager(window, distance, validationLayers, apiDump);
     physicalDevices = vulkanManager.getPhysicalDevices();
     controller = new Controller(window.getHandle(), input, paradigm);
-    timer = new Timer();
     getRunTimeInfo();
     setView();
   }
@@ -187,7 +185,6 @@ public class PsychoEngine {
   private void init() {
     window.show();
     psychoLogic.init(this);
-    timer.start();
     loop = true;
   }
 
@@ -401,28 +398,6 @@ public class PsychoEngine {
     return controller.getCommand();
   }
 
-  /**
-   * Get start time
-   *
-   * @return The start time in ms
-   *
-   * @since 0.0.1
-   */
-  public double getStartTime() {
-    return timer.getStartTime();
-  }
-
-  /**
-   * Get elapsed time
-   *
-   * @return Elapse time in ms
-   *
-   * @since 0.0.1
-   */
-  public double getElapsedTime() {
-    return timer.getElapsedTime();
-  }
-
   /* (non-Javadoc)
    * @see java.lang.Object#toString()
    */
@@ -457,7 +432,7 @@ public class PsychoEngine {
   /** Process input */
   private void input() {
     Command command = getCommand();
-    psychoLogic.input(command, timer.getElapsedTime());
+    psychoLogic.input(command);
     if (command == Command.CLOSE)
       loop = false;
   }

@@ -40,7 +40,7 @@ public class DeviceSupportTest {
     }
 
     @Override
-    public void input(Command command, double time) {
+    public void input(Command command) {
     }
 
     @Override

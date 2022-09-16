@@ -26,11 +26,10 @@ public interface PsychoLogic {
    * Reads input from controller
    *
    * @param command The command received
-   * @param time    The time the command was received
    *
    * @since 0.0.1
    */
-  void input(Command command, double time);
+  void input(Command command);
 
   /**
    * Updates state

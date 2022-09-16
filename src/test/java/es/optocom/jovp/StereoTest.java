@@ -102,7 +102,7 @@ public class StereoTest {
     }
 
     @Override
-    public void input(Command command, double time) {
+    public void input(Command command) {
       if (command != Command.NONE)
         System.out.println(command);
     }

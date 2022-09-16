@@ -35,7 +35,7 @@ public class PsychoEngineTest {
   @Test
   public void initializeEngine() {
     // Init psychoEngine and show some general info
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
     System.out.println(psychoEngine);
     System.out.println(psychoEngine.getWindow().getMonitorManager());
     // Check distance was set correctly
@@ -65,7 +65,7 @@ public class PsychoEngineTest {
    */
   @Test
   public void getPhysicalDevices() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
     List<VkPhysicalDevice> physicalDevices = psychoEngine.getPhysicalDevices();
     for (VkPhysicalDevice vkPhysicalDevice : physicalDevices)
       System.out.println(vkPhysicalDevice.toString());
@@ -79,7 +79,7 @@ public class PsychoEngineTest {
    */
   @Test
   public void getWindow() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
     Window window = psychoEngine.getWindow();
     // window position
     int[] position = psychoEngine.getWindowPosition();
@@ -97,34 +97,44 @@ public class PsychoEngineTest {
    */
   @Test
   public void runPsychoEngine() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    Timer timer = new Timer();
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(timer), 500);
     new Thread(() -> {
       double time = 0;
       while (time == 0) { // wait for the beginning of the psychophysics experience
-        time = psychoEngine.getStartTime();
+        time = timer.getStartTime();
         Thread.onSpinWait();
       }
       time = 0;
       while (time < 2000) { // close window after 1 second
-        time = psychoEngine.getElapsedTime();
+        time = timer.getElapsedTime();
         Thread.onSpinWait();
       }
       psychoEngine.finish();
     }).start();
     psychoEngine.start();
-    System.out.println("Engine was running for " + psychoEngine.getElapsedTime() / 1000 + " seconds");
+    System.out.println("Engine was running for " + timer.getElapsedTime() / 1000 + " seconds");
     psychoEngine.cleanup();
   }
 
-  // Psychophysics logic class
+  /** Psychophysics logic class */
   static class Logic implements PsychoLogic {
 
-    @Override
-    public void init(PsychoEngine psychoEngine) {
+    /** Logic timer */
+    Timer timer;
+
+    /** Init with timer */
+    Logic(Timer timer) {
+      this.timer = timer;
     }
 
     @Override
-    public void input(Command command, double time) {
+    public void init(PsychoEngine psychoEngine) {
+      timer.start();
+    }
+
+    @Override
+    public void input(Command command) {
     }
 
     @Override

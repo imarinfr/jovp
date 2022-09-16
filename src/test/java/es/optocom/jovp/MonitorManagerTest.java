@@ -82,7 +82,7 @@ public class MonitorManagerTest {
     }
 
     @Override
-    public void input(Command command, double time) {
+    public void input(Command command) {
     }
 
     @Override
