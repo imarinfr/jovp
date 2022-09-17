@@ -24,6 +24,7 @@ public class Monitor {
   private double pixelWidth; // pixel width in mm
   private double pixelHeight; // pixel height in mm
   private float aspect; // Aspect ratio between pixels
+  private int[] colorDepth = new int[3]; // Bit depths for all channels
   private GLFWVidMode.Buffer videoModes;
 
   /**
@@ -201,6 +202,17 @@ public class Monitor {
   }
 
   /**
+   * RGB color depth
+   *
+   * @return The color depth in the R, G, and B channels in bits
+   *
+   * @since 0.0.1
+   */
+  public int[] getColorDepth() {
+    return colorDepth;
+  }
+
+  /**
    * Get stored video mode
    *
    * @return Get stored video mode
@@ -240,12 +252,14 @@ public class Monitor {
     String pixelSizeTxt = "[" + String.format("%.1f", 1000 * pixelWidth) + ", " +
         String.format("%.1f", 1000 * pixelHeight) + "]";
     String dpiTxt = "[" + String.format("%.1f", getDpi()[0]) + ", " + String.format("%.1f", getDpi()[1]) + "]";
+    String colorDepthStr = "[" + colorDepth[0] + ", "+ colorDepth[0] + ", "+ colorDepth[0] + "]";
     return "Monitor name: " + getName() + "\n" + "\tHandle: " + getHandle() + "\n" +
-        "\tResolution: (" + width + ", " + height + ") pixels" + "\n" +
-        "\tMonitor size: (" + widthMM + ", " + heightMM + ") mm" + "\n" +
-        "\tPixel size (x, y): " + pixelSizeTxt + " microns per pixel" + "\n" +
-        "\tDPI (x, y): " + dpiTxt + " pixels per inch" + "\n" +
-        "\tRefresh rate: " + getRefreshRate() + " Hz\n";
+        "\tResolution: (" + width + ", " + height + ") pixels\n" +
+        "\tMonitor size: (" + widthMM + ", " + heightMM + ") mm\n" +
+        "\tPixel size (x, y): " + pixelSizeTxt + " microns per pixel\n" +
+        "\tDPI (x, y): " + dpiTxt + " pixels per inch\n" +
+        "\tRefresh rate: " + getRefreshRate() + " Hz\n" +
+        "\tRGB color depth: " + colorDepthStr + " bits\n";
   }
 
   /**
@@ -268,6 +282,9 @@ public class Monitor {
     width = fullScreenVideoMode.width();
     height = fullScreenVideoMode.height();
     refreshRate = fullScreenVideoMode.refreshRate();
+    colorDepth[0] = fullScreenVideoMode.redBits();
+    colorDepth[1] = fullScreenVideoMode.greenBits();
+    colorDepth[2] = fullScreenVideoMode.blueBits();
   }
 
   /**
