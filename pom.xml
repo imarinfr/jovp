@@ -12,6 +12,7 @@
     <maven.plugin.version>3.10.1</maven.plugin.version>
     <lwjgl.version>3.3.1</lwjgl.version>
     <joml.version>1.10.4</joml.version>
+    <commons.version>2.11.0</commons.version>
     <junit.version>5.9.0</junit.version>
   </properties>
 
@@ -221,6 +222,11 @@
       <groupId>org.joml</groupId>
       <artifactId>joml</artifactId>
       <version>${joml.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
