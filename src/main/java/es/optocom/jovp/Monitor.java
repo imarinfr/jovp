@@ -84,6 +84,28 @@ public class Monitor {
     return height;
   }
 
+    /**
+   * Get monitor physical width
+   *
+   * @return The monitor width in mm
+   *
+   * @since 0.0.1
+   */
+  public int getWidthMM() {
+    return widthMM;
+  }
+
+  /**
+   * Get monitor physical height
+   *
+   * @return The monitor height in mm
+   *
+   * @since 0.0.1
+   */
+  public int getHeightMM() {
+    return heightMM;
+  }
+
   /**
    * Allow to input the physical size manually
    *
