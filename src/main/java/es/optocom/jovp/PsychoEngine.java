@@ -177,13 +177,30 @@ public class PsychoEngine {
       psychoLoop();
       vkDeviceWaitIdle(vulkanManager.getDevice());
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Show the psychoEngine window
+   *
+   * @since 0.0.1
+   */
+  public void show() {
+    window.show();
+  }
+
+  /**
+   * Hide the psychoEngine window
+   *
+   * @since 0.0.1
+   */
+  public void hide() {
+    window.hide();
   }
 
   /** Initializes the window, controller, timer, and other running parameters */
   private void init() {
-    window.show();
     psychoLogic.init(this);
     loop = true;
   }
@@ -421,8 +438,7 @@ public class PsychoEngine {
   /** Performs the loop for the psychophysics experience */
   private void psychoLoop() {
     while (loop) {
-      if (window.shown())
-        window.focus();
+      if (window.show) window.focus();
       update();
       drawFrame();
       input();

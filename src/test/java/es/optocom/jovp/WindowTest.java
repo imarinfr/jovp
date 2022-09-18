@@ -26,12 +26,30 @@ public class WindowTest {
    * @since 0.0.1
    */
   @Test
+  public void showAndHide() {
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    try {
+      for (int i = 0; i < 5; i++) {
+        psychoEngine.show();
+        Thread.sleep(250);
+        psychoEngine.hide();
+        Thread.sleep(250);
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    psychoEngine.cleanup();
+  }
+ 
+  /**
+   * Tests for creating, showing, hiding, resizing, and hiding windows
+   *
+   * @since 0.0.1
+   */
+  @Test
   public void showWindowedAndFullScreen() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    Window window = psychoEngine.getWindow();
-    window.show();
-    window.hide();
-    psychoEngine.start();
+    psychoEngine.show();
     psychoEngine.setFullScreen();
     psychoEngine.setWindowed();
     psychoEngine.cleanup();
@@ -46,14 +64,13 @@ public class WindowTest {
   @Test
   public void changeWindowPositionAndSize() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    Window window = psychoEngine.getWindow();
     // position is relative to monitor workspace in the virtual desktop
     psychoEngine.setWindowPosition(10, 10);
-    assertArrayEquals(new int[] { 10, 10 }, window.getPosition());
+    assertArrayEquals(new int[] { 10, 28 }, psychoEngine.getWindowPosition());
     psychoEngine.setWindowSize(500, 200);
-    assertEquals(500, window.getWidth());
-    assertEquals(200, window.getHeight());
-    window.show();
+    assertEquals(500, psychoEngine.getWindow().getWidth());
+    assertEquals(200, psychoEngine.getWindow().getHeight());
+    psychoEngine.show();
     psychoEngine.setWindowSize(1000, 800);
     psychoEngine.setWindowPosition(10, 10);
     psychoEngine.cleanup();

@@ -148,7 +148,7 @@ public class Texture {
       size = PIXEL_SIZE * width * height;
       mipLevels = (int) Math.floor(log2(Math.max(width, height))) + 1;
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 

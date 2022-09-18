@@ -25,9 +25,9 @@ public class Window {
   private int height;
   private float xscale;
   private float yscale;
-  private boolean fullScreen = false;
-  private boolean shown = false;
-  private boolean resized = false;
+  protected boolean fullScreen = false;
+  protected boolean show = false;
+  protected boolean resized = false;
 
   /**
    * Creates a window
@@ -49,7 +49,7 @@ public class Window {
    * @since 0.0.1
    */
   public void show() {
-    shown = true;
+    show = true;
     glfwShowWindow(window);
     update();
   }
@@ -60,7 +60,7 @@ public class Window {
    * @since 0.0.1
    */
   public void hide() {
-    shown = false;
+    show = false;
     glfwHideWindow(window);
     update();
   }
@@ -257,17 +257,6 @@ public class Window {
   }
 
   /**
-   * Return query to whether the window is shown
-   *
-   * @return Whether the window is shown or hidden
-   *
-   * @since 0.0.1
-   */
-  boolean shown() {
-    return shown;
-  }
-
-  /**
    * Change to full-screen mode on demand
    *
    * @since 0.0.1
@@ -311,6 +300,7 @@ public class Window {
     this.height = height;
     glfwSetWindowSize(window, width, height);
     resized = true;
+    update();
   }
 
   /**
@@ -326,6 +316,7 @@ public class Window {
     this.x = x + workingArea[0];
     this.y = y + workingArea[1];
     glfwSetWindowPos(window, this.x, this.y);
+    update();
   }
 
   /** Initialize the window */
