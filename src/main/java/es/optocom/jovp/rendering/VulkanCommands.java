@@ -73,7 +73,7 @@ class VulkanCommands {
           ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
           for (Item item : items)
-            if (item.show(eye)) { // Check if item is to be shown
+            if (item.show) { // Check if item is to be shown
               item.buffers.updateUniforms(imageIndex, eye);
               ItemBuffers buffer = item.buffers;
               if (item.update) {

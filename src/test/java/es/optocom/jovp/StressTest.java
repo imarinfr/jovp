@@ -60,17 +60,15 @@ public class StressTest {
     @Override
     public void init(PsychoEngine psychoEngine) {
       addOptotypes();
-      for (int i = 0; i < 15; i++)
-        addPolygon(i);
-      for (int i = 0; i < 20; i++)
-        addCircle(i);
+      for (int i = 0; i < 15; i++) addPolygon(i);
+      for (int i = 0; i < 20; i++) addCircle(i);
       addTriangle();
       addSquares();
       addText();
       circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
       circle.position(0, ypos, zpos);
       circle.size(size, size);
-      circle.eye(Eye.NONE);
+      circle.hide();
       items.add(circle);
       try {
         Thread.sleep(5000);
@@ -91,9 +89,11 @@ public class StressTest {
     public void update(PsychoEngine psychoEngine) {
       double time = timer.getElapsedTime();
       if (time > 13425) {
-        // throw myself at public
-        if (time > 14425)
+        // throw myself at observer
+        if (time > 14425) {
+          circle.show();
           circle.position(0, ypos + Math.sin(time / 100), zpos);
+        }
         if (time > 16425) {
           size += 2.5;
           ypos += 0.6;
@@ -101,9 +101,7 @@ public class StressTest {
           circle.position(0, ypos, zpos);
           circle.size(size, size);
         }
-        if (zpos < 2)
-          for (Item item : items)
-            item.eye(Eye.NONE);
+        if (zpos < 2) for (Item item : items) item.hide();
         return;
       }
       iteration++;
@@ -140,7 +138,7 @@ public class StressTest {
           continue;
         if (time < 8000)
           continue;
-        item.eye(Eye.BOTH);
+        item.show();
         leadPosition += 1 / 60.0;
         if (imageNumber < 10)
           item.position(leadPosition - 5 * imageNumber, 8, 10);
@@ -231,7 +229,7 @@ public class StressTest {
         fileName = "ivanito.jpeg";
       Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
       circle.size(4.5, 4.5);
-      circle.eye(Eye.NONE);
+      circle.hide();
       items.add(circle);
     }
 

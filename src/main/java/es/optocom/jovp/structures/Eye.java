@@ -6,8 +6,6 @@ package es.optocom.jovp.structures;
  * @since 0.0.1
  */
 public enum Eye {
-  /** No eye */
-  NONE,
   /** Left eye */
   LEFT,
   /** Right eye */

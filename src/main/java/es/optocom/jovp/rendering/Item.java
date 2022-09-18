@@ -27,6 +27,7 @@ public class Item {
   final Post post;
   ItemBuffers buffers;
   boolean update = false; // Only for text
+  boolean show = true;
 
   /**
    * Create an item for psychophysics experience
@@ -69,18 +70,19 @@ public class Item {
   /**
    * Show item
    *
-   * @param view type of view
-   * @return Whether to show the item in the Eye
+   * @since 0.0.1
+   */
+  public void show() {
+    show = true;
+  }
+
+  /**
+   * Hide item
    *
    * @since 0.0.1
    */
-  public boolean show(int view) {
-    return switch (eye) {
-      case BOTH -> true;
-      case LEFT -> view == 0;
-      case RIGHT -> view == 1;
-      default -> false;
-    };
+  public void hide() {
+    show = false;
   }
 
   /**

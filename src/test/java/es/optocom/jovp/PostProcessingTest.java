@@ -74,6 +74,11 @@ public class PostProcessingTest {
       item.frequency(0.5, 0.25);
       item.envelope(PostType.GAUSSIAN, envelope4[0], envelope4[1]);
       items.add(item);
+      item = new Item(new Model(ModelType.CIRCLE), new Texture(new double [] {1, 1, 1, 1}));
+      item.position(-7.75, -3.25, 20);
+      item.size(2, 2);
+      item.envelope(PostType.GAUSSIAN, 0.25);
+      items.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture());
       item.position(-7.75, -3.25, 20);
       item.size(2, 2);
@@ -140,7 +145,8 @@ public class PostProcessingTest {
       items.get(2).rotation(-time / 10.0);
       double theta = time / 500.0;
       items.get(3).position(3.75 * Math.cos(theta) - 10, 3.75 * Math.sin(theta));
-      items.get(4).rotation(-time / 20.0);
+      items.get(4).position(-3.75 * Math.cos(theta) - 10, -3.75 * Math.sin(theta));
+      items.get(5).rotation(-time / 20.0);
       if (timerFps.getElapsedTime() <= refreshTime)
         fps++;
       else {
