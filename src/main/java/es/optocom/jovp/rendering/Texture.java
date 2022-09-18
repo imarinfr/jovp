@@ -38,12 +38,12 @@ public class Texture {
   float[] pixels;
 
   /**
-   * Create a white flat texture
+   * Create a black flat texture
    *
    * @since 0.0.1
    */
   public Texture() {
-    this(new double[] { 1, 1, 1, 1 });
+    this(new double[] { 0, 0, 0, 1 });
   }
 
   /**
