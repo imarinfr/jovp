@@ -183,8 +183,8 @@ public class VulkanManager {
    *
    * @since 0.0.1
    */
-  public float[] getFieldOfView() {
-    return new float[] { (float) Math.toDegrees(VulkanSetup.fovx), (float) Math.toDegrees(VulkanSetup.fovy) };
+  public double[] getFieldOfView() {
+    return new double[] { Math.toDegrees(VulkanSetup.fovx), Math.toDegrees(VulkanSetup.fovy) };
   }
 
   /**

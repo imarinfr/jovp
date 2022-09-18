@@ -46,8 +46,8 @@ public class PsychoEngineTest {
     psychoEngine.getWindow().getMonitor().setPhysicalSize(psychoEngine.getWindow().getMonitor().getWidth(),
         psychoEngine.getWindow().getMonitor().getHeight());
     psychoEngine.setDistance((int) (psychoEngine.getWindow().getScaledWidth() / 2.0));
-    float[] fov = psychoEngine.getFieldOfView();
-    assertEquals(90, fov[0]);
+    double[] fov = psychoEngine.getFieldOfView();
+    assertEquals(90, Math.round(1e3 *fov[0]) / 1e3);
     assertEquals(ViewMode.MONO, psychoEngine.getViewMode());
     psychoEngine.setViewMode(ViewMode.MONO);
     psychoEngine.setViewMode(ViewMode.STEREO);

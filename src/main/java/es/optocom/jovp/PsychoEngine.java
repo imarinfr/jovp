@@ -304,7 +304,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public float[] getFieldOfView() {
+  public double[] getFieldOfView() {
     return vulkanManager.getFieldOfView();
   }
 
