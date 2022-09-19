@@ -26,7 +26,7 @@ public class Window {
   private float xscale;
   private float yscale;
   protected boolean fullScreen = false;
-  protected boolean show = false;
+  protected boolean show = true;
   protected boolean resized = false;
 
   /**

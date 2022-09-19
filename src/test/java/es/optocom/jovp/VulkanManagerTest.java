@@ -74,9 +74,9 @@ public class VulkanManagerTest {
 
     @Override
     public void init(PsychoEngine psychoEngine) {
-      Item item = new Item(new Model(ModelType.TRIANGLE), new Texture());
+      Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] {1, 1, 1, 1}));
       item.position(0, 0);
-      item.size(1, 1);
+      item.size(5, 5);
       items.add(item);
     }
 
