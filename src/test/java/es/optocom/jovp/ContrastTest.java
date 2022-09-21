@@ -31,8 +31,8 @@ public class ContrastTest {
    */
   @Test
   public void funWithContrast() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.getWindow().getMonitor().setPhysicalSize(621, 341);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 1000);
+    psychoEngine.getWindow().getMonitor().setPhysicalSize(535, 295);
     psychoEngine.start();
     psychoEngine.cleanup();
   }

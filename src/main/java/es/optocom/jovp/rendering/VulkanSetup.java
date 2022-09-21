@@ -36,20 +36,8 @@ import static org.lwjgl.vulkan.KHRMultiview.VK_KHR_MULTIVIEW_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_ERROR_SURFACE_LOST_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR;
-import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
-import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR;
-import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR;
-import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR;
+import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
-import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
 import static org.lwjgl.vulkan.VK10.*;
@@ -130,31 +118,26 @@ class VulkanSetup {
    * contrast
    */
   static final int UNIFORM_SIZEOF = Float.BYTES * (4 + 4 * 16 + 7 * 4);
-  static final int POSITION_OFFSET = 0;
-  static final int TEXTURE_OFFSET = 3 * Float.BYTES;
+  // VulkanManager
   static final int MAX_FRAMES_IN_FLIGHT = 2;
   public static final float Z_NEAR = 0.1f;
   public static final float Z_FAR = 100.0f;
-  static final int SAMPLER_FILTER = VK_FILTER_NEAREST;
-  static final int SAMPLER_ADDRESS_MODE = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-  static final int SAMPLER_MIPMAP_MODE = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-  static final int COLOR_FORMAT = VK_FORMAT_R32G32B32A32_SFLOAT;
+  // LogicalDevice
   static final boolean SAMPLER_ANISOTROPY = true;
-  static final boolean SAMPLE_RATE_SHADING = true;
+  static final boolean SAMPLE_RATE_SHADING = true;  
+  // SwapChain
+  static final int COMPOSITE_ALPHA_MODE = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   static final int MIP_LEVELS = 1;
-  static final int STENCIL_LOAD_OPERATION = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  static final int STENCIL_STORE_OPERATION = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   static final int COLOR_ATTACHMENT_SAMPLES = VK_SAMPLE_COUNT_1_BIT;
-  static final int INITIAL_LAYOUT = VK_IMAGE_LAYOUT_UNDEFINED;
-  static final int COLOR_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  static final int COLOR_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  static final int COLOR_ATTACHMENT_RESOLVE_FINAL_LAYOUT = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-  static final int COLOR_ATTACHMENT_RESOLVE_LAYOUT = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  static final int DEPTH_ATTACHMENT_FINAL_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  static final int DEPTH_ATTACHMENT_LAYOUT = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  static final int PIPELINE_STAGE_COLOR_ATTACHMENT = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  static final int SURFACE_FORMAT = VK_FORMAT_B8G8R8_SRGB;
+  static final int COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+  static final int PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+  // ViewPass
+  static final int VERTEX_FORMAT = VK_FORMAT_R32G32B32_SFLOAT;
+  static final int VERTEX_OFFSET = 0;
+  static final int TEXTURE_FORMAT = VK_FORMAT_R32G32_SFLOAT;
+  static final int TEXTURE_OFFSET = 3 * Float.BYTES;
   static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   static final boolean PRIMITIVE_RESTART_ENABLE = false;
   static final float VIEWPORT_MIN_DEPTH = 0.0f;
@@ -176,7 +159,7 @@ class VulkanSetup {
   static final float MAX_DEPTH_BOUNDS = 1.0f;
   static final boolean STENCIL_TEST_ENABLE = false;
   static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                                      VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   static final boolean BLEND_ENABLE = false;
   static final boolean LOGIC_OPERATION_ENABLE = false;
   static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
@@ -184,6 +167,15 @@ class VulkanSetup {
   static final float BLEND_CONSTANTS_Y = 0.0f;
   static final float BLEND_CONSTANTS_Z = 0.0f;
   static final float BLEND_CONSTANTS_W = 0.0f;
+  // ItemBuffers
+  static final int SAMPLER_FILTER = VK_FILTER_NEAREST;
+  static final int SAMPLER_ADDRESS_MODE = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+  static final int SAMPLER_COMPARISONS = VK_COMPARE_OP_ALWAYS;
+  static final int SAMPLER_MIPMAP_MODE = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+  static final int SAMPLER_MIPMAP_FILTER = VK_FILTER_LINEAR;
+  static final int SAMPLER_COLOR_FORMAT = VK_FORMAT_R32G32B32A32_SFLOAT;
+  // Vulkan instances
   static VkInstance instance;
   static boolean validationLayers;
   static boolean apiDump;

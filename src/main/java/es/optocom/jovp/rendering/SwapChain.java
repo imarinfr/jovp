@@ -85,12 +85,11 @@ class SwapChain {
     /** set swap chain for stereoscopic view */
     private void stereoSwapChain() {
         IntBuffer width = stackGet().ints(0);
-        if (extent.width() % 2 == 0) width.put(extent.width() / 2);
-        else width.put((extent.width() - 1) / 2);
+        width.put(extent.width() / 2);
         VkExtent2D viewExtent = VkExtent2D.malloc().set(width.get(0), extent.height());
         viewPasses = new ArrayList<>(2);
         viewPasses.add(new ViewPass(renderPass, viewExtent));
-        viewPasses.add(new ViewPass(renderPass, width.get(0), viewExtent));
+        //viewPasses.add(new ViewPass(renderPass, width.get(0), viewExtent));
     }
 
     /** create swap chain */
@@ -119,7 +118,7 @@ class SwapChain {
                         .pQueueFamilyIndices(stack.ints(indices.graphicsFamily, indices.presentFamily));
             } else createInfo.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE);
             createInfo.preTransform(swapChainSupport.capabilities.currentTransform())
-                    .compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
+                    .compositeAlpha(VulkanSetup.COMPOSITE_ALPHA_MODE)
                     .presentMode(presentMode)
                     .clipped(true)
                     .oldSwapchain(VK_NULL_HANDLE);
@@ -145,7 +144,6 @@ class SwapChain {
             imageViews.add(VulkanSetup.createImageView(VulkanSetup.logicalDevice.device, swapChainImage, imageFormat,
                     VK_IMAGE_ASPECT_COLOR_BIT, VulkanSetup.MIP_LEVELS));
     }
-
 
     /** create color resources */
     private void createColorResources() {
@@ -173,26 +171,26 @@ class SwapChain {
             VkAttachmentDescription colorAttachment = attachments.get(0);
             colorAttachment.format(imageFormat).samples(VulkanSetup.logicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR).storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VulkanSetup.STENCIL_LOAD_OPERATION).stencilStoreOp(VulkanSetup.STENCIL_STORE_OPERATION)
-                    .initialLayout(VulkanSetup.INITIAL_LAYOUT).finalLayout(VulkanSetup.COLOR_ATTACHMENT_FINAL_LAYOUT);
+                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE).stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED).finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
             VkAttachmentReference colorAttachmentRef = attachmentRefs.get(0);
-            colorAttachmentRef.attachment(0).layout(VulkanSetup.COLOR_ATTACHMENT_LAYOUT);
+            colorAttachmentRef.attachment(0).layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
             // Present Image
             VkAttachmentDescription colorAttachmentResolve = attachments.get(2);
             colorAttachmentResolve.format(imageFormat).samples(VulkanSetup.COLOR_ATTACHMENT_SAMPLES)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE).storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VulkanSetup.STENCIL_LOAD_OPERATION).stencilStoreOp(VulkanSetup.STENCIL_STORE_OPERATION)
-                    .initialLayout(VulkanSetup.INITIAL_LAYOUT).finalLayout(VulkanSetup.COLOR_ATTACHMENT_RESOLVE_FINAL_LAYOUT);
+                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE).stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED).finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
             VkAttachmentReference colorAttachmentResolveRef = attachmentRefs.get(2);
-            colorAttachmentResolveRef.attachment(2).layout(VulkanSetup.COLOR_ATTACHMENT_RESOLVE_LAYOUT);
+            colorAttachmentResolveRef.attachment(2).layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
             // Depth-Stencil attachments
             VkAttachmentDescription depthAttachment = attachments.get(1);
             depthAttachment.format(VulkanSetup.findDepthFormat()).samples(VulkanSetup.logicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR).storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VulkanSetup.STENCIL_LOAD_OPERATION).stencilStoreOp(VulkanSetup.STENCIL_STORE_OPERATION)
-                    .initialLayout(VulkanSetup.INITIAL_LAYOUT).finalLayout(VulkanSetup.DEPTH_ATTACHMENT_FINAL_LAYOUT);
+                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE).stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED).finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             VkAttachmentReference depthAttachmentRef = attachmentRefs.get(1);
-            depthAttachmentRef.attachment(1).layout(VulkanSetup.DEPTH_ATTACHMENT_LAYOUT);
+            depthAttachmentRef.attachment(1).layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             // Pipeline bind point
             VkSubpassDescription.Buffer subpass = VkSubpassDescription.calloc(1, stack)
                     .pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS).colorAttachmentCount(1)
@@ -203,8 +201,9 @@ class SwapChain {
                             put(0, colorAttachmentResolveRef));
             VkSubpassDependency.Buffer dependency = VkSubpassDependency.calloc(1, stack)
                     .srcSubpass(VK_SUBPASS_EXTERNAL).dstSubpass(0)
-                    .srcStageMask(VulkanSetup.PIPELINE_STAGE_COLOR_ATTACHMENT).srcAccessMask(0)
-                    .dstStageMask(VulkanSetup.PIPELINE_STAGE_COLOR_ATTACHMENT).dstAccessMask(VulkanSetup.PIPELINE_ACCESS);
+                    .srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT).srcAccessMask(0)
+                    .dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    .dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
             VkRenderPassCreateInfo renderPassInfo = VkRenderPassCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
                     .pAttachments(attachments).pSubpasses(subpass).pDependencies(dependency);
@@ -257,8 +256,8 @@ class SwapChain {
     /** choose swap surface format */
     private static VkSurfaceFormatKHR chooseSwapSurfaceFormat(VkSurfaceFormatKHR.Buffer availableFormats) {
         return availableFormats.stream()
-                .filter(availableFormat -> availableFormat.format() == VK_FORMAT_B8G8R8_SRGB)
-                .filter(availableFormat -> availableFormat.colorSpace() == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+                .filter(availableFormat -> availableFormat.format() == VulkanSetup.SURFACE_FORMAT)
+                .filter(availableFormat -> availableFormat.colorSpace() == VulkanSetup.COLOR_SPACE)
                 .findAny()
                 .orElse(availableFormats.get(0));
     }
@@ -266,7 +265,7 @@ class SwapChain {
     /** choose swap present mode */
     private static int chooseSwapPresentMode(IntBuffer availablePresentModes) {
         for (int i = 0; i < availablePresentModes.capacity(); i++) {
-            if(availablePresentModes.get(i) == VK_PRESENT_MODE_MAILBOX_KHR)
+            if(availablePresentModes.get(i) == VulkanSetup.PRESENT_MODE)
                 return availablePresentModes.get(i);
         }
         return VK_PRESENT_MODE_FIFO_KHR;

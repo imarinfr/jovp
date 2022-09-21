@@ -382,12 +382,12 @@ public class Item {
   /**
    * Rotate the texture inside the model
    *
-   * @param texRotation Angle of rotation in degrees
+   * @param rotation Angle of rotation in degrees
    *
    * @since 0.0.1
    */
-  public void texRotation(double texRotation) {
-    texRotation(texRotation, new float[] { 0.5f, 0.5f });
+  public void texRotation(double rotation) {
+    texRotation(rotation, new float[] { 0.5f, 0.5f });
   }
 
   /**

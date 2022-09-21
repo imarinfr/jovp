@@ -69,7 +69,5 @@ void main() {
     if (envelope.x == 1) color = squareEnvelope(uv, color, envelope.yzw);
     if (envelope.x == 2) color = circleEnvelope(uv, color, envelope.yzw);
     if (envelope.x == 3) color = gaussianEnvelope(uv, color, envelope.yzw);
-    //if(color.b <= 0.01) color = vec4(1, 0, 0, 1);
-    //if(color.b >= 0.99) color = vec4(0, 1, 0, 1);
     color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
 }

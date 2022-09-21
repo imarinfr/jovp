@@ -51,8 +51,7 @@ public class VulkanManager {
     VulkanSetup.addValidationLayers();
     createInstance();
     createSurface();
-    if (validationLayers)
-      VulkanSetup.setupDebugMessenger();
+    if (validationLayers) VulkanSetup.setupDebugMessenger();
     enumerateSuitablePhysicalDevices();
     computeFieldOfView();
   }
@@ -72,8 +71,7 @@ public class VulkanManager {
     VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
     VulkanSetup.stereoView = viewMode == ViewMode.STEREO;
     VulkanSetup.swapChain = new SwapChain();
-    for (Item item : items)
-      item.createBuffers();
+    for (Item item : items) item.createBuffers();
     VulkanSetup.commandPool = new VulkanCommands(items);
     createSyncObjects();
     setPerspective();
@@ -330,8 +328,8 @@ public class VulkanManager {
   private void createSurface() {
     try (MemoryStack stack = stackPush()) {
       LongBuffer pSurface = stack.longs(VK_NULL_HANDLE);
-      int result = GLFWVulkan.glfwCreateWindowSurface(VulkanSetup.instance, VulkanSetup.window.getHandle(), null,
-          pSurface);
+      int result = GLFWVulkan.glfwCreateWindowSurface(VulkanSetup.instance, VulkanSetup.window.getHandle(),
+                                            null, pSurface);
       if (result != VK_SUCCESS)
         throw new AssertionError("Failed to create window surface: " +
             VulkanSetup.translateVulkanResult(result));

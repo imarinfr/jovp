@@ -7,8 +7,6 @@ import es.optocom.jovp.rendering.Texture;
 import es.optocom.jovp.structures.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 /**
  * Unitary tests for stereoscopic presentation
  *
@@ -32,7 +30,7 @@ public class StereoTest {
   @Test
   public void stereoTest() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500, ViewMode.STEREO);
-    psychoEngine.setWindowMonitor(0);
+    psychoEngine.getWindow().getMonitor().setPhysicalSize(535, 295);
     // psychoEngine.setFullScreen();
     psychoEngine.start();
     psychoEngine.cleanup();
@@ -41,10 +39,10 @@ public class StereoTest {
   // Psychophysics logic class
   static class Logic implements PsychoLogic {
 
-    double[] fixation = new double[] { 0, 1, 0, 1 };
+    double[] fixationColor = new double[] { 0, 1, 0, 1 };
     double[] backgroundColor = new double[] { 0.4, 0.4, 0.4, 1 };
 
-    Item stimulus1, stimulus2, stimulus3;
+    Item background, fixation, stimulus1, stimulus2, stimulus3;
     Timer timer = new Timer();
     Timer timerFps = new Timer();
     int fps = 0;
@@ -53,14 +51,12 @@ public class StereoTest {
 
     @Override
     public void init(PsychoEngine psychoEngine) {
-      Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation)); // fixation
-      item.size(1);
-      items.add(item);
-      item = new Item(new Model(ModelType.SQUARE), new Texture(backgroundColor)); // background
-      System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
-      item.size(11.2, 10);
-      item.position(0, -1, 90);
-      items.add(item);
+      background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor)); // background
+      background.position(0, 0, 90);
+      items.add(background);
+      fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
+      fixation.size(2);
+      items.add(fixation);
       stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       stimulus1.position(-3, -3);
       stimulus1.size(4.5, 4.5);
@@ -109,6 +105,8 @@ public class StereoTest {
 
     @Override
     public void update(PsychoEngine psychoEngine) {
+      double[] fov = psychoEngine.getFieldOfView();
+      background.size(fov[0], fov[1]);
       double time = timer.getElapsedTime();
       stimulus1.contrast(Math.sin(time / 1000.0) / 2 + 0.5);
       stimulus3.contrast(Math.sin(time / 200.0) / 2 + 0.5);

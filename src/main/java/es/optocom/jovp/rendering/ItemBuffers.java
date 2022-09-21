@@ -188,12 +188,12 @@ class ItemBuffers {
       LongBuffer pTextureImage = stack.mallocLong(1);
       LongBuffer pTextureImageMemory = stack.mallocLong(1);
       VulkanSetup.createImage(texture.width, texture.height, texture.mipLevels,
-          VK_SAMPLE_COUNT_1_BIT, VulkanSetup.COLOR_FORMAT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+          VK_SAMPLE_COUNT_1_BIT, VulkanSetup.SAMPLER_COLOR_FORMAT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
               VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
           pTextureImage, pTextureImageMemory);
       textureImage = pTextureImage.get(0);
       textureImageMemory = pTextureImageMemory.get(0);
-      VulkanSetup.transitionImageLayout(commandPool, textureImage, VulkanSetup.COLOR_FORMAT,
+      VulkanSetup.transitionImageLayout(commandPool, textureImage, VulkanSetup.SAMPLER_COLOR_FORMAT,
           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture.mipLevels);
       copyBufferToImage(pStagingBuffer.get(0), textureImage, texture.width, texture.height);
       generateMipmaps(VulkanSetup.logicalDevice, texture, textureImage);
@@ -201,8 +201,7 @@ class ItemBuffers {
       vkFreeMemory(VulkanSetup.logicalDevice.device, pStagingBufferMemory.get(0), null);
     }
     textureImageView = VulkanSetup.createImageView(VulkanSetup.logicalDevice.device, textureImage,
-        VulkanSetup.COLOR_FORMAT,
-        VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
+        VulkanSetup.SAMPLER_COLOR_FORMAT, VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
   }
 
   /** create texture sampler */
@@ -220,7 +219,7 @@ class ItemBuffers {
           .borderColor(VulkanSetup.SAMPLER_BORDER_COLOR)
           .unnormalizedCoordinates(false)
           .compareEnable(false)
-          .compareOp(VK_COMPARE_OP_ALWAYS)
+          .compareOp(VulkanSetup.SAMPLER_COMPARISONS)
           .mipmapMode(VulkanSetup.SAMPLER_MIPMAP_MODE)
           .minLod(0) // Optional
           .maxLod((float) texture.getMipLevels())
@@ -327,7 +326,7 @@ class ItemBuffers {
   private void generateMipmaps(LogicalDevice logicalDevice, Texture texture, long image) {
     try (MemoryStack stack = stackPush()) {
       VkFormatProperties formatProperties = VkFormatProperties.malloc(stack);
-      vkGetPhysicalDeviceFormatProperties(logicalDevice.device.getPhysicalDevice(), VulkanSetup.COLOR_FORMAT,
+      vkGetPhysicalDeviceFormatProperties(logicalDevice.device.getPhysicalDevice(), VulkanSetup.SAMPLER_COLOR_FORMAT,
           formatProperties);
       if ((formatProperties.optimalTilingFeatures() & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) == 0)
         throw new RuntimeException("Texture image format does not support linear blitting");
@@ -366,7 +365,7 @@ class ItemBuffers {
             .baseArrayLayer(0)
             .layerCount(1);
         vkCmdBlitImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit, VK_FILTER_LINEAR);
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, blit, VulkanSetup.SAMPLER_MIPMAP_FILTER);
         barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
             .newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             .srcAccessMask(VK_ACCESS_TRANSFER_READ_BIT)
@@ -452,7 +451,7 @@ class ItemBuffers {
         (float) Math.toDegrees(item.size.x) * 2 * item.frequency.x,
         (float) Math.toDegrees(item.size.y) * 2 * item.frequency.y,
         item.frequency.z, item.frequency.w);
-    Vector4f rotation = new Vector4f((float) item.texRotation, item.texPivot[0], item.texPivot[1], 0);
+    Vector4f texRotation = new Vector4f((float) item.texRotation, item.texPivot[0], item.texPivot[1], 1);
     // Post-processing: envelope and Gaussian defocus
     final Vector4f envelope = new Vector4f(0, 0, 0, 0);
     switch (item.post.envelope) {
@@ -470,7 +469,7 @@ class ItemBuffers {
           0, data);
       {
         uniformsToBuffer(data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF), settings,
-            transform, spatial, rotation, item.rgba0(), item.rgba1(),
+            transform, spatial, texRotation, item.rgba0(), item.rgba1(),
             item.contrast, envelope);
       }
       vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
@@ -479,7 +478,7 @@ class ItemBuffers {
 
   /** uniforms to buffer */
   private void uniformsToBuffer(ByteBuffer buffer, Vector4i settings, Matrix4f transform, Vector4f frequency,
-  Vector4f rotation, Vector4f rgba0, Vector4f rgba1, Vector4f contrast, Vector4f envelope) {
+  Vector4f texRotation, Vector4f rgba0, Vector4f rgba1, Vector4f contrast, Vector4f envelope) {
     final int mat4Size = 16 * Float.BYTES;
     final int vec4Size = 4 * Float.BYTES;
     settings.get(0, buffer);
@@ -488,7 +487,7 @@ class ItemBuffers {
     VulkanSetup.view.get(2 * mat4Size + vec4Size, buffer);
     VulkanSetup.projection.get(3 * mat4Size + vec4Size, buffer);
     frequency.get(4 * mat4Size + vec4Size, buffer);
-    rotation.get(4 * mat4Size + 2 * vec4Size, buffer);
+    texRotation.get(4 * mat4Size + 2 * vec4Size, buffer);
     rgba0.get(4 * mat4Size + 3 * vec4Size, buffer);
     rgba1.get(4 * mat4Size + 4 * vec4Size, buffer);
     contrast.get(4 * mat4Size + 5 * vec4Size, buffer);

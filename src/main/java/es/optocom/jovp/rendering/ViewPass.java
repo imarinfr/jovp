@@ -10,8 +10,6 @@ import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
@@ -260,11 +258,11 @@ class ViewPass {
     // Position
     VkVertexInputAttributeDescription positionDescription = attributeDescriptions.get(0);
     positionDescription.binding(0).location(0)
-        .format(VK_FORMAT_R32G32B32_SFLOAT).offset(VulkanSetup.POSITION_OFFSET);
+        .format(VulkanSetup.VERTEX_FORMAT).offset(VulkanSetup.VERTEX_OFFSET);
     // Texture coordinates
     VkVertexInputAttributeDescription texturesCoordinatesDescription = attributeDescriptions.get(1);
     texturesCoordinatesDescription.binding(0).location(1)
-        .format(VK_FORMAT_R32G32_SFLOAT).offset(VulkanSetup.TEXTURE_OFFSET);
+        .format(VulkanSetup.TEXTURE_FORMAT).offset(VulkanSetup.TEXTURE_OFFSET);
     return attributeDescriptions.rewind();
   }
 
