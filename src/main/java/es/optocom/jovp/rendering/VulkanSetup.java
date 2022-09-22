@@ -191,7 +191,7 @@ class VulkanSetup {
   static VkPhysicalDevice physicalDevice;
   static LogicalDevice logicalDevice;
   static SwapChain swapChain;
-  static commandPool;
+  static VulkanCommands vulkanCommands;
   static boolean stereoView; // whether mono or stereo mode
   static int distance; // in mm
   static float fovx; // in radians;

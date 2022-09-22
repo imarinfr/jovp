@@ -23,7 +23,7 @@ import static org.lwjgl.vulkan.VK13.*;
 class ItemBuffers {
 
   final Item item;
-  final long commandPool;
+  long commandPool;
   long vertexBuffer;
   long indexBuffer;
   long vertexBufferMemory;
@@ -36,30 +36,74 @@ class ItemBuffers {
   List<Long> uniformBuffersMemory;
   long descriptorPool;
   List<Long> descriptorSets;
+  private boolean updateModel = false;
+  private boolean updateTexture = false;
 
   /**
-   * Create Vulkan objects for an item
+   * Initialize Item Buffers
    *
-   * @param item The item to render
+   * @param item The item for which to create buffers
    *
    * @since 0.0.1
    */
   ItemBuffers(Item item) {
     this.item = item;
+  }
+
+  /**
+   * Create buffers for the model on request
+   *
+   * @since 0.0.1
+   */
+  void create() {
     commandPool = VulkanSetup.createCommandPool();
-    createModelObjects(item.model);
-    createTextureObjects(item.texture);
+    createModelObjects();
+    createTextureObjects();
     createDescriptorObjects();
   }
 
   /**
-   * Update buffers for the model on request
-   *
+   * Signal the renderer that model buffers need to be recreated
+   * but only if buffers have already been created
+   * 
    * @since 0.0.1
    */
-  void update() {
+  void signalUpdateModel() {
+    if (commandPool != 0) updateModel = true;
+  }
+
+  /**
+   * Signal the renderer that texture buffers need to be recreated
+   * but only if buffers have already been created
+   * 
+   * @since 0.0.1
+   */
+  void signalUpdateTexture() {
+    if (commandPool != 0) updateTexture = true;
+  }
+  
+  /**
+   * Recreate model buffers
+   * 
+   * @since 0.0.1
+   */
+  private void recreateModel() {
     destroyModelObjects();
-    createModelObjects(item.model);
+    createModelObjects();
+    updateModel = false;
+  }
+
+  /**
+   * Recreate texture buffers
+   * 
+   * @since 0.0.1
+   */
+  private void recreateTexture() {
+    destroyDescriptorObjects();
+    destroyTextureObjects();
+    createTextureObjects();
+    createDescriptorObjects();
+    updateTexture = false;
   }
 
   /**
@@ -74,16 +118,40 @@ class ItemBuffers {
     VulkanSetup.destroyCommandPool(commandPool);
   }
 
+  /**
+   * Render item
+   *
+   * @since 0.0.1
+   */
+  void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int eye) {
+    if(!item.shown()) return;
+    ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
+    updateUniforms(image, eye);
+    if (updateModel) recreateModel();
+    if (updateTexture) recreateTexture();
+    ItemBuffers buffer = item.buffers;
+    LongBuffer vertexBuffers = stack.longs(buffer.vertexBuffer);
+    LongBuffer offsets = stack.longs(0);
+    vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        viewPass.pipelineLayout, 0,
+        stack.longs(buffer.descriptorSets.get(image)), null);
+    vkCmdDrawIndexed(commandBuffer, item.model.length, 1,
+        0, 0, 0);
+  }
+
   /** create vertex and index buffers */
-  private void createModelObjects(Model model) {
-    createVertexBuffer(model);
-    createIndexBuffer(model);
+  private void createModelObjects() {
+    createVertexBuffer();
+    createIndexBuffer();
   }
 
   /** create texture image and sampler */
-  private void createTextureObjects(Texture texture) {
-    createTextureImage(texture);
-    createTextureSampler(texture);
+  private void createTextureObjects() {
+    createTextureImage();
+    createTextureSampler();
   }
 
   /** create uniform buffers and descriptor pool and sets */
@@ -118,9 +186,9 @@ class ItemBuffers {
   }
 
   /** create vertex buffer */
-  private void createVertexBuffer(Model model) {
+  private void createVertexBuffer() {
     try (MemoryStack stack = stackPush()) {
-      long bufferSize = (long) VulkanSetup.MODEL_SIZEOF * model.length;
+      long bufferSize = (long) VulkanSetup.MODEL_SIZEOF * item.model.length;
       LongBuffer pBuffer = stack.mallocLong(1);
       LongBuffer pBufferMemory = stack.mallocLong(1);
       VulkanSetup.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -131,7 +199,7 @@ class ItemBuffers {
       PointerBuffer data = stack.mallocPointer(1);
       vkMapMemory(VulkanSetup.logicalDevice.device, stagingBufferMemory, 0, bufferSize, 0, data);
       {
-        verticesToBuffer(model.vertices, data.getByteBuffer(0, (int) bufferSize));
+        verticesToBuffer(item.model.vertices, data.getByteBuffer(0, (int) bufferSize));
       }
       vkUnmapMemory(VulkanSetup.logicalDevice.device, stagingBufferMemory);
       VulkanSetup.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -145,9 +213,9 @@ class ItemBuffers {
   }
 
   /** create index buffer */
-  private void createIndexBuffer(Model model) {
+  private void createIndexBuffer() {
     try (MemoryStack stack = stackPush()) {
-      long bufferSize = (long) Integer.BYTES * model.length;
+      long bufferSize = (long) Integer.BYTES * item.model.length;
       LongBuffer pBuffer = stack.mallocLong(1);
       LongBuffer pBufferMemory = stack.mallocLong(1);
       VulkanSetup.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -158,7 +226,7 @@ class ItemBuffers {
       PointerBuffer data = stack.mallocPointer(1);
       vkMapMemory(VulkanSetup.logicalDevice.device, stagingBufferMemory, 0, bufferSize, 0, data);
       {
-        indicesToBuffer(model.indices, data.getByteBuffer(0, (int) bufferSize));
+        indicesToBuffer(item.model.indices, data.getByteBuffer(0, (int) bufferSize));
       }
       vkUnmapMemory(VulkanSetup.logicalDevice.device, stagingBufferMemory);
       VulkanSetup.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
@@ -172,40 +240,40 @@ class ItemBuffers {
   }
 
   /** create texture image */
-  private void createTextureImage(Texture texture) {
+  private void createTextureImage() {
     try (MemoryStack stack = stackPush()) {
       LongBuffer pStagingBuffer = stack.mallocLong(1);
       LongBuffer pStagingBufferMemory = stack.mallocLong(1);
-      VulkanSetup.createBuffer(texture.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+      VulkanSetup.createBuffer(item.texture.size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
           pStagingBuffer, pStagingBufferMemory);
       PointerBuffer data = stack.mallocPointer(1);
-      vkMapMemory(VulkanSetup.logicalDevice.device, pStagingBufferMemory.get(0), 0, texture.size, 0, data);
+      vkMapMemory(VulkanSetup.logicalDevice.device, pStagingBufferMemory.get(0), 0, item.texture.size, 0, data);
       {
-        textureToBuffer(texture.getPixels(), data.getByteBuffer(0, texture.size));
+        textureToBuffer(item.texture.getPixels(), data.getByteBuffer(0, item.texture.size));
       }
       vkUnmapMemory(VulkanSetup.logicalDevice.device, pStagingBufferMemory.get(0));
       LongBuffer pTextureImage = stack.mallocLong(1);
       LongBuffer pTextureImageMemory = stack.mallocLong(1);
-      VulkanSetup.createImage(texture.width, texture.height, texture.mipLevels,
+      VulkanSetup.createImage(item.texture.width, item.texture.height, item.texture.mipLevels,
           VK_SAMPLE_COUNT_1_BIT, VulkanSetup.SAMPLER_COLOR_FORMAT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
               VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
           pTextureImage, pTextureImageMemory);
       textureImage = pTextureImage.get(0);
       textureImageMemory = pTextureImageMemory.get(0);
       VulkanSetup.transitionImageLayout(commandPool, textureImage, VulkanSetup.SAMPLER_COLOR_FORMAT,
-          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture.mipLevels);
-      copyBufferToImage(pStagingBuffer.get(0), textureImage, texture.width, texture.height);
-      generateMipmaps(VulkanSetup.logicalDevice, texture, textureImage);
+          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, item.texture.mipLevels);
+      copyBufferToImage(pStagingBuffer.get(0), textureImage, item.texture.width, item.texture.height);
+      generateMipmaps(VulkanSetup.logicalDevice, item.texture, textureImage);
       vkDestroyBuffer(VulkanSetup.logicalDevice.device, pStagingBuffer.get(0), null);
       vkFreeMemory(VulkanSetup.logicalDevice.device, pStagingBufferMemory.get(0), null);
     }
     textureImageView = VulkanSetup.createImageView(VulkanSetup.logicalDevice.device, textureImage,
-        VulkanSetup.SAMPLER_COLOR_FORMAT, VK_IMAGE_ASPECT_COLOR_BIT, texture.mipLevels);
+        VulkanSetup.SAMPLER_COLOR_FORMAT, VK_IMAGE_ASPECT_COLOR_BIT, item.texture.mipLevels);
   }
 
   /** create texture sampler */
-  private void createTextureSampler(Texture texture) {
+  private void createTextureSampler() {
     try (MemoryStack stack = stackPush()) {
       VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.calloc(stack)
           .sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
@@ -222,7 +290,7 @@ class ItemBuffers {
           .compareOp(VulkanSetup.SAMPLER_COMPARISONS)
           .mipmapMode(VulkanSetup.SAMPLER_MIPMAP_MODE)
           .minLod(0) // Optional
-          .maxLod((float) texture.getMipLevels())
+          .maxLod((float) item.texture.getMipLevels())
           .mipLodBias(0); // Optional
       LongBuffer pTextureSampler = stack.mallocLong(1);
       int result = vkCreateSampler(VulkanSetup.logicalDevice.device,

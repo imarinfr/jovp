@@ -87,8 +87,7 @@ public class Items implements Iterable<Item> {
    * @since 0.0.1
    */
   public void destroy() {
-    for (Item item : items)
-      item.destroy();
+    for (Item item : items) item.destroy();
     items = new ArrayList<>();
   }
 

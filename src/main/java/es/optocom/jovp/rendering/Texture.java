@@ -71,6 +71,18 @@ public class Texture {
   }
 
   /**
+   * Creates a default sine spatial pattern
+   *
+   * @param rgba0 Vector of 4 values with the R, G, B, and alpha channels
+   * @param rgba1 Vector of 4 values with the R, G, B, and alpha channels
+   *
+   * @since 0.0.1
+   */
+  public Texture(double[] rgba0, double[] rgba1) {
+    this(TextureType.SINE, rgba0, rgba1);
+  }
+
+  /**
    * Creates spatial patterns: checkerboard, sine, square sine, and 1st, 2nd, and
    * 3rd Gaussian derivatives
    *

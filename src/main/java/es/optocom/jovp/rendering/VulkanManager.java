@@ -71,8 +71,8 @@ public class VulkanManager {
     VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
     VulkanSetup.stereoView = viewMode == ViewMode.STEREO;
     VulkanSetup.swapChain = new SwapChain();
-    for (Item item : items) item.createBuffers();
-    VulkanSetup.commandPool = new VulkanCommands(items);
+    for (Item item : items) item.buffers.create();
+    VulkanSetup.vulkanCommands = new VulkanCommands(items);
     createSyncObjects();
     setPerspective();
   }
@@ -100,7 +100,7 @@ public class VulkanManager {
         vkWaitForFences(VulkanSetup.logicalDevice.device, imagesInFlight.get(imageIndex).fence(), true,
             VulkanSetup.UINT64_MAX);
       vkDeviceWaitIdle(VulkanSetup.logicalDevice.device);
-      VulkanSetup.commandPool.renderPass(imageIndex);
+      VulkanSetup.vulkanCommands.renderPass(imageIndex);
       imagesInFlight.put(imageIndex, thisFrame);
       VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack)
           .sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
@@ -108,7 +108,7 @@ public class VulkanManager {
           .pWaitSemaphores(thisFrame.pImageAvailableSemaphore())
           .pWaitDstStageMask(stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
           .pSignalSemaphores(thisFrame.pRenderFinishedSemaphore())
-          .pCommandBuffers(stack.pointers(VulkanSetup.commandPool.commandBuffers.get(imageIndex)));
+          .pCommandBuffers(stack.pointers(VulkanSetup.vulkanCommands.commandBuffers.get(imageIndex)));
       vkResetFences(VulkanSetup.logicalDevice.device, thisFrame.pFence());
       result = vkQueueSubmit(VulkanSetup.logicalDevice.graphicsQueue, submitInfo, thisFrame.fence());
       if (result != VK_SUCCESS) {
@@ -141,7 +141,7 @@ public class VulkanManager {
   public void cleanup() {
     if (VulkanSetup.logicalDevice != null) {
       destroySyncObjects();
-      VulkanSetup.commandPool.destroy();
+      VulkanSetup.vulkanCommands.destroy();
       VulkanSetup.swapChain.destroy();
       items.destroy();
       VulkanSetup.logicalDevice.destroy();

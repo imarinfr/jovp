@@ -34,6 +34,8 @@ public class Model {
 
   private static final int VERTICES_CIRCLE = 500; // For circles and annulus: MUST BE EVEN!!!
   private static final String OPTOTYPE_OBJECT = "es/optocom/jovp/models/Sloan.obj"; // Optotypes object file
+  private static final float DEFAULT_HOLLOW_RATIO = 0.5f;
+  private static final Optotype DEFAULT_OPTOTYPE = Optotype.E;
 
   ModelType type;
   int length;
@@ -67,6 +69,8 @@ public class Model {
       case CROSS -> cross();
       case MALTESE -> maltese();
       case CIRCLE -> circle();
+      case ANNULUS -> annulus(DEFAULT_HOLLOW_RATIO);
+      case OPTOTYPE -> optotype(DEFAULT_OPTOTYPE);
       default -> throw new IllegalStateException("Invalid model type: " + type);
     }
     length = indices.length;

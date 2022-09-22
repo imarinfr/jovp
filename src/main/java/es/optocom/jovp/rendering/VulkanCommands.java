@@ -6,7 +6,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;
 import org.lwjgl.vulkan.*;
 
-import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +20,9 @@ import static org.lwjgl.vulkan.VK13.*;
  */
 class VulkanCommands {
 
-  final Items items;
   final long commandPool;
   List<VkCommandBuffer> commandBuffers;
+  final Items items;
 
   /**
    * Creates the command pool and buffers
@@ -45,7 +44,7 @@ class VulkanCommands {
   }
 
   /** do a render pass */
-  void renderPass(int imageIndex) {
+  void renderPass(int image) {
     try (MemoryStack stack = stackPush()) {
       VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack)
           .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
@@ -59,44 +58,24 @@ class VulkanCommands {
       clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
       clearValues.get(1).depthStencil().set(1.0f, 0);
       renderPassInfo.pClearValues(clearValues);
-      VkCommandBuffer commandBuffer = commandBuffers.get(imageIndex);
+      VkCommandBuffer commandBuffer = commandBuffers.get(image);
       int result = vkBeginCommandBuffer(commandBuffer, beginInfo);
       if (result != VK_SUCCESS)
         throw new AssertionError("Failed to begin recording command buffers: " +
             VulkanSetup.translateVulkanResult(result));
-      renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(imageIndex));
+      renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(image));
       vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
         // For monocular view there is only 1 view pass, for binocular 0 is left eye, 1
         // is right eye
         for (int eye = 0; eye < VulkanSetup.swapChain.viewPasses.size(); eye++) {
-          ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
-          vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
-          for (Item item : items)
-            if (item.shown()) { // Check if item is to be shown
-              item.buffers.updateUniforms(imageIndex, eye);
-              ItemBuffers buffer = item.buffers;
-              if (item.update) {
-                buffer.update();
-                item.update = false;
-              }
-              LongBuffer vertexBuffers = stack.longs(buffer.vertexBuffer);
-              LongBuffer offsets = stack.longs(0);
-              vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
-              vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-              vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                  viewPass.pipelineLayout, 0,
-                  stack.longs(buffer.descriptorSets.get(imageIndex)), null);
-              vkCmdDrawIndexed(commandBuffer, item.model.length, 1,
-                  0, 0, 0);
-            }
+          for (Item item : items) item.buffers.render(stack, commandBuffer, image, eye);
         }
       }
       vkCmdEndRenderPass(commandBuffer);
       result = vkEndCommandBuffer(commandBuffer);
       if (result != VK_SUCCESS)
-        throw new AssertionError("Failed to record command buffer: " +
-            VulkanSetup.translateVulkanResult(result));
+        throw new AssertionError("Failed to record command buffer: " + VulkanSetup.translateVulkanResult(result));
     }
   }
 

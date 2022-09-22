@@ -90,6 +90,7 @@ public class Text extends Item {
         }
         createFontTexture(rgba);
         model = new Model();
+        buffers = new ItemBuffers(this);
     }
 
     /**
@@ -131,7 +132,7 @@ public class Text extends Item {
         model.setVertices(vertices);
         model.setIndices(indices);
         size(FONT_SIZE * width / 2 * height, height, 1);
-        update = true;
+        update(model);
     }
 
     /**

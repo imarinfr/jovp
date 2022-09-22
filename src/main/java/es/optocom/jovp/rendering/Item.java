@@ -26,7 +26,6 @@ public class Item {
   float[] texPivot;
   final Post post;
   ItemBuffers buffers;
-  boolean update = false; // Only for text
   private boolean show = true;
 
   /**
@@ -41,10 +40,11 @@ public class Item {
     this();
     this.model = model;
     this.texture = texture;
+    buffers = new ItemBuffers(this);
   }
 
   /**
-   * Init an item, used for use with Text
+   * Init an item, used for use with Text. CARE: only for Text
    *
    * @since 0.0.1
    */
@@ -52,8 +52,46 @@ public class Item {
     eye = Eye.BOTH;
     position = new Vector3d(0, 0, VulkanSetup.Z_FAR / 2);
     defaults();
-    buffers = null;
     post = new Post();
+  }
+
+    /**
+   * Recreate buffers
+   * 
+   * @param model The new model
+   * @param texture The new texture
+   *
+   * @since 0.0.1
+   */
+  public void update(Model model, Texture texture) {
+    this.model = model;
+    this.texture = texture;
+    buffers.signalUpdateModel();
+    buffers.signalUpdateTexture();
+  }
+
+  /**
+   * Recreate buffers
+   * 
+   * @param model The new model
+   *
+   * @since 0.0.1
+   */
+  public void update(Model model) {
+    this.model = model;
+    buffers.signalUpdateModel();
+  }
+
+  /**
+   * Recreate buffers
+   * 
+   * @param texture The new texture
+   *
+   * @since 0.0.1
+   */
+  public void update(Texture texture) {
+    this.texture = texture;
+    buffers.signalUpdateTexture();
   }
 
   /**
@@ -319,22 +357,14 @@ public class Item {
    * @since 0.0.1
    */
   public void contrast(float r, float g, float b, float a) {
-    if (r < 0)
-      r = 0;
-    if (r > 1)
-      r = 1;
-    if (g < 0)
-      g = 0;
-    if (g > 1)
-      g = 1;
-    if (b < 0)
-      b = 0;
-    if (b > 1)
-      b = 1;
-    if (a < 0)
-      a = 0;
-    if (a > 1)
-      a = 1;
+    if (r < 0) r = 0;
+    if (r > 1) r = 1;
+    if (g < 0) g = 0;
+    if (g > 1) g = 1;
+    if (b < 0) b = 0;
+    if (b > 1) b = 1;
+    if (a < 0) a = 0;
+    if (a > 1) a = 1;
     contrast.x = r;
     contrast.y = g;
     contrast.z = b;
@@ -520,11 +550,6 @@ public class Item {
    */
   public void removeDefocus() {
     post.removeDefocus();
-  }
-
-  /** create buffers */
-  void createBuffers() {
-    buffers = new ItemBuffers(this);
   }
 
   /** defaults */
