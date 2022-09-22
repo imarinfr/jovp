@@ -330,7 +330,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public void setView() { // TODO
+  public void setView() { // TODO: set view
     Vector3f eye = new Vector3f(0.0f, 0.0f, 0.0f);
     Vector3f center = new Vector3f(0.0f, 0.0f, 1.0f);
     Vector3f up = new Vector3f(0.0f, -1f, 0.0f);

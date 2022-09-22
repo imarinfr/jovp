@@ -73,7 +73,7 @@ class VulkanCommands {
           ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
           vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
           for (Item item : items)
-            if (item.show) { // Check if item is to be shown
+            if (item.shown()) { // Check if item is to be shown
               item.buffers.updateUniforms(imageIndex, eye);
               ItemBuffers buffer = item.buffers;
               if (item.update) {
@@ -116,8 +116,7 @@ class VulkanCommands {
       for (int i = 0; i < size; i++)
         commandBuffers.add(new VkCommandBuffer(pCommandBuffers.get(i), VulkanSetup.logicalDevice.device));
     }
-    for (int image = 0; image < size; image++)
-      renderPass(image);
+    for (int image = 0; image < size; image++) renderPass(image);
   }
 
   /** list to pointer buffer */

@@ -45,6 +45,7 @@ public class Items implements Iterable<Item> {
    */
   public void remove(Item item) {
     items.remove(item);
+    item.destroy();
   }
 
   /**

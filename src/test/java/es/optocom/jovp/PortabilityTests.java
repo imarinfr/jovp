@@ -25,7 +25,7 @@ public class PortabilityTests {
    */
   @Test
   public void portabilityDesktop() {
-    // TODO
+    // TODO portabilityDesktop testing
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.cleanup();
   }
@@ -37,7 +37,7 @@ public class PortabilityTests {
    */
   @Test
   public void portabilityMacOS() {
-    // TODO
+    // TODO portabilityMacOS testing
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.cleanup();
   }
@@ -48,7 +48,7 @@ public class PortabilityTests {
    */
   @Test
   public void portabilityIOS() {
-    // TODO
+    // TODO portabilityIOS testing
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.cleanup();
   }
@@ -60,7 +60,7 @@ public class PortabilityTests {
    */
   @Test
   public void portabilityMinimumVulkan() {
-    // TODO
+    // TODO portabilityMinimumVulkan testing
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.cleanup();
   }
@@ -72,7 +72,7 @@ public class PortabilityTests {
    */
   @Test
   public void specMinimumVulkan() {
-    // TODO
+    // TODO specMinimumVulkan testing
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.cleanup();
   }

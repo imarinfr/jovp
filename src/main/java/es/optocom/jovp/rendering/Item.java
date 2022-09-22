@@ -27,7 +27,7 @@ public class Item {
   final Post post;
   ItemBuffers buffers;
   boolean update = false; // Only for text
-  boolean show = true;
+  private boolean show = true;
 
   /**
    * Create an item for psychophysics experience
@@ -83,6 +83,17 @@ public class Item {
    */
   public void hide() {
     show = false;
+  }
+
+  /**
+   * Is item shown?
+   * 
+   * @return Whether iter is shown
+   *
+   * @since 0.0.1
+   */
+  public boolean shown() {
+    return show;
   }
 
   /**

@@ -437,7 +437,7 @@ class ItemBuffers {
     Vector3f position = new Vector3f((float) (item.position.z * Math.tan(item.position.x)),
         (float) (item.position.z * Math.tan(item.position.y)), (float) item.position.z);
     if (VulkanSetup.stereoView) {
-      // TODO
+      // TODO: processing during stereo view when there are optical distorsions
     }
     Vector3f size = new Vector3f((float) (item.position.z * Math.tan(item.size.x)),
         (float) (item.position.z * Math.tan(item.size.y)), (float) item.size.z);

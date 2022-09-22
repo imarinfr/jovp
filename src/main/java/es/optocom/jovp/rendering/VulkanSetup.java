@@ -191,13 +191,13 @@ class VulkanSetup {
   static VkPhysicalDevice physicalDevice;
   static LogicalDevice logicalDevice;
   static SwapChain swapChain;
-  static VulkanCommands commandPool;
+  static commandPool;
   static boolean stereoView; // whether mono or stereo mode
   static int distance; // in mm
   static float fovx; // in radians;
   static float fovy; // in radians;
-  float separation = 0.08f; // TODO
-  float focalLength = 0.5f; // TODO
+  float separation = 0.08f; // TODO: separation for stereoscoping viewing
+  float focalLength = 0.5f; // TODO: focal length to set up optical distorsions
   static final Matrix4f projection = new Matrix4f();
   static final Matrix4f view = new Matrix4f();
   static final Matrix4f lens = new Matrix4f();
@@ -412,9 +412,9 @@ class VulkanSetup {
       VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_validation");
       VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_synchronization2");
       if (System.getenv("VK_DEVSIM_FILENAME") != null)
-        VALIDATION_LAYERS.add("VK_LAYER_LUNARG_device_simulation"); // TODO
+        VALIDATION_LAYERS.add("VK_LAYER_LUNARG_device_simulation"); // TODO: add device simulation
       if (System.getenv("VP_DEFAULT") != null)
-        VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_profiles"); // TODO
+        VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_profiles"); // TODO: add profiles
       if (apiDump)
         VALIDATION_LAYERS.add("VK_LAYER_LUNARG_api_dump");
     } else
