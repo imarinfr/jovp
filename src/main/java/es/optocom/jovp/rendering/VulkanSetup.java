@@ -160,7 +160,13 @@ class VulkanSetup {
   static final boolean STENCIL_TEST_ENABLE = false;
   static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                       VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-  static final boolean BLEND_ENABLE = false;
+  static final boolean BLEND_ENABLE = true;
+  static final int BLEND_COLOR_SOURCE_FACTOR = VK_BLEND_FACTOR_SRC_ALPHA;
+  static final int BLEND_COLOR_DESTINATION_FACTOR = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  static final int BLEND_COLOR_OPERATION = VK_BLEND_OP_ADD;
+  static final int BLEND_ALPHA_SOURCE_FACTOR = VK_BLEND_FACTOR_ONE;
+  static final int BLEND_ALPHA_DESTINATION_FACTOR = VK_BLEND_FACTOR_ZERO;
+  static final int BLEND_ALPHA_OPERATION = VK_BLEND_OP_ADD;
   static final boolean LOGIC_OPERATION_ENABLE = false;
   static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
   static final float BLEND_CONSTANTS_X = 0.0f;

@@ -428,20 +428,16 @@ class ItemBuffers {
     final Vector4i settings = new Vector4i(0, 0, 0, 0);
     // Type of texture
     switch (item.getTexture().type) {
-      case FLAT -> settings.x = 0;
-      case TEXT -> settings.x = 2;
-      case IMAGE -> settings.x = 3;
-      default -> settings.x = 1;
+      case TEXT, IMAGE -> settings.x = 0;
+      case FLAT -> settings.x = 1;
+      default -> settings.x = 2;
     }
     final Matrix4f transform = new Matrix4f();
     // Convert from degrees of visual angle to distances
     Vector3f position = new Vector3f((float) (item.position.z * Math.tan(item.position.x)),
         (float) (item.position.z * Math.tan(item.position.y)), (float) item.position.z);
     if (VulkanSetup.stereoView) {
-      if (eye == 0)
-        position.x = position.x + 0.2f; // left eye
-      if (eye == 1)
-        position.x = position.x - 0.2f; // right eye
+      // TODO
     }
     Vector3f size = new Vector3f((float) (item.position.z * Math.tan(item.size.x)),
         (float) (item.position.z * Math.tan(item.size.y)), (float) item.size.z);
@@ -510,13 +506,9 @@ class ItemBuffers {
     try (MemoryStack stack = stackPush()) {
       VkCommandBuffer commandBuffer = VulkanSetup.beginCommand(commandPool);
       VkBufferImageCopy.Buffer region = VkBufferImageCopy.calloc(1, stack);
-      region.bufferOffset(0)
-          .bufferRowLength(0)
-          .bufferImageHeight(0);
+      region.bufferOffset(0).bufferRowLength(0).bufferImageHeight(0);
       region.imageSubresource().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-          .mipLevel(0)
-          .baseArrayLayer(0)
-          .layerCount(1);
+          .mipLevel(0).baseArrayLayer(0).layerCount(1);
       region.imageOffset().set(0, 0, 0);
       region.imageExtent(VkExtent3D.calloc(stack).set(width, height, 1));
       vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region);

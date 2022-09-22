@@ -75,18 +75,6 @@ class ViewPass {
   long graphicsPipeline;
 
   /**
-   * Creates a single view pass for monocular view
-   *
-   * @param renderPass Render pass handle
-   * @param extent     Port view extent
-   *
-   * @since 0.0.1
-   */
-  ViewPass(long renderPass, VkExtent2D extent) {
-    this(renderPass, 0, extent);
-  }
-
-  /**
    * Creates a single view pass for monocular or stereoscopic view
    *
    * @param renderPass Render pass handle
@@ -162,8 +150,13 @@ class ViewPass {
           .stencilTestEnable(VulkanSetup.STENCIL_TEST_ENABLE);
       // Color blending
       VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState
-          .calloc(1, stack)
-          .colorWriteMask(VulkanSetup.COLOR_WRITE_MASK).blendEnable(VulkanSetup.BLEND_ENABLE);
+          .calloc(1, stack).colorWriteMask(VulkanSetup.COLOR_WRITE_MASK).blendEnable(VulkanSetup.BLEND_ENABLE)
+          .srcColorBlendFactor(VulkanSetup.BLEND_COLOR_SOURCE_FACTOR)
+          .dstColorBlendFactor(VulkanSetup.BLEND_COLOR_DESTINATION_FACTOR)
+          .colorBlendOp(VulkanSetup.BLEND_COLOR_OPERATION)
+          .srcAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_SOURCE_FACTOR)
+          .dstAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_DESTINATION_FACTOR)
+          .alphaBlendOp(VulkanSetup.BLEND_ALPHA_OPERATION);
       VkPipelineColorBlendStateCreateInfo colorBlending = VkPipelineColorBlendStateCreateInfo.calloc(stack)
           .sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
           .logicOpEnable(VulkanSetup.LOGIC_OPERATION_ENABLE).logicOp(VulkanSetup.LOGIC_OPERATION)

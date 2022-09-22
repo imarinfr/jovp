@@ -40,7 +40,7 @@ public class StereoTest {
   static class Logic implements PsychoLogic {
 
     double[] fixationColor = new double[] { 0, 1, 0, 1 };
-    double[] backgroundColor = new double[] { 0.4, 0.4, 0.4, 1 };
+    double[] backgroundColor = new double[] { 0, 0, 1, 1 };
 
     Item background, fixation, stimulus1, stimulus2, stimulus3;
     Timer timer = new Timer();
@@ -82,15 +82,15 @@ public class StereoTest {
       Text title = new Text();
       title.setText("Stereoscopic view");
       title.eye(Eye.LEFT);
-      title.size(0.5);
+      title.size(0.75);
       title.position(-5, 5);
       items.add(title);
       // Add text to show FPS
       text = new Text();
       text.setText("Refresh rate:");
       text.eye(Eye.LEFT);
-      text.size(0.4);
-      text.position(-5, 4.5);
+      text.size(0.6);
+      text.position(-5, 4);
       items.add(text);
       // Start timer
       timer.start();

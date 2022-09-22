@@ -79,17 +79,15 @@ class SwapChain {
     /** set swap chain for monocular view */
     private void monoSwapChain() {
         viewPasses = new ArrayList<>(1);
-        viewPasses.add(new ViewPass(renderPass, extent));
+        viewPasses.add(new ViewPass(renderPass, 0, extent));
     }
 
     /** set swap chain for stereoscopic view */
     private void stereoSwapChain() {
-        IntBuffer width = stackGet().ints(0);
-        width.put(extent.width() / 2);
-        VkExtent2D viewExtent = VkExtent2D.malloc().set(width.get(0), extent.height());
+        VkExtent2D halfExtent = VkExtent2D.malloc().set(extent.width() / 2, extent.height());
         viewPasses = new ArrayList<>(2);
-        viewPasses.add(new ViewPass(renderPass, viewExtent));
-        //viewPasses.add(new ViewPass(renderPass, width.get(0), viewExtent));
+        viewPasses.add(new ViewPass(renderPass, 0, halfExtent));
+        viewPasses.add(new ViewPass(renderPass, extent.width() / 2 + 1, halfExtent));
     }
 
     /** create swap chain */

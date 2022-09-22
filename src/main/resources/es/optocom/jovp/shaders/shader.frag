@@ -61,13 +61,12 @@ vec4 circleEnvelope(vec2 uv, vec4 color, vec3 params) {
 
 void main() {
     color = texture(texSampler, rotate(spatial(uv, frequency), rotation.xyw));
-    if (settings.x == 0) color = rgba1; // flat color
-    if (settings.x == 1) color = rgba0 + color * (rgba1 - rgba0); // contrast
-    if (settings.x == 2) color = rgba1 * color; // text
-    if (settings.x == 3) color = color; // image
+    // for images or text do nothing
+    if (settings.x == 1) color = rgba1; // flat, image, or text color
+    if (settings.x == 2) color = rgba0 + color * (rgba1 - rgba0); // contrast
     // Post-processing: envelope?
     if (envelope.x == 1) color = squareEnvelope(uv, color, envelope.yzw);
     if (envelope.x == 2) color = circleEnvelope(uv, color, envelope.yzw);
     if (envelope.x == 3) color = gaussianEnvelope(uv, color, envelope.yzw);
-    color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
+    //color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
 }
