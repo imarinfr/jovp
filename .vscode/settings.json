@@ -5,5 +5,13 @@
   "java.dependency.packagePresentation": "hierarchical",
   "java.test.config": {
     "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"]
+  },
+  "glsl-linter.validatorPath": "/usr/local/bin/glslangValidator",
+  "glsl-linter.fileExtensions": {
+    ".fs.glsl": "frag",
+    ".vs.glsl": "vert",
+    ".tes.glsl": "tese",
+    ".tcs.glsl": "tesc",
+    ".gs.glsl": "geom"
   }
 }
