@@ -141,11 +141,19 @@ public class VulkanManagerTest {
     Item background, item1, item2;
     ModelType[] models = {ModelType.CIRCLE, ModelType.SQUARE, ModelType.TRIANGLE, ModelType.ANNULUS, ModelType.OPTOTYPE};
     TextureType[] textures = {TextureType.CHECKERBOARD, TextureType.SINE, TextureType.G1, TextureType.G2, TextureType.G3};
+    double[] backgroundColor = new double[] {0.5, 0.5, 0.5, 1};
     double[] color0 = new double[] {1, 1, 1, 1};
     double[] color1 = new double[] {0, 0, 0.5, 1};
 
     @Override
     public void init(PsychoEngine psychoEngine) {
+      // Background
+      background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
+      background.position(0,0, 100);
+      double[] fov = psychoEngine.getFieldOfView();
+      background.size(fov[0],fov[1]);
+      items.add(background);
+      // Title
       Text title = new Text();
       title.setText("Blinking items");
       title.size(1.5);
@@ -156,11 +164,8 @@ public class VulkanManagerTest {
       text.setText("Refresh rate:");
       text.size(0.75);
       text.position(-15, 7);
-      background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0.25, 0.25, 0.25, 1}));
-      background.position(0,0, 100);
-      double[] fov = psychoEngine.getFieldOfView();
-      background.size(fov[0],fov[1]);
-      items.add(background);
+      items.add(text);
+      // Items
       item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
       item1.position(0, 0, 90);
       item1.size(10, 10);
