@@ -100,16 +100,8 @@ public class PsychoEngineTest {
     Timer timer = new Timer();
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(timer), 500);
     new Thread(() -> {
-      double time = 0;
-      while (time == 0) { // wait for the beginning of the psychophysics experience
-        time = timer.getStartTime();
-        Thread.onSpinWait();
-      }
-      time = 0;
-      while (time < 2000) { // close window after 1 second
-        time = timer.getElapsedTime();
-        Thread.onSpinWait();
-      }
+      while (timer.getElapsedTime() == -1) Thread.onSpinWait(); // wait for the beginning of the psychophysics experience
+      while (timer.getElapsedTime() < 1000) Thread.onSpinWait(); // close window after 1 second
       psychoEngine.finish();
     }).start();
     psychoEngine.start();

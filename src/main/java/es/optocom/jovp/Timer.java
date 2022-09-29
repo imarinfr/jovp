@@ -8,7 +8,7 @@ package es.optocom.jovp;
 public class Timer {
 
   private final double creationTime;
-  private double startTime;
+  private double startTime = -1;
 
   /**
    * Create timer
@@ -20,7 +20,7 @@ public class Timer {
   }
 
   /**
-   * Initialize timer
+   * Start timer
    *
    * @since 0.0.1
    */
@@ -29,25 +29,12 @@ public class Timer {
   }
 
   /**
-   * Get start time
-   *
-   * @return Time start time in ms
+   * Stop timer
    *
    * @since 0.0.1
    */
-  public long getStartTime() {
-    return Math.round(getStartNanoTime() / 1e6);
-  }
-
-  /**
-   * Get start time
-   *
-   * @return Time start time in nano-seconds
-   *
-   * @since 0.0.1
-   */
-  public double getStartNanoTime() {
-    return startTime;
+  public void stop() {
+    startTime = -1;
   }
 
   /**
@@ -69,6 +56,7 @@ public class Timer {
    * @since 0.0.1
    */
   public double getElapsedNanoTime() {
+    if (startTime == -1) return 0;
     return getTime() - startTime;
   }
 
