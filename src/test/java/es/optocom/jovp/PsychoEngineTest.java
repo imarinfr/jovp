@@ -38,8 +38,6 @@ public class PsychoEngineTest {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
     Window window = psychoEngine.getWindow();
     Monitor monitor = window.getMonitor();
-    System.out.println(psychoEngine);
-    System.out.println(window.getMonitorManager());
     // Check distance was set correctly
     assertEquals(psychoEngine.getDistance(), 500);
     psychoEngine.setDistance(300);
@@ -50,7 +48,7 @@ public class PsychoEngineTest {
     double alpha = 90; // field of view
     monitor.setPhysicalSize(monitorWidthMM, monitorHeightMM);
     psychoEngine.setSize(monitor.getWidth(), monitor.getHeight());
-    psychoEngine.setDistance(monitorWidthMM / (2 * Math.atan(Math.PI / 180.0 * alpha / 2.0)));
+    psychoEngine.setDistance(monitorWidthMM / (2 * Math.tan(Math.PI / 180.0 * alpha / 2.0)));
     double[] fov = psychoEngine.getFieldOfView();
     assertEquals(90, Math.round(1e3 * fov[0]) / 1e3);
     assertEquals(ViewMode.MONO, psychoEngine.getViewMode());

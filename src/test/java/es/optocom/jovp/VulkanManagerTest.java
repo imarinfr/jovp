@@ -12,6 +12,7 @@ import es.optocom.jovp.structures.TextureType;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -68,7 +69,9 @@ public class VulkanManagerTest {
   @Test
   public void showTriangle() {
     PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 1000);
+    System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     psychoEngine.setPhysicalSize(621, 341);
+    System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     psychoEngine.start();
     psychoEngine.cleanup();
   }
@@ -120,6 +123,7 @@ public class VulkanManagerTest {
 
     @Override
     public void update(PsychoEngine psychoEngine) {
+      System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     }
 
   }

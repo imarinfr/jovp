@@ -195,8 +195,8 @@ public class VulkanManager {
     double width = VulkanSetup.window.getPixelWidth() * VulkanSetup.window.getWidth();
     double height = VulkanSetup.window.getPixelHeight() * VulkanSetup.window.getHeight();
     if (VulkanSetup.stereoView) width = width / 2; // only half of the screen is used per eye
-    VulkanSetup.fovx = 2 * Math.tan((width / 2.0) / VulkanSetup.distance);
-    VulkanSetup.fovy = 2 * Math.tan((height / 2.0) / VulkanSetup.distance);
+    VulkanSetup.fovx = 2 * Math.atan((width / 2.0) / VulkanSetup.distance);
+    VulkanSetup.fovy = 2 * Math.atan((height / 2.0) / VulkanSetup.distance);
   }
 
   /**
