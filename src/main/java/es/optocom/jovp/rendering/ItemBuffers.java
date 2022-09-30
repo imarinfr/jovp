@@ -125,7 +125,8 @@ class ItemBuffers {
    * @since 0.0.1
    */
   void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int eye) {
-    if(!item.show() || (item.eye == Eye.LEFT && eye == 1) | (item.eye == Eye.RIGHT && eye == 0))
+    if (!item.show() || VulkanSetup.stereoView &&
+        ((item.eye == Eye.LEFT && eye == 1) || (item.eye == Eye.RIGHT && eye == 0)))
       return;
     ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
