@@ -181,24 +181,6 @@ public class PsychoEngine {
     }
   }
 
-  /**
-   * Show the psychoEngine window
-   *
-   * @since 0.0.1
-   */
-  public void show() {
-    window.show();
-  }
-
-  /**
-   * Hide the psychoEngine window
-   *
-   * @since 0.0.1
-   */
-  public void hide() {
-    window.hide();
-  }
-
   /** Initializes the window, controller, timer, and other running parameters */
   private void init() {
     psychoLogic.init(this);
@@ -226,6 +208,17 @@ public class PsychoEngine {
     Objects.requireNonNull(glfwSetErrorCallback(null)).free();
   }
 
+  /**
+   * Show the psychoEngine window
+   * 
+   * @param show whether to show the window
+   *
+   * @since 0.0.1
+   */
+  public void show(boolean show) {
+    window.show(show);
+  }
+ 
   /**
    * Get window
    *
@@ -277,7 +270,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public void setDistance(int distance) {
+  public void setDistance(double distance) {
     vulkanManager.setDistance(distance);
   }
 
@@ -288,7 +281,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public int getDistance() {
+  public double getDistance() {
     return vulkanManager.getDistance();
   }
 

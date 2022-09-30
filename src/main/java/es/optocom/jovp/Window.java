@@ -46,22 +46,14 @@ public class Window {
   /**
    * Shows the window
    *
+   * @param show whether to show the window
+   * 
    * @since 0.0.1
    */
-  public void show() {
-    show = true;
-    glfwShowWindow(window);
-    update();
-  }
-
-  /**
-   * Hide window
-   *
-   * @since 0.0.1
-   */
-  public void hide() {
-    show = false;
-    glfwHideWindow(window);
+  public void show(boolean show) {
+    this.show = show;
+    if (show) glfwShowWindow(window);
+    else glfwHideWindow(window);
     update();
   }
 
@@ -187,18 +179,7 @@ public class Window {
    * @since 0.0.1
    */
   public int getWidth() {
-    return width;
-  }
-
-  /**
-   * Get scaled width
-   *
-   * @return The window width in screen coordinates
-   *
-   * @since 0.0.1
-   */
-  public float getScaledWidth() {
-    return xscale * width;
+    return (int) (xscale * width);
   }
 
   /**
@@ -209,18 +190,7 @@ public class Window {
    * @since 0.0.1
    */
   public int getHeight() {
-    return height;
-  }
-
-  /**
-   * Get scaled height
-   *
-   * @return The window height in screen coordinates
-   *
-   * @since 0.0.1
-   */
-  public float getScaledHeight() {
-    return yscale * height;
+    return (int) (yscale * height);
   }
 
   /**
@@ -241,7 +211,7 @@ public class Window {
    *
    * @since 0.0.1
    */
-  public float getPixelAspect() {
+  public double getPixelAspect() {
     return monitor.getPixelAspect();
   }
 

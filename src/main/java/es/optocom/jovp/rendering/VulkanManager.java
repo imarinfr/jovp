@@ -149,6 +149,7 @@ public class VulkanManager {
       VulkanSetup.logicalDevice = null;
     }
     destroyInstance();
+    VulkanSetup.cleanup();
   }
 
   /**
@@ -158,7 +159,7 @@ public class VulkanManager {
    *
    * @since 0.0.1
    */
-  public void setDistance(int distance) {
+  public void setDistance(double distance) {
     VulkanSetup.distance = distance;
     computeFieldOfView();
   }
@@ -170,7 +171,7 @@ public class VulkanManager {
    *
    * @since 0.0.1
    */
-  public int getDistance() {
+  public double getDistance() {
     return VulkanSetup.distance;
   }
 
@@ -191,17 +192,11 @@ public class VulkanManager {
    * @since 0.0.1
    */
   public void computeFieldOfView() {
-    double xHalfSize = VulkanSetup.window.getPixelWidth() * VulkanSetup.window.getScaledWidth() / 2
-        / VulkanSetup.distance;
-    double yHalfSize = VulkanSetup.window.getPixelHeight() * VulkanSetup.window.getScaledHeight() / 2
-        / VulkanSetup.distance;
-    if (VulkanSetup.stereoView) {
-      xHalfSize = xHalfSize / 2;
-      if (VulkanSetup.window.getPixelWidth() % 2 == 1) // if number of pixels odd, then correct
-        xHalfSize = (VulkanSetup.window.getPixelWidth() - 1) / VulkanSetup.window.getPixelWidth() * xHalfSize;
-    }
-    VulkanSetup.fovx = (float) (2 * Math.atan(xHalfSize));
-    VulkanSetup.fovy = (float) (2 * Math.atan(yHalfSize));
+    double width = VulkanSetup.window.getPixelWidth() * VulkanSetup.window.getWidth();
+    double height = VulkanSetup.window.getPixelHeight() * VulkanSetup.window.getHeight();
+    if (VulkanSetup.stereoView) width = width / 2; // only half of the screen is used per eye
+    VulkanSetup.fovx = 2 * Math.tan((width / 2.0) / VulkanSetup.distance);
+    VulkanSetup.fovy = 2 * Math.tan((height / 2.0) / VulkanSetup.distance);
   }
 
   /**
@@ -374,7 +369,7 @@ public class VulkanManager {
       if (VulkanSetup.window.getPixelWidth() % 2 == 1) // if number of pixels odd, then correct
         aspect = (VulkanSetup.window.getPixelWidth() - 1) / VulkanSetup.window.getPixelWidth() * aspect;
     }
-    VulkanSetup.projection.identity().perspective(VulkanSetup.fovy, (float) aspect, VulkanSetup.Z_NEAR,
+    VulkanSetup.projection.identity().perspective((float) VulkanSetup.fovy, (float) aspect, VulkanSetup.Z_NEAR,
         VulkanSetup.Z_FAR, true);
   }
 

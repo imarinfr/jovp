@@ -184,6 +184,7 @@ class VulkanSetup {
   // Vulkan instances
   static VkInstance instance;
   static boolean validationLayers;
+  static long messenger;
   static boolean apiDump;
   static Window window;
   static long surface;
@@ -193,15 +194,38 @@ class VulkanSetup {
   static SwapChain swapChain;
   static VulkanCommands vulkanCommands;
   static boolean stereoView; // whether mono or stereo mode
-  static int distance; // in mm
-  static float fovx; // in radians;
-  static float fovy; // in radians;
-  float separation = 0.08f; // TODO: separation for stereoscoping viewing
-  float focalLength = 0.5f; // TODO: focal length to set up optical distorsions
-  static final Matrix4f projection = new Matrix4f();
-  static final Matrix4f view = new Matrix4f();
-  static final Matrix4f lens = new Matrix4f();
-  static long messenger;
+  static double distance; // in mm
+  static double fovx; // in radians;
+  static double fovy; // in radians;
+  static double separation = 0.08f; // TODO: separation for stereoscoping viewing
+  static double focalLength = 0.5f; // TODO: focal length to set up optical distorsions
+  static Matrix4f projection = new Matrix4f();
+  static Matrix4f view = new Matrix4f();
+  static Matrix4f lens = new Matrix4f();
+
+  /** clean after use */
+  static void cleanup() {
+    instance = null;
+    validationLayers = true;
+    messenger = -1;
+    apiDump = true;
+    window = null;
+    surface = -1;
+    physicalDevices = null;
+    physicalDevice = null;
+    logicalDevice = null;
+    swapChain = null;
+    vulkanCommands = null;
+    stereoView = false;
+    distance = - 1;
+    fovx = -1;
+    fovy = -1;
+    separation = - 1;
+    focalLength = -1;
+    projection = new Matrix4f();
+    view = new Matrix4f();
+    lens = new Matrix4f();
+  }
 
   /** result translator */
   static String translateVulkanResult(int result) {

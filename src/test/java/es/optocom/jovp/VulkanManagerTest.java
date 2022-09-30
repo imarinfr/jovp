@@ -202,8 +202,7 @@ public class VulkanManagerTest {
         textureTimer.start();
       }
       if(blinkTimer.getElapsedTime() > blinkItemTime) {
-        if(item2.shown()) item2.hide();
-        else item2.show();
+        item2.show(!item2.show());
         blinkTimer.start();
       }
       if (timerFps.getElapsedTime() <= refreshTime)

@@ -23,7 +23,7 @@ public class Monitor {
   private int heightMM;
   private double pixelWidth; // pixel width in mm
   private double pixelHeight; // pixel height in mm
-  private float aspect; // Aspect ratio between pixels
+  private double aspect; // Aspect ratio between pixels
   private int[] colorDepth = new int[3]; // Bit depths for all channels
   private GLFWVidMode.Buffer videoModes;
 
@@ -164,7 +164,7 @@ public class Monitor {
    *
    * @since 0.0.1
    */
-  public float getPixelAspect() {
+  public double getPixelAspect() {
     return aspect;
   }
 
@@ -307,7 +307,7 @@ public class Monitor {
   private void computePixelSize() {
     pixelWidth = widthMM / (double) width;
     pixelHeight = heightMM / (double) height;
-    aspect = (float) (pixelWidth / pixelHeight);
+    aspect = pixelWidth / pixelHeight;
   }
 
 }

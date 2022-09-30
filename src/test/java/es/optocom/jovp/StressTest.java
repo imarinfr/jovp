@@ -68,7 +68,7 @@ public class StressTest {
       circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
       circle.position(0, ypos, zpos);
       circle.size(size, size);
-      circle.hide();
+      circle.show(false);
       items.add(circle);
       try {
         Thread.sleep(5000);
@@ -101,7 +101,7 @@ public class StressTest {
           circle.position(0, ypos, zpos);
           circle.size(size, size);
         }
-        if (zpos < 2) for (Item item : items) item.hide();
+        if (zpos < 2) for (Item item : items) item.show(true);
         return;
       }
       iteration++;
@@ -229,7 +229,7 @@ public class StressTest {
         fileName = "ivanito.jpeg";
       Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
       circle.size(4.5, 4.5);
-      circle.hide();
+      circle.show(false);
       items.add(circle);
     }
 

@@ -55,7 +55,7 @@ public class Item {
     post = new Post();
   }
 
-    /**
+  /**
    * Recreate buffers
    * 
    * @param model The new model
@@ -108,19 +108,12 @@ public class Item {
   /**
    * Show item
    *
+   * @param show whether to show the item
+   * 
    * @since 0.0.1
    */
-  public void show() {
-    show = true;
-  }
-
-  /**
-   * Hide item
-   *
-   * @since 0.0.1
-   */
-  public void hide() {
-    show = false;
+  public void show(boolean show) {
+    this.show = show;
   }
 
   /**
@@ -130,7 +123,7 @@ public class Item {
    *
    * @since 0.0.1
    */
-  public boolean shown() {
+  public boolean show() {
     return show;
   }
 

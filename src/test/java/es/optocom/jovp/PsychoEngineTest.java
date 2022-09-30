@@ -36,18 +36,23 @@ public class PsychoEngineTest {
   public void initializeEngine() {
     // Init psychoEngine and show some general info
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
+    Window window = psychoEngine.getWindow();
+    Monitor monitor = window.getMonitor();
     System.out.println(psychoEngine);
-    System.out.println(psychoEngine.getWindow().getMonitorManager());
+    System.out.println(window.getMonitorManager());
     // Check distance was set correctly
     assertEquals(psychoEngine.getDistance(), 500);
     psychoEngine.setDistance(300);
     assertEquals(psychoEngine.getDistance(), 300);
     // Check field of view
-    psychoEngine.getWindow().getMonitor().setPhysicalSize(psychoEngine.getWindow().getMonitor().getWidth(),
-        psychoEngine.getWindow().getMonitor().getHeight());
-    psychoEngine.setDistance((int) (psychoEngine.getWindow().getScaledWidth() / 2.0));
+    int monitorWidthMM = 500;
+    int monitorHeightMM = (int) (monitorWidthMM * monitor.getHeight() / monitor.getWidth());
+    double alpha = 90; // field of view
+    monitor.setPhysicalSize(monitorWidthMM, monitorHeightMM);
+    psychoEngine.setWindowSize(monitor.getWidth(), monitor.getHeight());
+    psychoEngine.setDistance(monitorWidthMM / (2 * Math.atan(Math.PI / 180.0 * alpha / 2.0)));
     double[] fov = psychoEngine.getFieldOfView();
-    assertEquals(90, Math.round(1e3 *fov[0]) / 1e3);
+    assertEquals(90, Math.round(1e3 * fov[0]) / 1e3);
     assertEquals(ViewMode.MONO, psychoEngine.getViewMode());
     psychoEngine.setViewMode(ViewMode.MONO);
     psychoEngine.setViewMode(ViewMode.STEREO);
