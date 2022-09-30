@@ -64,15 +64,16 @@ public class WindowTest {
   @Test
   public void changeWindowPositionAndSize() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    assertArrayEquals(new int[] {psychoEngine.getWindow().getMonitor().getWidth() / 2, 0}, psychoEngine.getPosition());
     // position is relative to monitor workspace in the virtual desktop
-    psychoEngine.setWindowPosition(10, 10);
-    assertArrayEquals(new int[] { 10, 28 }, psychoEngine.getWindowPosition());
-    psychoEngine.setWindowSize(500, 200);
+    psychoEngine.setPosition(10, 10);
+    assertArrayEquals(new int[] {10, 10}, psychoEngine.getPosition());
+    psychoEngine.setSize(500, 200);
     assertEquals(500, psychoEngine.getWindow().getWidth());
     assertEquals(200, psychoEngine.getWindow().getHeight());
     psychoEngine.show(true);
-    psychoEngine.setWindowSize(1000, 800);
-    psychoEngine.setWindowPosition(10, 10);
+    psychoEngine.setSize(1000, 800);
+    psychoEngine.setPosition(10, 10);
     psychoEngine.cleanup();
   }
 

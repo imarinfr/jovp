@@ -120,6 +120,22 @@ public class Window {
     return window;
   }
 
+
+  /**
+   * Sets window position relative to the current monitor
+   *
+   * @param x The x position in pixels
+   * @param y The y position in pixels
+   *
+   * @since 0.0.1
+   */
+  void setPosition(int x, int y) {
+    this.x = x;
+    this.y = y;
+    int[] workingArea = getWorkingArea(monitor.getHandle());
+    glfwSetWindowPos(window, this.x + workingArea[0], this.y + workingArea[1]);
+  }
+
   /**
    * Get the window position (x, y) in pixels relative to Monitor
    *
@@ -128,8 +144,7 @@ public class Window {
    * @since 0.0.1
    */
   public int[] getPosition() {
-    int[] workingArea = getWorkingArea(monitor.getHandle());
-    return new int[] { x - workingArea[0], y - workingArea[1] };
+    return new int[] {x, y};
   }
 
   /**
@@ -270,23 +285,6 @@ public class Window {
     this.height = height;
     glfwSetWindowSize(window, width, height);
     resized = true;
-    update();
-  }
-
-  /**
-   * Sets window position relative to the current monitor
-   *
-   * @param x The x position in pixels
-   * @param y The y position in pixels
-   *
-   * @since 0.0.1
-   */
-  void setPosition(int x, int y) {
-    int[] workingArea = getWorkingArea(monitor.getHandle());
-    this.x = x + workingArea[0];
-    this.y = y + workingArea[1];
-    glfwSetWindowPos(window, this.x, this.y);
-    update();
   }
 
   /** Initialize the window */
@@ -331,8 +329,9 @@ public class Window {
       this.yscale = yscale;
     });
     glfwSetWindowPosCallback(window, (window, x, y) -> {
-      this.x = x;
-      this.y = y;
+      int[] workingArea = getWorkingArea(monitor.getHandle());
+      this.x = x - workingArea[0];
+      this.y = y - workingArea[1];
     });
 
   }

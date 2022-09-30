@@ -49,7 +49,7 @@ public class PsychoEngineTest {
     int monitorHeightMM = (int) (monitorWidthMM * monitor.getHeight() / monitor.getWidth());
     double alpha = 90; // field of view
     monitor.setPhysicalSize(monitorWidthMM, monitorHeightMM);
-    psychoEngine.setWindowSize(monitor.getWidth(), monitor.getHeight());
+    psychoEngine.setSize(monitor.getWidth(), monitor.getHeight());
     psychoEngine.setDistance(monitorWidthMM / (2 * Math.atan(Math.PI / 180.0 * alpha / 2.0)));
     double[] fov = psychoEngine.getFieldOfView();
     assertEquals(90, Math.round(1e3 * fov[0]) / 1e3);
@@ -87,11 +87,11 @@ public class PsychoEngineTest {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
     Window window = psychoEngine.getWindow();
     // window position
-    int[] position = psychoEngine.getWindowPosition();
+    int[] position = psychoEngine.getPosition();
     assertArrayEquals(position, window.getPosition());
     System.out.println("Window position is: " + Arrays.toString(position));
     // window monitor
-    psychoEngine.setWindowMonitor(0);
+    psychoEngine.setMonitor(0);
     psychoEngine.cleanup();
   }
 

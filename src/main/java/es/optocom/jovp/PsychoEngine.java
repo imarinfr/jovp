@@ -339,7 +339,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public void setWindowMonitor(int monitor) {
+  public void setMonitor(int monitor) {
     window.setMonitor(monitor);
   }
 
@@ -351,8 +351,9 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public void setWindowPosition(int x, int y) {
+  public void setPosition(int x, int y) {
     window.setPosition(x, y);
+    window.update();
   }
 
   /**
@@ -362,7 +363,7 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public int[] getWindowPosition() {
+  public int[] getPosition() {
     return window.getPosition();
   }
 
@@ -374,8 +375,9 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public void setWindowSize(int width, int height) {
+  public void setSize(int width, int height) {
     window.setSize(width, height);
+    window.update();
     vulkanManager.computeFieldOfView();
   }
 
@@ -442,8 +444,7 @@ public class PsychoEngine {
   private void input() {
     Command command = getCommand();
     psychoLogic.input(command);
-    if (command == Command.CLOSE)
-      loop = false;
+    if (command == Command.CLOSE) loop = false;
   }
 
   /** Update and get ready for rendering */
