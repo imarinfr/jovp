@@ -231,6 +231,29 @@ public class PsychoEngine {
   }
 
   /**
+   * Get monitor
+   *
+   * @return The monitor
+   *
+   * @since 0.0.1
+   */
+  public Monitor getMonitor() {
+    return window.getMonitor();
+  }
+
+  /**
+   * Get monitor manager
+   *
+   * @return The monitor manager
+   *
+   * @since 0.0.1
+   */
+  public MonitorManager getMonitorManager() {
+    return window.getMonitorManager();
+  }
+
+
+  /**
    * Get the Vulkan manager
    *
    * @return The Vulkan manager
@@ -341,6 +364,18 @@ public class PsychoEngine {
    */
   public void setMonitor(int monitor) {
     window.setMonitor(monitor);
+  }
+
+  /**
+   * Allow to input the physical size manually
+   *
+   * @param widthMM  The width of the monitor in mm
+   * @param heightMM The height of the monitor in mm
+   *
+   * @since 0.0.1
+   */
+  public void setPhysicalSize(int widthMM, int heightMM) {
+    window.getMonitor().setPhysicalSize(widthMM, heightMM);
   }
 
   /**

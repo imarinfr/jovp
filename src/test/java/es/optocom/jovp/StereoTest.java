@@ -30,7 +30,7 @@ public class StereoTest {
   @Test
   public void stereoTest() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500, ViewMode.STEREO);
-    psychoEngine.getWindow().getMonitor().setPhysicalSize(535, 295);
+    psychoEngine.setPhysicalSize(535, 295);
     // psychoEngine.setFullScreen();
     psychoEngine.start();
     psychoEngine.cleanup();

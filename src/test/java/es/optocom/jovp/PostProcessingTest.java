@@ -33,7 +33,7 @@ public class PostProcessingTest {
   @Test
   public void showAllOptotypes() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.getWindow().getMonitor().setPhysicalSize(621, 341);
+    psychoEngine.setPhysicalSize(621, 341);
     psychoEngine.start();
     psychoEngine.cleanup();
   }

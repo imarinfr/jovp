@@ -68,7 +68,7 @@ public class VulkanManagerTest {
   @Test
   public void showTriangle() {
     PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 1000);
-    psychoEngine.getWindow().getMonitor().setPhysicalSize(621, 341);
+    psychoEngine.setPhysicalSize(621, 341);
     psychoEngine.start();
     psychoEngine.cleanup();
   }

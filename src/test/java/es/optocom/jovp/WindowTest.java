@@ -64,7 +64,7 @@ public class WindowTest {
   @Test
   public void changeWindowPositionAndSize() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    assertArrayEquals(new int[] {psychoEngine.getWindow().getMonitor().getWidth() / 2, 0}, psychoEngine.getPosition());
+    assertArrayEquals(new int[] {psychoEngine.getMonitor().getWidth() / 2, 0}, psychoEngine.getPosition());
     // position is relative to monitor workspace in the virtual desktop
     psychoEngine.setPosition(10, 10);
     assertArrayEquals(new int[] {10, 10}, psychoEngine.getPosition());

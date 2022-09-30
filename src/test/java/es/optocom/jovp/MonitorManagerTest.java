@@ -1,6 +1,7 @@
 package es.optocom.jovp;
 
 import es.optocom.jovp.structures.Command;
+
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
 
@@ -27,7 +28,7 @@ public class MonitorManagerTest {
   @Test
   public void retrieveMonitors() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
+    MonitorManager monitorManager = psychoEngine.getMonitorManager();
     System.out.println(monitorManager);
     psychoEngine.cleanup();
   }
@@ -40,12 +41,27 @@ public class MonitorManagerTest {
   @Test
   public void setSettingsManually() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
+    MonitorManager monitorManager = psychoEngine.getMonitorManager();
     Monitor monitor = monitorManager.getMonitor(0);
     monitor.setPhysicalSize(621, 341);
     monitor.setSize(1024, 640);
     monitor.setRefreshRate(10);
     System.out.println(monitor);
+    psychoEngine.cleanup();
+  }
+
+  /**
+   * Test for no idea
+   *
+   * @since 0.0.1
+   */
+  @Test
+  public void changeMonitorSize() {
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    Monitor monitor = psychoEngine.getMonitor();
+    System.out.println("Monitor dimensons in mm: [" + monitor.getWidthMM() + ", " + monitor.getHeightMM() + "]");
+    psychoEngine.setPhysicalSize(621, 341);
+    System.out.println("Monitor dimensons in mm: [" + monitor.getWidthMM() + ", " + monitor.getHeightMM() + "]");
     psychoEngine.cleanup();
   }
 
@@ -57,7 +73,7 @@ public class MonitorManagerTest {
   @Test
   public void videoModes() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    MonitorManager monitorManager = psychoEngine.getWindow().getMonitorManager();
+    MonitorManager monitorManager = psychoEngine.getMonitorManager();
     Monitor monitor = monitorManager.getMonitor(0);
     GLFWVidMode videoMode = monitor.getCurrentVideoMode();
     System.out.println("Fullscreen video mode: " + monitor.getWidth() + "x" + monitor.getHeight() + " - " +
