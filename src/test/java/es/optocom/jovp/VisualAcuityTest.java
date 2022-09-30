@@ -74,16 +74,16 @@ public class VisualAcuityTest {
       // Title
       Text title = new Text();
       title.setText("Visual Acuity test");
-      title.size(0.5);
-      title.position(-2, 5);
+      title.size(1.5);
+      title.position(-5, 8);
       items.add(title);
       // Info text
       info = new Text();
       info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
           "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
           "Reversals: " + reversals);
-      info.size(0.5);
-      info.position(-8, -5);
+      info.size(1);
+      info.position(-15, 6.5);
       items.add(info);
     }
 

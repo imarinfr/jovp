@@ -30,7 +30,7 @@ public class StressTest {
    */
   @Test
   public void movingShapesAround() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 180);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.start();
     psychoEngine.cleanup();
   }
@@ -53,7 +53,7 @@ public class StressTest {
     double[] triangleColor1 = new double[] { 1, 1, 1, 1 };
     double[] triangleColor2 = new double[] { 0, 0, 1, 1 };
     Item circle;
-    double size = 1.5;
+    double size = 1;
     double ypos = 3;
     double zpos = 25;
 
@@ -95,7 +95,7 @@ public class StressTest {
           circle.position(0, ypos + Math.sin(time / 100), zpos);
         }
         if (time > 16425) {
-          size += 2.5;
+          size += 2;
           ypos += 0.6;
           zpos -= 0.5;
           circle.position(0, ypos, zpos);
@@ -106,7 +106,7 @@ public class StressTest {
       }
       iteration++;
       theta -= 5;
-      float xpos = -22;
+      float xpos = -16;
       int number = 0;
       // process optotypes
       for (Item item : items) {
@@ -116,7 +116,7 @@ public class StressTest {
             * timer.getElapsedTime()) / 500);
         item.position(xpos, ypos);
         item.rotation(theta);
-        xpos += 1.75;
+        xpos += 1.25;
         number++;
       }
       // process polygons
@@ -175,13 +175,14 @@ public class StressTest {
     }
 
     private void addOptotypes() {
+      double[] colorWhite = new double[] { 1, 1, 1, 1 };
       double[] colorRed = new double[] { 1, 0, 0, 1 };
       double[] colorGreen = new double[] { 0, 1, 0, 1 };
       double[] colorBlue = new double[] { 0, 0, 1, 1 };
-      items.add(new Item(new Model(Optotype.A), new Texture()));
-      items.add(new Item(new Model(Optotype.B), new Texture()));
-      items.add(new Item(new Model(Optotype.C), new Texture()));
-      items.add(new Item(new Model(Optotype.D), new Texture()));
+      items.add(new Item(new Model(Optotype.A), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.B), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.C), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.D), new Texture(colorWhite)));
       items.add(new Item(new Model(Optotype.E), new Texture(colorRed)));
       items.add(new Item(new Model(Optotype.F), new Texture(colorRed)));
       items.add(new Item(new Model(Optotype.G), new Texture(colorRed)));
@@ -194,10 +195,10 @@ public class StressTest {
       items.add(new Item(new Model(Optotype.N), new Texture(colorBlue)));
       items.add(new Item(new Model(Optotype.O), new Texture(colorBlue)));
       items.add(new Item(new Model(Optotype.P), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.Q), new Texture()));
-      items.add(new Item(new Model(Optotype.R), new Texture()));
-      items.add(new Item(new Model(Optotype.S), new Texture()));
-      items.add(new Item(new Model(Optotype.T), new Texture()));
+      items.add(new Item(new Model(Optotype.Q), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.R), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.S), new Texture(colorWhite)));
+      items.add(new Item(new Model(Optotype.T), new Texture(colorWhite)));
       items.add(new Item(new Model(Optotype.U), new Texture(colorRed)));
       items.add(new Item(new Model(Optotype.V), new Texture(colorRed)));
       items.add(new Item(new Model(Optotype.W), new Texture(colorGreen)));
@@ -205,7 +206,7 @@ public class StressTest {
       items.add(new Item(new Model(Optotype.Y), new Texture(colorBlue)));
       items.add(new Item(new Model(Optotype.Z), new Texture(colorBlue)));
       for (Item optotype : items)
-        optotype.size(1.25, 1.25);
+        optotype.size(1, 1);
     }
 
     private void addPolygon(int i) {
@@ -217,7 +218,7 @@ public class StressTest {
       if (i % 3 == 2)
         fileName = "ivanito.jpeg";
       Item polygon = new Item(new Model(12), new Texture(fileName));
-      polygon.size(4, 4);
+      polygon.size(2, 2);
       items.add(polygon);
     }
 
@@ -228,7 +229,7 @@ public class StressTest {
       if (i % 2 == 1)
         fileName = "ivanito.jpeg";
       Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
-      circle.size(4.5, 4.5);
+      circle.size(2.25, 2.25);
       circle.show(false);
       items.add(circle);
     }
@@ -259,13 +260,13 @@ public class StressTest {
       double[] textColor = new double[] { 1, 0, 1, 1 };
       text = new Text(textColor);
       text.setText("Optotypes and basic shapes moving");
-      text.size(1.25);
-      text.position(-14, 12);
+      text.size(0.75);
+      text.position(-5, 5);
       items.add(text);
       text = new Text();
       text.setText("Refresh rate: ");
-      text.size(1);
-      text.position(-22, 11);
+      text.size(0.6);
+      text.position(-5, 4);
       items.add(text);
     }
 

@@ -31,7 +31,7 @@ public class ContrastTest {
    */
   @Test
   public void funWithContrast() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 300);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.start();
     psychoEngine.cleanup();
   }

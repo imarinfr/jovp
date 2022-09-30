@@ -68,7 +68,7 @@ public class VulkanManagerTest {
    */
   @Test
   public void showTriangle() {
-    PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 1000);
+    PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 500);
     System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     psychoEngine.setPhysicalSize(621, 341);
     System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
@@ -83,7 +83,7 @@ public class VulkanManagerTest {
    */
   @Test
   public void blinkingAndChangingShape() {
-    PsychoEngine psychoEngine = new PsychoEngine(new LogicBlinkingAndChangingShape(), 300);
+    PsychoEngine psychoEngine = new PsychoEngine(new LogicBlinkingAndChangingShape(), 500);
     psychoEngine.start();
     psychoEngine.cleanup();
   }
@@ -112,7 +112,7 @@ public class VulkanManagerTest {
     public void init(PsychoEngine psychoEngine) {
       Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] {1, 1, 1, 1}));
       item.position(0, 0);
-      item.size(5, 5);
+      item.size(10, 10);
       items.add(item);
     }
 
@@ -166,8 +166,8 @@ public class VulkanManagerTest {
       // Add text to show FPS
       text = new Text();
       text.setText("Refresh rate:");
-      text.size(0.75);
-      text.position(-15, 7);
+      text.size(1);
+      text.position(-15, 6.5);
       items.add(text);
       // Items
       item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));

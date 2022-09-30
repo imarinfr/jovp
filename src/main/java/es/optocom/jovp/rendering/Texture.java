@@ -22,7 +22,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
  */
 public class Texture {
 
-  private static final Vector4f VOID = new Vector4f(0, 0, 0, -1);
   private static final Vector4f TRANSPARENT = new Vector4f(0, 0, 0, 0);
 
   private static final int PIXEL_SIZE = 4 * Float.BYTES;
@@ -135,8 +134,8 @@ public class Texture {
    */
   public Texture(String fileName) {
     type = TextureType.IMAGE;
-    rgba0 = VOID;
-    rgba1 = VOID;
+    this.rgba0 = TRANSPARENT;
+    this.rgba1 = TRANSPARENT;
     String path;
     try (MemoryStack stack = stackPush()) {
       URL resource = getSystemClassLoader().getResource("es/optocom/jovp/samplers/" + fileName);
@@ -229,36 +228,22 @@ public class Texture {
    * @since 0.0.1
    */
   public void setColor(double[] rgba) {
-    switch (type) {
-      case FLAT -> {
-        rgba0 = VOID;
-        rgba1 = new Vector4f((float) rgba[0], (float) rgba[1], (float) rgba[2], (float) rgba[3]);
-      }
-      case TEXT -> {
-        rgba0 = TRANSPARENT;
-        rgba1 = new Vector4f((float) rgba[0], (float) rgba[1], (float) rgba[2], (float) rgba[3]);
-      }
-      case IMAGE -> {
-        rgba0 = VOID;
-        rgba1 = VOID;
-      }
-      default -> setColors(rgba, rgba);
-    }
+    setColors(rgba, rgba);
   }
 
   /**
    * Set texture minimum color for grids
    *
-   * @param rgbaMin The RGBA values of the minimum color
-   * @param rgbaMax The RGBA values of the maximum color
+   * @param rgba0 The RGBA values of color 0 (background or minimum color depending on context)
+   * @param rgba1 The RGBA values of color 1 (foreground or maximum color depending on context)
    *
    * @since 0.0.1
    */
-  public void setColors(double[] rgbaMin, double[] rgbaMax) {
-    if (type == TextureType.FLAT || type == TextureType.TEXT || type == TextureType.IMAGE)
-      return;
-    this.rgba0 = new Vector4f((float) rgbaMin[0], (float) rgbaMin[1], (float) rgbaMin[2], (float) rgbaMin[3]);
-    this.rgba1 = new Vector4f((float) rgbaMax[0], (float) rgbaMax[1], (float) rgbaMax[2], (float) rgbaMax[3]);
+  public void setColors(double[] rgba0, double[] rgba1) {
+    this.rgba0 = (type == TextureType.TEXT || type == TextureType.IMAGE) ? TRANSPARENT :
+      new Vector4f((float) rgba0[0], (float) rgba0[1], (float) rgba0[2], (float) rgba0[3]);
+    this.rgba1 = (type == TextureType.IMAGE) ? TRANSPARENT :
+      new Vector4f((float) rgba1[0], (float) rgba1[1], (float) rgba1[2], (float) rgba1[3]);
   }
 
   /**
