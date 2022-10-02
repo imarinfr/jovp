@@ -95,6 +95,7 @@ public class Texture {
     this.type = type;
     setColors(rgba0, rgba1);
     switch (type) {
+      case FLAT -> flat();
       case CHECKERBOARD -> checkerboard();
       case SQUARESINE -> squareSine();
       case SINE -> sine();
