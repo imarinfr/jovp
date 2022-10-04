@@ -1,7 +1,8 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.structures.Command;
 import org.junit.jupiter.api.Test;
+
+import es.optocom.jovp.definitions.Command;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -85,7 +86,7 @@ public class WindowTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
       if (command != Command.NONE)
         System.out.println(command);
     }

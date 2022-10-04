@@ -1,8 +1,9 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.TextureType;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
+
+import es.optocom.jovp.definitions.TextureType;
 
 import java.net.URI;
 import java.net.URISyntaxException;

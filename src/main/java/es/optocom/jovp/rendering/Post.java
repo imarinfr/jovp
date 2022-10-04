@@ -1,6 +1,6 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.PostType;
+import es.optocom.jovp.definitions.PostType;
 
 /**
  * Postprocessing information

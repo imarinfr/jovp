@@ -91,6 +91,7 @@ import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 import es.optocom.jovp.Window;
+import es.optocom.jovp.definitions.ViewMode;
 
 /**
  *
@@ -193,7 +194,7 @@ class VulkanSetup {
   static LogicalDevice logicalDevice;
   static SwapChain swapChain;
   static VulkanCommands vulkanCommands;
-  static boolean stereoView; // whether mono or stereo mode
+  static ViewMode viewMode = ViewMode.MONO;
   static double distance; // in mm
   static double fovx; // in radians;
   static double fovy; // in radians;
@@ -216,7 +217,7 @@ class VulkanSetup {
     logicalDevice = null;
     swapChain = null;
     vulkanCommands = null;
-    stereoView = false;
+    viewMode = ViewMode.MONO;
     distance = - 1;
     fovx = -1;
     fovy = -1;

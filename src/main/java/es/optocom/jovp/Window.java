@@ -2,6 +2,11 @@ package es.optocom.jovp;
 
 import org.lwjgl.glfw.GLFWVidMode;
 
+import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.Input;
+import es.optocom.jovp.definitions.Paradigm;
+import jssc.SerialPortException;
+
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -15,9 +20,12 @@ public class Window {
 
   private static final String TITLE = "JOVP Vulkan Engine";
 
+  private static final String USB_INPUT_NEEDS_PORT = "For USB inputs, a device name is required";
+
   private long window;
   private final MonitorManager monitorManager;
   private Monitor monitor;
+  private Controller controller;
 
   private int x;
   private int y;
@@ -41,6 +49,41 @@ public class Window {
     setDefaultDimensions();
     setSize(width, height);
     setPosition(x, y);
+  }
+
+  /**
+   * Sets the controller for predefined inputs and paradigms
+   *
+   * @param input Input type except USB serial port
+   * @param paradigm The paradigm to use for mapping
+   * 
+   * @since 0.0.1
+   */
+  public void setController(Input input, Paradigm paradigm) throws IllegalArgumentException {
+    if (input == Input.USB) throw new IllegalArgumentException(USB_INPUT_NEEDS_PORT);
+    controller = new Controller(window, input, paradigm);
+  }
+
+  /**
+   * Sets the controller for predefined inputs and paradigms
+   *
+   * @param device Name of the device to use as USB controller
+   * @param paradigm The paradigm to use for mapping
+   * @throws SerialPortException
+   * 
+   * @since 0.0.1
+   */
+  public void setController(String device, Paradigm paradigm) throws SerialPortException {
+    controller = new Controller(device, paradigm);
+  }
+
+  /**
+   * Returns the command recorded from the input device
+   * 
+   * @since 0.0.1
+   */
+  public Command getCommand() {
+    return controller.getCommand();
   }
 
   /**
@@ -119,7 +162,6 @@ public class Window {
   public long getHandle() {
     return window;
   }
-
 
   /**
    * Sets window position relative to the current monitor

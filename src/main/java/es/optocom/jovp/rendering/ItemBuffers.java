@@ -1,11 +1,13 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.Eye;
-import es.optocom.jovp.structures.Vertex;
 import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+
+import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.Vertex;
+import es.optocom.jovp.definitions.ViewMode;
 
 import java.lang.Math;
 import java.nio.ByteBuffer;
@@ -125,7 +127,7 @@ class ItemBuffers {
    * @since 0.0.1
    */
   void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int eye) {
-    if (!item.show() || VulkanSetup.stereoView &&
+    if (!item.show() || VulkanSetup.viewMode == ViewMode.STEREO &&
         ((item.eye == Eye.LEFT && eye == 1) || (item.eye == Eye.RIGHT && eye == 0)))
       return;
     ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(eye);
@@ -507,7 +509,7 @@ class ItemBuffers {
     // Convert from degrees of visual angle to distances
     Vector3f position = new Vector3f((float) (item.position.z * Math.tan(item.position.x)),
         (float) (item.position.z * Math.tan(item.position.y)), (float) item.position.z);
-    if (VulkanSetup.stereoView) {
+    if (VulkanSetup.viewMode == ViewMode.STEREO) {
       // TODO: processing during stereo view when there are optical distorsions
     }
     Vector3f size = new Vector3f((float) (item.position.z * Math.tan(item.size.x)),

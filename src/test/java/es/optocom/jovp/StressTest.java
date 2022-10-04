@@ -1,10 +1,11 @@
 package es.optocom.jovp;
 
+import es.optocom.jovp.definitions.*;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
-import es.optocom.jovp.structures.*;
+
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +81,7 @@ public class StressTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
       if (command != Command.NONE)
         System.out.println(command);
     }

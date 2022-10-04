@@ -1,9 +1,9 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.structures.Command;
-
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
+
+import es.optocom.jovp.definitions.Command;
 
 /**
  * Unitary tests for screen manager
@@ -98,7 +98,7 @@ public class MonitorManagerTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
     }
 
     @Override

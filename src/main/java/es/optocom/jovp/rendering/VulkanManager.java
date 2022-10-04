@@ -1,8 +1,9 @@
 package es.optocom.jovp.rendering;
 
 import es.optocom.jovp.Items;
-import es.optocom.jovp.structures.ViewMode;
 import es.optocom.jovp.Window;
+import es.optocom.jovp.definitions.ViewMode;
+
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -69,13 +70,35 @@ public class VulkanManager {
     VulkanSetup.physicalDevice = physicalDevice;
     this.items = items;
     VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
-    VulkanSetup.stereoView = viewMode == ViewMode.STEREO;
+    VulkanSetup.viewMode = viewMode;
     VulkanSetup.swapChain = new SwapChain();
     for (Item item : items) item.buffers.create();
     VulkanSetup.vulkanCommands = new VulkanCommands(items);
     createSyncObjects();
     setPerspective();
   }
+
+  /**
+   * Set view mode
+   *
+   * @param viewMode The view mode
+   *
+   * @since 0.0.1
+   */
+  public void setViewMode(ViewMode viewMode) {
+    VulkanSetup.viewMode = viewMode;
+  };
+
+  /**
+   * Get view mode
+   *
+   * @return The view mode
+   *
+   * @since 0.0.1
+   */
+  public ViewMode getViewMode() {
+    return VulkanSetup.viewMode;
+  };
 
   /**
    * Draw a frame
@@ -194,7 +217,7 @@ public class VulkanManager {
   public void computeFieldOfView() {
     double width = VulkanSetup.window.getPixelWidth() * VulkanSetup.window.getWidth();
     double height = VulkanSetup.window.getPixelHeight() * VulkanSetup.window.getHeight();
-    if (VulkanSetup.stereoView) width = width / 2; // only half of the screen is used per eye
+    if (VulkanSetup.viewMode == ViewMode.STEREO) width = width / 2; // only half of the screen is used per eye
     VulkanSetup.fovx = 2 * Math.atan((width / 2.0) / VulkanSetup.distance);
     VulkanSetup.fovy = 2 * Math.atan((height / 2.0) / VulkanSetup.distance);
   }
@@ -364,7 +387,7 @@ public class VulkanManager {
   private void setPerspective() {
     computeFieldOfView();
     double aspect = VulkanSetup.window.getPixelAspect() * VulkanSetup.swapChain.aspect;
-    if (VulkanSetup.stereoView) {
+    if (VulkanSetup.viewMode == ViewMode.STEREO) {
       aspect = aspect / 2;
       if (VulkanSetup.window.getPixelWidth() % 2 == 1) // if number of pixels odd, then correct
         aspect = (VulkanSetup.window.getPixelWidth() - 1) / VulkanSetup.window.getPixelWidth() * aspect;

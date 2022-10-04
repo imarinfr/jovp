@@ -1,12 +1,13 @@
 package es.optocom.jovp;
 
+import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
-import es.optocom.jovp.structures.Command;
-import es.optocom.jovp.structures.ModelType;
-import es.optocom.jovp.structures.TextureType;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -115,7 +116,7 @@ public class ContrastTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
       if (command != Command.NONE)
         System.out.println(command);
     }

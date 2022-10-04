@@ -1,10 +1,11 @@
 package es.optocom.jovp;
 
+import es.optocom.jovp.definitions.*;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
-import es.optocom.jovp.structures.*;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -29,7 +30,8 @@ public class StereoTest {
    */
   @Test
   public void stereoTest() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500, ViewMode.STEREO);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    psychoEngine.setViewMode(ViewMode.STEREO);
     psychoEngine.setPhysicalSize(535, 295);
     // psychoEngine.setFullScreen();
     psychoEngine.start();
@@ -98,7 +100,7 @@ public class StereoTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
       if (command != Command.NONE)
         System.out.println(command);
     }

@@ -1,10 +1,11 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.Eye;
-import es.optocom.jovp.structures.PostType;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.PostType;
 
 /**
  * Item to construct the psychophysical experience

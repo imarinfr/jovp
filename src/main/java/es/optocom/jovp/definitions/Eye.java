@@ -1,4 +1,4 @@
-package es.optocom.jovp.structures;
+package es.optocom.jovp.definitions;
 
 /**
  * Eye for monocular or stereoscopic view

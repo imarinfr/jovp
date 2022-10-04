@@ -1,9 +1,10 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.FontType;
-import es.optocom.jovp.structures.Vertex;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+
+import es.optocom.jovp.definitions.FontType;
+import es.optocom.jovp.definitions.Vertex;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;

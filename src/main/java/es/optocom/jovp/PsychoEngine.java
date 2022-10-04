@@ -1,10 +1,11 @@
 package es.optocom.jovp;
 
+import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.Input;
+import es.optocom.jovp.definitions.Paradigm;
+import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.VulkanManager;
-import es.optocom.jovp.structures.Command;
-import es.optocom.jovp.structures.Input;
-import es.optocom.jovp.structures.Paradigm;
-import es.optocom.jovp.structures.ViewMode;
+
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -33,15 +34,12 @@ public class PsychoEngine {
   private final Window window;
   private final VulkanManager vulkanManager;
   private final List<VkPhysicalDevice> physicalDevices;
-  private final Controller controller;
 
   private int numberOfCores;
   private long freeMemory;
   private long maxMemory;
   private long totalMemory;
 
-  private ViewMode viewMode;
-  private Paradigm paradigm;
   private boolean loop;
 
   /**
@@ -53,92 +51,27 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public PsychoEngine(PsychoLogic psychoLogic, int distance) {
-    this(psychoLogic, distance, ViewMode.MONO, Input.KEYPAD, Paradigm.M2AFC_HORIZONTAL,
-        VALIDATION_LAYERS, API_DUMP);
-  }
-
-  /**
-   * Main method for the JOVP
-   *
-   * @param psychoLogic Logic for the psychophysics experience
-   * @param distance    Viewing distance of the observer in mm
-   * @param input       Input to use as input for observer's input
-   *
-   * @since 0.0.1
-   */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, Input input) {
-    this(psychoLogic, distance, ViewMode.MONO, input, Paradigm.M2AFC_HORIZONTAL,
-        VALIDATION_LAYERS, API_DUMP);
-  }
-
-  /**
-   * Main method for the JOVP
-   *
-   * @param psychoLogic Logic for the psychophysics experience
-   * @param distance    Viewing distance of the observer in mm
-   * @param viewMode    Viewing viewMode
-   *
-   * @since 0.0.1
-   */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode) {
-    this(psychoLogic, distance, viewMode, Input.KEYPAD, Paradigm.M2AFC_HORIZONTAL,
-        VALIDATION_LAYERS, API_DUMP);
-  }
-
-  /**
-   * Main method for the JOVP
-   *
-   * @param psychoLogic Logic for the psychophysics experience
-   * @param viewMode    Viewing viewMode
-   * @param distance    Viewing distance of the observer in mm
-   * @param input       Input to use as input for observer's input
-   *
-   * @since 0.0.1
-   */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input) {
-    this(psychoLogic, distance, viewMode, input, Paradigm.M2AFC_HORIZONTAL, VALIDATION_LAYERS, API_DUMP);
-  }
-
-  /**
-   * Main method for the JOVP
-   *
-   * @param psychoLogic Logic for the psychophysics experience
-   * @param viewMode    Viewing viewMode
-   * @param distance    Viewing distance of the observer in mm
-   * @param input       Input to use as input for observer's input
-   * @param paradigm    The psychophysical paradigm to use
-   *
-   * @since 0.0.1
-   */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input, Paradigm paradigm) {
-    this(psychoLogic, distance, viewMode, input, paradigm, VALIDATION_LAYERS, API_DUMP);
+    this(psychoLogic, distance, VALIDATION_LAYERS, API_DUMP);
   }
 
   /**
    * Main method for the JOVP
    *
    * @param psychoLogic      Logic for the psychophysics experience
-   * @param viewMode         Viewing viewMode
    * @param distance         Viewing distance of the observer in mm
-   * @param input            Input to use as input for observer's input
-   * @param paradigm         The psychophysical paradigm to use
    * @param validationLayers Whether to use validation layers
    * @param apiDump          Whether to use the VK_LAYER_LUNARG_api_dump layer
    *
    * @since 0.0.1
    */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, ViewMode viewMode, Input input, Paradigm paradigm,
-      boolean validationLayers, boolean apiDump) {
+  public PsychoEngine(PsychoLogic psychoLogic, int distance, boolean validationLayers, boolean apiDump) {
     glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
     if (!glfwInit())
       throw new RuntimeException("Cannot initialize GLFW");
     this.psychoLogic = psychoLogic;
-    this.viewMode = viewMode;
-    this.paradigm = paradigm;
     window = new Window();
     vulkanManager = new VulkanManager(window, distance, validationLayers, apiDump);
     physicalDevices = vulkanManager.getPhysicalDevices();
-    controller = new Controller(window.getHandle(), input, paradigm);
     getRunTimeInfo();
     setView();
   }
@@ -155,36 +88,57 @@ public class PsychoEngine {
   }
 
   /**
-   * Start the psychoEngine in the default physical device
+   * Start the psychoEngine in the default physical device, view mode, input and paradigm
    *
    * @since 0.0.1
    */
   public void start() {
-    start(physicalDevices.get(0)); // Run with default physical device
+    start(vulkanManager.getViewMode());
+  }
+
+  /**
+   * Start the psychoEngine in the default physical device, input and paradigm
+   * 
+   * @param viewMode The view mode
+   *
+   * @since 0.0.1
+   */
+  public void start(ViewMode viewMode) {
+    start(physicalDevices.get(0), viewMode, Input.MOUSE, Paradigm.CLICKER);
+  }
+
+  /**
+   * Start the psychoEngine in the default physical device, view mode, and input
+   * 
+   * @param paradigm The view mode
+   *
+   * @since 0.0.1
+   */
+  public void start(Paradigm paradigm) {
+    start(physicalDevices.get(0), ViewMode.MONO, Input.MOUSE, paradigm);
   }
 
   /**
    * Run the psychoEngine in a selected physical device
    *
    * @param physicalDevice The physical device for the psychoEngine run
+   * @param viewMode The view mode
+   * @param input Controller input 
+   * @param paradigm Psychophysics paradigm for mapping input to commands
    *
    * @since 0.0.1
    */
-  public void start(VkPhysicalDevice physicalDevice) {
+  public void start(VkPhysicalDevice physicalDevice, ViewMode viewMode, Input input, Paradigm paradigm) {
     try {
-      init();
+      window.setController(input, paradigm);
+      psychoLogic.init(this);
       vulkanManager.start(physicalDevice, viewMode, PsychoLogic.items);
+      loop = true;
       psychoLoop();
       vkDeviceWaitIdle(vulkanManager.getDevice());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  /** Initializes the window, controller, timer, and other running parameters */
-  private void init() {
-    psychoLogic.init(this);
-    loop = true;
   }
 
   /**
@@ -272,7 +226,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public void setViewMode(ViewMode viewMode) {
-    this.viewMode = viewMode;
+    vulkanManager.setViewMode(viewMode);
   }
 
   /**
@@ -283,7 +237,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public ViewMode getViewMode() {
-    return viewMode;
+    return vulkanManager.getViewMode();
   }
 
   /**
@@ -306,28 +260,6 @@ public class PsychoEngine {
    */
   public double getDistance() {
     return vulkanManager.getDistance();
-  }
-
-  /**
-   * Set the psychophysics paradigm
-   *
-   * @param paradigm The psychophysics paradigm
-   *
-   * @since 0.0.1
-   */
-  public void setParadigm(Paradigm paradigm) {
-    this.paradigm = paradigm;
-  }
-
-  /**
-   * Get the psychophysics paradigm
-   *
-   * @return The psychophysics paradigm
-   *
-   * @since 0.0.1
-   */
-  public Paradigm getParadigm() {
-    return paradigm;
   }
 
   /**
@@ -434,20 +366,7 @@ public class PsychoEngine {
     window.setWindowed();
   }
 
-  /**
-   * Get command
-   *
-   * @return The command from the controller
-   *
-   * @since 0.0.1
-   */
-  public Command getCommand() {
-    return controller.getCommand();
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
+  /** convert to strint */
   public String toString() {
     String freeMemoryTxt = String.format("%.1f", (float) freeMemory / 1048576);
     String maxMemoryTxt = String.format("%.1f", (float) maxMemory / 1048576);
@@ -477,8 +396,8 @@ public class PsychoEngine {
 
   /** Process input */
   private void input() {
-    Command command = getCommand();
-    psychoLogic.input(command);
+    Command command = window.getCommand();
+    psychoLogic.input(this, command);
     if (command == Command.CLOSE) loop = false;
   }
 

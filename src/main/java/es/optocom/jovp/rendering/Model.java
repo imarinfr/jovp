@@ -1,12 +1,13 @@
 package es.optocom.jovp.rendering;
 
-import es.optocom.jovp.structures.ModelType;
-import es.optocom.jovp.structures.Optotype;
-import es.optocom.jovp.structures.Vertex;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
+
+import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Optotype;
+import es.optocom.jovp.definitions.Vertex;
 
 import java.io.*;
 import java.net.URI;

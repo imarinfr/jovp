@@ -1,10 +1,10 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.structures.Command;
-import es.optocom.jovp.structures.ViewMode;
-import es.optocom.jovp.structures.Paradigm;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.vulkan.VkPhysicalDevice;
+
+import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.ViewMode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,9 +55,6 @@ public class PsychoEngineTest {
     psychoEngine.setViewMode(ViewMode.MONO);
     psychoEngine.setViewMode(ViewMode.STEREO);
     assertEquals(ViewMode.STEREO, psychoEngine.getViewMode());
-    // Set paradigm
-    psychoEngine.setParadigm(Paradigm.CLICKER);
-    assertEquals(Paradigm.CLICKER, psychoEngine.getParadigm());
     psychoEngine.cleanup();
   }
 
@@ -129,7 +126,7 @@ public class PsychoEngineTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
     }
 
     @Override

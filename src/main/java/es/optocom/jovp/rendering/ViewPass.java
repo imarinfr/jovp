@@ -61,7 +61,7 @@ import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDescription;
 import org.lwjgl.vulkan.VkViewport;
 
-import es.optocom.jovp.structures.ShaderKind;
+import es.optocom.jovp.definitions.ShaderKind;
 
 /**
  * Creates all the elements to render on a viewport

@@ -1,6 +1,6 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.structures.Command;
+import es.optocom.jovp.definitions.Command;
 
 /**
  * Logic for Psychophysics Experiments. Interface with defaults to run
@@ -25,11 +25,14 @@ public interface PsychoLogic {
   /**
    * Reads input from controller
    *
+   * @param psychoEngine The engine to retrieve info as required
    * @param command The command received
+   * 
+   * @return whether to finish the loop or not
    *
    * @since 0.0.1
    */
-  void input(Command command);
+  void input(PsychoEngine psychoEngine, Command command);
 
   /**
    * Updates state

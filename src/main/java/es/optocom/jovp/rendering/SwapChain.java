@@ -3,6 +3,8 @@ package es.optocom.jovp.rendering;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import es.optocom.jovp.definitions.ViewMode;
+
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.*;
@@ -50,7 +52,7 @@ class SwapChain {
         createColorResources();
         createDepthResources();
         createRenderPass();
-        if (VulkanSetup.stereoView) stereoSwapChain();
+        if (VulkanSetup.viewMode == ViewMode.STEREO) stereoSwapChain();
         else monoSwapChain();
         createFramebuffers();
         aspect = (float) extent.width() / (float) extent.height();

@@ -1,8 +1,9 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.structures.Command;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.vulkan.VkPhysicalDevice;
+
+import es.optocom.jovp.definitions.Command;
 
 /**
  * Unitary tests for the physical and logical device support
@@ -40,7 +41,7 @@ public class DeviceSupportTest {
     }
 
     @Override
-    public void input(Command command) {
+    public void input(PsychoEngine psychoEngine, Command command) {
     }
 
     @Override
