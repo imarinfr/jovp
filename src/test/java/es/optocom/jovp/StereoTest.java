@@ -33,8 +33,7 @@ public class StereoTest {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.setViewMode(ViewMode.STEREO);
     psychoEngine.setPhysicalSize(535, 295);
-    // psychoEngine.setFullScreen();
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 

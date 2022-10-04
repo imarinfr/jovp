@@ -3,7 +3,6 @@ package es.optocom.jovp;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.definitions.Input;
 import es.optocom.jovp.definitions.Paradigm;
 import jssc.SerialPortException;
 
@@ -20,8 +19,6 @@ public class Window {
 
   private static final String TITLE = "JOVP Vulkan Engine";
 
-  private static final String USB_INPUT_NEEDS_PORT = "For USB inputs, a device name is required";
-
   private long window;
   private final MonitorManager monitorManager;
   private Monitor monitor;
@@ -34,7 +31,6 @@ public class Window {
   private float xscale;
   private float yscale;
   protected boolean fullScreen = false;
-  protected boolean show = true;
   protected boolean resized = false;
 
   /**
@@ -54,31 +50,17 @@ public class Window {
   /**
    * Sets the controller for predefined inputs and paradigms
    *
-   * @param input Input type except USB serial port
+   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
    * @param paradigm The paradigm to use for mapping
-   * 
-   * @throws IllegalArgumentException
+   *
+   * @throws NullPointerException if no suitable controller is found
+   * @throws SerialPortException if USB serial controller cannot be opened
    * 
    * @since 0.0.1
    */
-  public void setController(Input input, Paradigm paradigm) throws IllegalArgumentException {
-    if (input == Input.USB) throw new IllegalArgumentException(USB_INPUT_NEEDS_PORT);
+  public void setController(String input, Paradigm paradigm) throws NullPointerException, SerialPortException {
     controller = new Controller(window, input, paradigm);
-  }
-
-  /**
-   * Sets the controller for predefined inputs and paradigms
-   *
-   * @param device Name of the device to use as USB controller
-   * @param paradigm The paradigm to use for mapping
-   *
-   * @throws SerialPortException
-   * 
-   * @since 0.0.1
-   */
-  public void setController(String device, Paradigm paradigm) throws SerialPortException {
-    controller = new Controller(window, device, paradigm);
-    controller.open();
+    if (controller.isUsb()) controller.open();
   }
 
   /**
@@ -92,15 +74,21 @@ public class Window {
 
   /**
    * Shows the window
-   *
-   * @param show whether to show the window
    * 
    * @since 0.0.1
    */
-  public void show(boolean show) {
-    this.show = show;
-    if (show) glfwShowWindow(window);
-    else glfwHideWindow(window);
+  public void show() {
+    glfwShowWindow(window);
+    update();
+  }
+
+  /**
+   * Hides the window
+   * 
+   * @since 0.0.1
+   */
+  public void hide() {
+    glfwHideWindow(window);
     update();
   }
 
@@ -127,15 +115,6 @@ public class Window {
   }
 
   /**
-   * Focus on current window
-   *
-   * @since 0.0.1
-   */
-  void focus() {
-    glfwFocusWindow(window);
-  }
-
-  /**
    * Updates window content
    *
    * @since 0.0.1
@@ -152,7 +131,7 @@ public class Window {
    * @since 0.0.1
    */
   void cleanup() throws SerialPortException {
-    if (controller != null) controller.close();
+    if (controller != null && controller.isUsb()) controller.close();
     glfwSetWindowShouldClose(window, true);
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
@@ -340,7 +319,7 @@ public class Window {
   private void initWindow() {
     glfwDefaultWindowHints();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+    glfwWindowHint(GLFW_FLOATING, GLFW_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);

@@ -31,9 +31,9 @@ public class WindowTest {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     try {
       for (int i = 0; i < 5; i++) {
-        psychoEngine.show(true);
+        psychoEngine.show();
         Thread.sleep(250);
-        psychoEngine.show(false);
+        psychoEngine.hide();
         Thread.sleep(250);
       }
     } catch (InterruptedException e) {
@@ -50,7 +50,7 @@ public class WindowTest {
   @Test
   public void showWindowedAndFullScreen() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.show(true);
+    psychoEngine.show();
     psychoEngine.setFullScreen();
     psychoEngine.setWindowed();
     psychoEngine.cleanup();
@@ -72,7 +72,7 @@ public class WindowTest {
     psychoEngine.setSize(500, 200);
     assertEquals(500, psychoEngine.getWindow().getWidth());
     assertEquals(200, psychoEngine.getWindow().getHeight());
-    psychoEngine.show(true);
+    psychoEngine.show();
     psychoEngine.setSize(1000, 800);
     psychoEngine.setPosition(10, 10);
     psychoEngine.cleanup();

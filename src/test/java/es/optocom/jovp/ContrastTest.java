@@ -2,6 +2,7 @@ package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
@@ -33,7 +34,7 @@ public class ContrastTest {
   @Test
   public void funWithContrast() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 

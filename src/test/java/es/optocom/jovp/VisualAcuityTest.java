@@ -36,7 +36,7 @@ public class VisualAcuityTest {
   @Test
   public void visualAcuityTest() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.start(Paradigm.M2AFC);
+    psychoEngine.start("mouse", Paradigm.M2AFC);
     psychoEngine.cleanup();
   }
 

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
 import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.ViewMode;
 
 import java.util.Arrays;
@@ -104,7 +105,7 @@ public class PsychoEngineTest {
       while (timer.getElapsedTime() < 1000) Thread.onSpinWait(); // close window after 1 second
       psychoEngine.finish();
     }).start();
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     System.out.println("Engine was running for " + timer.getElapsedTime() / 1000 + " seconds");
     psychoEngine.cleanup();
   }

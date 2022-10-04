@@ -46,7 +46,7 @@ public class Controller implements SerialPortEventListener {
   private static final int BUTTON9 = 9;
 
   /** Error message for serial port exception */
-  private static final String CANNOT_SET_INPUT = "The parameters for a USB connection are the 'device' name and paradigm";
+  private static final String CANNOT_SET_CONTROLLER = "The input device '%s' is not suitable as a controller";
 
   /**
    * Scans the port for suitable USB connections
@@ -73,7 +73,7 @@ public class Controller implements SerialPortEventListener {
    *
    * @since 0.0.1
   */
-  public static String byName(String name) {
+  public static String searchByName(String name) {
     return Arrays.stream(getSuitableConnections())
       .filter(Pattern.compile(name).asPredicate())
       .findFirst().orElse(null).toString();
@@ -82,59 +82,56 @@ public class Controller implements SerialPortEventListener {
   /** Input device */
   private final Input input;
   /** USB port */
-  private final SerialPort usb;
+  private SerialPort usb = null;
   /** Psychophysics paradigm to map input to commands */
   private final Paradigm paradigm;
   /** Controller command */
   private Command command = Command.NONE;
 
+
   /**
    * Controller type and settings
    *
    * @param windowHandle The window handle
-   * @param input The input is listening to
+   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
    * @param paradigm Preset scheme for the psychophysics paradigm
+   * 
+   * @throws NullPointerException if no suitable controller is found
    *
    * @since 0.0.1
    */
-  Controller(long windowHandle, Input input, Paradigm paradigm) throws IllegalArgumentException {
-    this.input = input;
-    this.paradigm = paradigm;
-    this.usb = null;
-    glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
-    switch (input) {
-      case MOUSE -> mouseCallbacks(windowHandle);
-      case KEYPAD -> keypadCallbacks(windowHandle);
-      default -> throw new IllegalArgumentException(CANNOT_SET_INPUT);
+  Controller(long windowHandle, String input, Paradigm paradigm) throws NullPointerException {
+    switch (input.toUpperCase()) {
+      case "MOUSE" -> {
+        this.input = Input.MOUSE;
+        mouseCallbacks(windowHandle);
+      }
+      case "KEYPAD" -> {
+        this.input = Input.KEYPAD;
+        keypadCallbacks(windowHandle);
+      }
+      default -> {
+        try {
+          this.input = Input.USB;
+          this.usb = new SerialPort(searchByName(input));
+        } catch (NullPointerException ignored) {
+          throw new IllegalArgumentException(String.format(CANNOT_SET_CONTROLLER, input));
+        }
+      }
     }
-  }
-
-  /**
-   * Controller type and settings
-   *
-   * @param windowHandle The window handle
-   * @param device The device name
-   * @param paradigm Preset scheme for the psychophysics paradigm
-   *
-   * @since 0.0.1
-   */
-  Controller(long windowHandle, String device, Paradigm paradigm) throws SerialPortException {
-    this(device, paradigm);
+    this.paradigm = paradigm;
     glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
   }
 
   /**
-   * Controller type and settings
+   * Check whether controller is connected through a USB serial port
    *
-   * @param device The device name
-   * @param paradigm Preset scheme for the psychophysics paradigm
+   * @returns whether controller is connected through a USB serial port
    *
    * @since 0.0.1
-   */
-  Controller(String device, Paradigm paradigm) throws SerialPortException {
-    this.input = Input.USB;
-    this.paradigm = paradigm;
-    this.usb = new SerialPort(byName(device));
+  */
+  public boolean isUsb() {
+    return input == Input.USB;
   }
 
   /**

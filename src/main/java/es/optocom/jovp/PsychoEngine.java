@@ -1,7 +1,6 @@
 package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.definitions.Input;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.VulkanManager;
@@ -89,93 +88,43 @@ public class PsychoEngine {
   }
 
   /**
-   * Start the psychoEngine in the default physical device, view mode, input and paradigm
+   * Start the psychoEngine in the default physical device, view mode, and input
+   * 
+   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
+   * @param paradigm Psychophysics paradigm for mapping input to commands
    *
    * @since 0.0.1
    */
-  public void start() {
-    start(vulkanManager.getViewMode());
+  public void start(String input, Paradigm paradigm) {
+    start(physicalDevices.get(0), input, paradigm, ViewMode.MONO);
   }
 
   /**
-   * Start the psychoEngine in the default physical device, input and paradigm
+   * Start the psychoEngine in the default physical device
    * 
+   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
+   * @param paradigm Psychophysics paradigm for mapping input to commands
    * @param viewMode The view mode
    *
    * @since 0.0.1
    */
-  public void start(ViewMode viewMode) {
-    start(physicalDevices.get(0), viewMode, Input.MOUSE, Paradigm.CLICKER);
-  }
-
-  /**
-   * Start the psychoEngine in the default physical device, view mode, and input
-   * 
-   * @param paradigm The view mode
-   *
-   * @since 0.0.1
-   */
-  public void start(Paradigm paradigm) {
-    start(physicalDevices.get(0), ViewMode.MONO, Input.MOUSE, paradigm);
+  public void start(String input, Paradigm paradigm, ViewMode viewMode) {
+    start(physicalDevices.get(0), input, paradigm, viewMode);
   }
 
   /**
    * Run the psychoEngine in a selected physical device
    *
    * @param physicalDevice The physical device for the psychoEngine run
-   * @param viewMode The view mode
-   * @param input Controller input 
+   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
    * @param paradigm Psychophysics paradigm for mapping input to commands
+   * @param viewMode The view mode
    *
    * @since 0.0.1
    */
-  public void start(VkPhysicalDevice physicalDevice, ViewMode viewMode, Input input, Paradigm paradigm) {
+  public void start(VkPhysicalDevice physicalDevice, String input, Paradigm paradigm, ViewMode viewMode) {
     try {
       window.setController(input, paradigm);
-      init(physicalDevice, viewMode);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Start the psychoEngine in the default physical device, view mode, and input
-   * 
-   * @param device Device for a USB controller
-   * @param paradigm Psychophysics paradigm for mapping input to commands
-   *
-   * @since 0.0.1
-   */
-  public void start(String device, Paradigm paradigm) {
-    start(physicalDevices.get(0), ViewMode.MONO, device, paradigm);
-  }
-
-  /**
-   * Start the psychoEngine in the default physical device, view mode, and input
-   * 
-   * @param viewMode The view mode
-   * @param device Device for a USB controller
-   * @param paradigm Psychophysics paradigm for mapping input to commands
-   *
-   * @since 0.0.1
-   */
-  public void start(ViewMode viewMode, String device, Paradigm paradigm) {
-    start(physicalDevices.get(0), viewMode, device, paradigm);
-  }
-
-  /**
-   * Run the psychoEngine in a selected physical device
-   *
-   * @param physicalDevice The physical device for the psychoEngine run
-   * @param viewMode The view mode
-   * @param device Device for a USB controller
-   * @param paradigm Psychophysics paradigm for mapping input to commands
-   *
-   * @since 0.0.1
-   */
-  public void start(VkPhysicalDevice physicalDevice, ViewMode viewMode, String device, Paradigm paradigm) {
-    try {
-      window.setController(device, paradigm);
       init(physicalDevice, viewMode);
     } catch (SerialPortException e) {
       throw new RuntimeException(e);
@@ -191,6 +140,7 @@ public class PsychoEngine {
     psychoLogic.init(this);
     vulkanManager.start(physicalDevice, viewMode, PsychoLogic.items);
     loop = true;
+    window.show();
     psychoLoop();
     vkDeviceWaitIdle(vulkanManager.getDevice());
   }
@@ -224,15 +174,22 @@ public class PsychoEngine {
 
   /**
    * Show the psychoEngine window
-   * 
-   * @param show whether to show the window
    *
    * @since 0.0.1
    */
-  public void show(boolean show) {
-    window.show(show);
+  public void show() {
+    window.show();
   }
  
+  /**
+   * Hide the psychoEngine window
+   *
+   * @since 0.0.1
+   */
+  public void hide() {
+    window.hide();
+  }
+
   /**
    * Get window
    *
@@ -447,7 +404,6 @@ public class PsychoEngine {
   /** Performs the loop for the psychophysics experience */
   private void psychoLoop() {
     while (loop) {
-      if (window.show) window.focus();
       update();
       drawFrame();
       input();

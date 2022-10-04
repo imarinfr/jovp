@@ -2,6 +2,7 @@ package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
@@ -72,7 +73,7 @@ public class VulkanManagerTest {
     System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     psychoEngine.setPhysicalSize(621, 341);
     System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 
@@ -84,7 +85,7 @@ public class VulkanManagerTest {
   @Test
   public void blinkingAndChangingShape() {
     PsychoEngine psychoEngine = new PsychoEngine(new LogicBlinkingAndChangingShape(), 500);
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 

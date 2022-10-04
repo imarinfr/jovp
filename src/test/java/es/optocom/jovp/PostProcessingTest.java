@@ -2,6 +2,7 @@ package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.PostType;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
@@ -35,7 +36,7 @@ public class PostProcessingTest {
   public void showAllOptotypes() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.setPhysicalSize(621, 341);
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 

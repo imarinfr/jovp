@@ -32,7 +32,7 @@ public class StressTest {
   @Test
   public void movingShapesAround() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    psychoEngine.start();
+    psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
 
