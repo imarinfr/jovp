@@ -5,6 +5,7 @@ import es.optocom.jovp.definitions.Input;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.VulkanManager;
+import jssc.SerialPortException;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -131,14 +132,67 @@ public class PsychoEngine {
   public void start(VkPhysicalDevice physicalDevice, ViewMode viewMode, Input input, Paradigm paradigm) {
     try {
       window.setController(input, paradigm);
-      psychoLogic.init(this);
-      vulkanManager.start(physicalDevice, viewMode, PsychoLogic.items);
-      loop = true;
-      psychoLoop();
-      vkDeviceWaitIdle(vulkanManager.getDevice());
+      init(physicalDevice, viewMode);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Start the psychoEngine in the default physical device, view mode, and input
+   * 
+   * @param device Device for a USB controller
+   * @param paradigm Psychophysics paradigm for mapping input to commands
+   *
+   * @since 0.0.1
+   */
+  public void start(String device, Paradigm paradigm) {
+    start(physicalDevices.get(0), ViewMode.MONO, device, paradigm);
+  }
+
+  /**
+   * Start the psychoEngine in the default physical device, view mode, and input
+   * 
+   * @param viewMode The view mode
+   * @param device Device for a USB controller
+   * @param paradigm Psychophysics paradigm for mapping input to commands
+   *
+   * @since 0.0.1
+   */
+  public void start(ViewMode viewMode, String device, Paradigm paradigm) {
+    start(physicalDevices.get(0), viewMode, device, paradigm);
+  }
+
+  /**
+   * Run the psychoEngine in a selected physical device
+   *
+   * @param physicalDevice The physical device for the psychoEngine run
+   * @param viewMode The view mode
+   * @param device Device for a USB controller
+   * @param paradigm Psychophysics paradigm for mapping input to commands
+   *
+   * @since 0.0.1
+   */
+  public void start(VkPhysicalDevice physicalDevice, ViewMode viewMode, String device, Paradigm paradigm) {
+    try {
+      window.setController(device, paradigm);
+      init(physicalDevice, viewMode);
+    } catch (SerialPortException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Initialize psychoEngine
+   *
+   * @since 0.0.1
+   */
+  private void init(VkPhysicalDevice physicalDevice, ViewMode viewMode) {
+    psychoLogic.init(this);
+    vulkanManager.start(physicalDevice, viewMode, PsychoLogic.items);
+    loop = true;
+    psychoLoop();
+    vkDeviceWaitIdle(vulkanManager.getDevice());
   }
 
   /**
@@ -152,14 +206,20 @@ public class PsychoEngine {
 
   /**
    * Clean up after use
-   *
+   * 
+   * @throws SerialPortException
+   * 
    * @since 0.0.1
    */
   public void cleanup() {
-    vulkanManager.cleanup();
-    window.cleanup();
-    glfwTerminate();
-    Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+    try {
+      vulkanManager.cleanup();
+      window.cleanup();
+      glfwTerminate();
+      Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+    } catch (SerialPortException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

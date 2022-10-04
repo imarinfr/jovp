@@ -57,6 +57,8 @@ public class Window {
    * @param input Input type except USB serial port
    * @param paradigm The paradigm to use for mapping
    * 
+   * @throws IllegalArgumentException
+   * 
    * @since 0.0.1
    */
   public void setController(Input input, Paradigm paradigm) throws IllegalArgumentException {
@@ -69,12 +71,14 @@ public class Window {
    *
    * @param device Name of the device to use as USB controller
    * @param paradigm The paradigm to use for mapping
+   *
    * @throws SerialPortException
    * 
    * @since 0.0.1
    */
   public void setController(String device, Paradigm paradigm) throws SerialPortException {
-    controller = new Controller(device, paradigm);
+    controller = new Controller(window, device, paradigm);
+    controller.open();
   }
 
   /**
@@ -143,9 +147,12 @@ public class Window {
   /**
    * Close window and clean up
    *
+   * @throws SerialPortException
+   *
    * @since 0.0.1
    */
-  void cleanup() {
+  void cleanup() throws SerialPortException {
+    if (controller != null) controller.close();
     glfwSetWindowShouldClose(window, true);
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);

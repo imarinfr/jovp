@@ -2,25 +2,87 @@ package es.optocom.jovp;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Input;
 import es.optocom.jovp.definitions.Paradigm;
-import es.optocom.jovp.definitions.SerialController;
+import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
+import jssc.SerialPortList;
+import jssc.SerialPortTimeoutException;
 
 /**
  * Input schemes for different psychophysics paradigms
  *
  * @since 0.0.1
  */
-public class Controller {
+public class Controller implements SerialPortEventListener {
 
+  /** Byte count for USB serial controller */
+  private static final int BYTE_COUNT = 5;
+  /** Timeout for USB serial controller */
+  private static final int TIMEOUT = 50;
+  /** USB button code: Button 1 */
+  private static final int BUTTON1 = 1;
+  /** USB button code: Button 2 */
+  private static final int BUTTON2 = 2;
+  /** USB button code: Button 3 */
+  private static final int BUTTON3 = 3;
+  /** USB button code: Button 4 */
+  private static final int BUTTON4 = 4;
+  /** USB button code: Button 5 */
+  private static final int BUTTON5 = 5;
+  /** USB button code: Button 6 */
+  private static final int BUTTON6 = 6;
+  /** USB button code: Button 7 */
+  private static final int BUTTON7 = 7;
+  /** USB button code: Button 8 */
+  private static final int BUTTON8 = 8;
+  /** USB button code: Button 9 */
+  private static final int BUTTON9 = 9;
+
+  /** Error message for serial port exception */
   private static final String CANNOT_SET_INPUT = "The parameters for a USB connection are the 'device' name and paradigm";
+
+  /**
+   * Scans the port for suitable USB connections
+   *
+   * @return The list of suitable USB connections
+   *
+   * @since 0.0.1
+  */
+  public static String[] getSuitableConnections() {
+    Pattern pattern = switch (System.getProperty("os.name")) {
+      case "Linux" -> Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
+      case "SunOS" -> Pattern.compile("[0-9]*|[a-z]*");
+      case "Mac OS X", "Darwin" -> Pattern.compile("cu\\.usbserial\\-");
+      case "Win" -> Pattern.compile("");
+      default -> Pattern.compile(""); // 'Win' and other unknown OS
+    };
+    return SerialPortList.getPortNames(pattern);
+  }
+
+  /**
+   * Find a connection matching name
+   *
+   * @return The first in the list of suitable USB connections that matches the name
+   *
+   * @since 0.0.1
+  */
+  public static String byName(String name) {
+    return Arrays.stream(getSuitableConnections())
+      .filter(Pattern.compile(name).asPredicate())
+      .findFirst().orElse(null).toString();
+  }
 
   /** Input device */
   private final Input input;
   /** USB port */
-  private final SerialController usb;
+  private final SerialPort usb;
   /** Psychophysics paradigm to map input to commands */
   private final Paradigm paradigm;
   /** Controller command */
@@ -39,11 +101,26 @@ public class Controller {
     this.input = input;
     this.paradigm = paradigm;
     this.usb = null;
+    glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
     switch (input) {
       case MOUSE -> mouseCallbacks(windowHandle);
       case KEYPAD -> keypadCallbacks(windowHandle);
       default -> throw new IllegalArgumentException(CANNOT_SET_INPUT);
     }
+  }
+
+  /**
+   * Controller type and settings
+   *
+   * @param windowHandle The window handle
+   * @param device The device name
+   * @param paradigm Preset scheme for the psychophysics paradigm
+   *
+   * @since 0.0.1
+   */
+  Controller(long windowHandle, String device, Paradigm paradigm) throws SerialPortException {
+    this(device, paradigm);
+    glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
   }
 
   /**
@@ -57,8 +134,65 @@ public class Controller {
   Controller(String device, Paradigm paradigm) throws SerialPortException {
     this.input = Input.USB;
     this.paradigm = paradigm;
-    this.usb = new SerialController(device);
-    usbCallbacks(usb);
+    this.usb = new SerialPort(byName(device));
+  }
+
+  /**
+   * Opens a serial controller for a specific device
+   *
+   * @throws SerialPortException if port cannot be opened
+   *
+   * @since 0.0.1
+  */
+  public void open() throws SerialPortException {
+    usb.openPort();
+    purge();
+    usb.addEventListener(this);
+  }
+
+  /**
+   * Closes the port
+   *
+   * @throws SerialPortException if port cannot be closed
+   *
+   * @since 0.0.1
+  */
+  public void close() throws SerialPortException {
+    usb.closePort();
+  }
+
+  /**
+   * Purges the Serial port upon request and if it contains data
+   *
+   * @throws SerialPortException if device cannot be purged
+   *
+   * @since 0.0.1
+  */
+  public void purge() throws SerialPortException {
+    if (usb.getInputBufferBytesCount() > 0)
+      usb.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+  }
+
+  /**
+   * For USB controllers, this is where the event is captured and processed
+   *
+   * @since 0.0.1
+  */
+  public void serialEvent(SerialPortEvent event) {
+    if (event.isRXCHAR()) {
+      try {
+        // TODO Code specifically for the ImoVifa button
+        // TODO On click it sends 5 bytes (as ints: 42 79 78 78 35)
+        // TODO On release it sends 5 bytes (as ints: 42 79 70 70 35)
+        int[] msg = usb.readIntArray(BYTE_COUNT, TIMEOUT);
+        for (int i : msg) System.out.print(i + " ");
+        if (msg[3] == 78) System.out.println("Pressed");
+        if (msg[3] == 70) System.out.println("Released");
+        if (msg[3] == 78) usbButton(1, GLFW_PRESS);
+      } catch (SerialPortException | SerialPortTimeoutException e) {
+        throw new RuntimeException(e);
+      }    
+    }
   }
 
   /**
@@ -98,20 +232,13 @@ public class Controller {
 
   /** add callbacks to keys in the specified window */
   private void mouseCallbacks(long windowHandle) {
-    glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
     glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> buttonPressed(button, action));
   }
 
   /** add callbacks to keys in the specified window */
   private void keypadCallbacks(long windowHandle) {
-    glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
     glfwSetMouseButtonCallback(windowHandle, null);
     glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> keyPressed(key, action));
-  }
-
-  /** add callbacks to keys in the specified window */
-  private void usbCallbacks(SerialController usb) {
-    // TODO setup callbacks
   }
 
   /** close window icon clicked */
@@ -119,18 +246,18 @@ public class Controller {
     command = Command.CLOSE;
   }
 
-  /** key pressed */
-  private void keyPressed(int key, int action) {
-    if (action == GLFW_PRESS) {
-      command = processCommand(key);
-    }
+  /** mouse button pressed */
+  private void usbButton(int button, int action) {
+    if (action == GLFW_PRESS) command = processCommand(button);
   }
-
   /** mouse button pressed */
   private void buttonPressed(int button, int action) {
-    if (action == GLFW_PRESS) {
-      command = processCommand(button);
-    }
+    if (action == GLFW_PRESS) command = processCommand(button);
+  }
+  
+  /** keypad key pressed */
+  private void keyPressed(int key, int action) {
+    if (action == GLFW_PRESS) command = processCommand(key);
   }
 
   /** response for a clicker paradigm */
@@ -138,7 +265,7 @@ public class Controller {
     return switch(input) {
       case MOUSE -> command == GLFW_MOUSE_BUTTON_LEFT ? Command.YES : Command.NONE;
       case KEYPAD -> command == GLFW_KEY_KP_0 ? Command.YES : Command.NONE;
-      case USB -> Command.NONE; // TODO
+      case USB -> command == BUTTON1 ? Command.YES : Command.NONE;
     };
   }
 
@@ -157,90 +284,184 @@ public class Controller {
           case GLFW_KEY_KP_6 -> Command.ITEM2;
           default -> Command.NONE;
         };
-      case USB -> Command.NONE; // TODO
+      case USB -> 
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          default -> Command.NONE;
+        };
     };
   }
 
   /** response for a 2AFC paradigm, vertical setup */
   private Command process2AfcVertical(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_8 -> Command.ITEM1;
-      case GLFW_KEY_KP_5 -> Command.ITEM2;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_8 -> Command.ITEM1;
+          case GLFW_KEY_KP_5 -> Command.ITEM2;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 3AFC paradigm, horizontal setup */
   private Command process3AfcHorizontal(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_4 -> Command.ITEM1;
-      case GLFW_KEY_KP_5 -> Command.ITEM2;
-      case GLFW_KEY_KP_6 -> Command.ITEM3;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_4 -> Command.ITEM1;
+          case GLFW_KEY_KP_5 -> Command.ITEM2;
+          case GLFW_KEY_KP_6 -> Command.ITEM3;
+          default -> Command.NONE;
+      };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 3AFC paradigm, vertical setup */
   private Command process3AfcVertical(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_8 -> Command.ITEM1;
-      case GLFW_KEY_KP_5 -> Command.ITEM2;
-      case GLFW_KEY_KP_2 -> Command.ITEM3;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_8 -> Command.ITEM1;
+          case GLFW_KEY_KP_5 -> Command.ITEM2;
+          case GLFW_KEY_KP_2 -> Command.ITEM3;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 4AFC paradigm, cross setup */
   private Command process4AfcCross(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_8 -> Command.ITEM1;
-      case GLFW_KEY_KP_4 -> Command.ITEM2;
-      case GLFW_KEY_KP_6 -> Command.ITEM3;
-      case GLFW_KEY_KP_2 -> Command.ITEM4;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_8 -> Command.ITEM1;
+          case GLFW_KEY_KP_4 -> Command.ITEM2;
+          case GLFW_KEY_KP_6 -> Command.ITEM3;
+          case GLFW_KEY_KP_2 -> Command.ITEM4;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          case BUTTON4 -> Command.ITEM4;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 4AFC paradigm, diagonal setup */
   private Command process4AfcDiagonal(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_7 -> Command.ITEM1;
-      case GLFW_KEY_KP_9 -> Command.ITEM2;
-      case GLFW_KEY_KP_1 -> Command.ITEM3;
-      case GLFW_KEY_KP_3 -> Command.ITEM4;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_7 -> Command.ITEM1;
+          case GLFW_KEY_KP_9 -> Command.ITEM2;
+          case GLFW_KEY_KP_1 -> Command.ITEM3;
+          case GLFW_KEY_KP_3 -> Command.ITEM4;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          case BUTTON4 -> Command.ITEM4;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 8AFC paradigm */
   private Command process8Afc(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_7 -> Command.ITEM1;
-      case GLFW_KEY_KP_8 -> Command.ITEM2;
-      case GLFW_KEY_KP_9 -> Command.ITEM3;
-      case GLFW_KEY_KP_4 -> Command.ITEM4;
-      case GLFW_KEY_KP_6 -> Command.ITEM5;
-      case GLFW_KEY_KP_1 -> Command.ITEM6;
-      case GLFW_KEY_KP_2 -> Command.ITEM7;
-      case GLFW_KEY_KP_3 -> Command.ITEM8;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_7 -> Command.ITEM1;
+          case GLFW_KEY_KP_8 -> Command.ITEM2;
+          case GLFW_KEY_KP_9 -> Command.ITEM3;
+          case GLFW_KEY_KP_4 -> Command.ITEM4;
+          case GLFW_KEY_KP_6 -> Command.ITEM5;
+          case GLFW_KEY_KP_1 -> Command.ITEM6;
+          case GLFW_KEY_KP_2 -> Command.ITEM7;
+          case GLFW_KEY_KP_3 -> Command.ITEM8;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          case BUTTON4 -> Command.ITEM4;
+          case BUTTON5 -> Command.ITEM5;
+          case BUTTON6 -> Command.ITEM6;
+          case BUTTON7 -> Command.ITEM7;
+          case BUTTON8 -> Command.ITEM8;
+          default -> Command.NONE;
+        };
+      };
   }
 
   /** response for a 9AFC paradigm */
   private Command process9Afc(int command) {
-    return switch (command) {
-      case GLFW_KEY_KP_7 -> Command.ITEM1;
-      case GLFW_KEY_KP_8 -> Command.ITEM2;
-      case GLFW_KEY_KP_9 -> Command.ITEM3;
-      case GLFW_KEY_KP_4 -> Command.ITEM4;
-      case GLFW_KEY_KP_5 -> Command.ITEM5;
-      case GLFW_KEY_KP_6 -> Command.ITEM6;
-      case GLFW_KEY_KP_1 -> Command.ITEM7;
-      case GLFW_KEY_KP_2 -> Command.ITEM8;
-      case GLFW_KEY_KP_3 -> Command.ITEM9;
-      default -> Command.NONE;
-    };
+    return switch(input) {
+      case MOUSE -> Command.NONE;
+      case KEYPAD ->
+        switch (command) {
+          case GLFW_KEY_KP_7 -> Command.ITEM1;
+          case GLFW_KEY_KP_8 -> Command.ITEM2;
+          case GLFW_KEY_KP_9 -> Command.ITEM3;
+          case GLFW_KEY_KP_4 -> Command.ITEM4;
+          case GLFW_KEY_KP_5 -> Command.ITEM5;
+          case GLFW_KEY_KP_6 -> Command.ITEM6;
+          case GLFW_KEY_KP_1 -> Command.ITEM7;
+          case GLFW_KEY_KP_2 -> Command.ITEM8;
+          case GLFW_KEY_KP_3 -> Command.ITEM9;
+          default -> Command.NONE;
+        };
+      case USB ->
+        switch (command) {
+          case BUTTON1 -> Command.ITEM1;
+          case BUTTON2 -> Command.ITEM2;
+          case BUTTON3 -> Command.ITEM3;
+          case BUTTON4 -> Command.ITEM4;
+          case BUTTON5 -> Command.ITEM5;
+          case BUTTON6 -> Command.ITEM6;
+          case BUTTON7 -> Command.ITEM7;
+          case BUTTON8 -> Command.ITEM8;
+          case BUTTON9 -> Command.ITEM9;
+          default -> Command.NONE;
+        };
+      };
   }
 
 }
