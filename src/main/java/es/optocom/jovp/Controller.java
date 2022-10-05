@@ -55,7 +55,7 @@ public class Controller implements SerialPortEventListener {
    *
    * @since 0.0.1
   */
-  public static String[] getSuitableConnections() {
+  public static String[] getSuitableControllers() {
     Pattern pattern = switch (System.getProperty("os.name")) {
       case "Linux" -> Pattern.compile("(ttyS|ttyUSB|ttyACM|ttyAMA|rfcomm|ttyO)[0-9]{1,3}");
       case "SunOS" -> Pattern.compile("[0-9]*|[a-z]*");
@@ -74,7 +74,7 @@ public class Controller implements SerialPortEventListener {
    * @since 0.0.1
   */
   public static String searchByName(String name) {
-    return Arrays.stream(getSuitableConnections())
+    return Arrays.stream(getSuitableControllers())
       .filter(Pattern.compile(name).asPredicate())
       .findFirst().orElse(null).toString();
   }

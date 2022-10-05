@@ -26,7 +26,7 @@ public class SerialControllerTest {
    */
   @Test
   public void getSerialControllerNames() {
-    String [] available = Controller.getSuitableConnections();
+    String [] available = Controller.getSuitableControllers();
     System.out.println(Arrays.toString(available));
   }
 
