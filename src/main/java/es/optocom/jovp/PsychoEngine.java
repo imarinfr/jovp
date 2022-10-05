@@ -127,7 +127,7 @@ public class PsychoEngine {
       window.setController(input, paradigm);
       init(physicalDevice, viewMode);
     } catch (SerialPortException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Cannot start psychoEngine.", e);
     }
   }
 
@@ -168,7 +168,7 @@ public class PsychoEngine {
       glfwTerminate();
       Objects.requireNonNull(glfwSetErrorCallback(null)).free();
     } catch (SerialPortException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Cannot cleanup the psychoEngine", e);
     }
   }
 

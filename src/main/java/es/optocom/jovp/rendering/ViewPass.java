@@ -219,7 +219,7 @@ class ViewPass {
       String source = IOUtils.toString(inputStream, String.valueOf(StandardCharsets.UTF_8));
       return compileShader(shaderFile, source, shaderKind);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Cannot compile shader file", e);
     }
   }
 

@@ -238,7 +238,7 @@ public class Model {
           indices[i] = model.indices.get(i);
       }
     } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Could load moodel.", e);
     }
   }
 
@@ -498,8 +498,8 @@ public class Model {
       }
       vertices = vertexArrayList.toArray(new Vertex[0]);
       indices = indicesArrayList.toArray(new Integer[0]);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException("Could not load Optotype", e);
     }
     indices = expandIndices(indices);
   }

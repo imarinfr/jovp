@@ -161,7 +161,7 @@ public class Texture {
       size = PIXEL_SIZE * width * height;
       mipLevels = (int) Math.floor(log2(Math.max(width, height))) + 1;
     } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Cannot create texture.", e);
     }
   }
 
