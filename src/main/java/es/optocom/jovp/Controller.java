@@ -69,6 +69,7 @@ public class Controller implements SerialPortEventListener {
   /**
    * Find a connection matching name
    *
+   * @param name Name to match
    * @return The first in the list of suitable USB connections that matches the name
    *
    * @since 0.0.1
@@ -126,7 +127,7 @@ public class Controller implements SerialPortEventListener {
   /**
    * Check whether controller is connected through a USB serial port
    *
-   * @returns whether controller is connected through a USB serial port
+   * @return whether controller is connected through a USB serial port
    *
    * @since 0.0.1
   */

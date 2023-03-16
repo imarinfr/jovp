@@ -28,8 +28,6 @@ public interface PsychoLogic {
    * @param psychoEngine The engine to retrieve info as required
    * @param command The command received
    * 
-   * @return whether to finish the loop or not
-   *
    * @since 0.0.1
    */
   void input(PsychoEngine psychoEngine, Command command);

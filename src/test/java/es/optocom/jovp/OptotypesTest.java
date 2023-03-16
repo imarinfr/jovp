@@ -34,6 +34,8 @@ public class OptotypesTest {
    */
   @Test
   public void showAllOptotypes() {
+    final String classPath = System.getProperty("java.class.path", ".");
+    System.out.println(classPath);
     PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();

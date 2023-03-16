@@ -157,7 +157,7 @@ public class PsychoEngine {
   /**
    * Clean up after use
    * 
-   * @throws SerialPortException
+   * @throws RuntimeException Cannot clean up the psychoEngine
    * 
    * @since 0.0.1
    */

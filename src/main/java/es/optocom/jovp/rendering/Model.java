@@ -34,7 +34,7 @@ import static org.lwjgl.assimp.Assimp.*;
 public class Model {
 
   private static final int VERTICES_CIRCLE = 500; // For circles and annulus: MUST BE EVEN!!!
-  private static final String OPTOTYPE_OBJECT = "es/optocom/jovp/models/Sloan.obj"; // Optotypes object file
+  private static final String OPTOTYPE_OBJECT = "/es/optocom/jovp/models/Sloan.obj"; // Optotypes object file
   private static final float DEFAULT_HOLLOW_RATIO = 0.5f;
   private static final Optotype DEFAULT_OPTOTYPE = Optotype.E;
 
@@ -467,13 +467,13 @@ public class Model {
 
   /** create vertices and indices for an optotype */
   private void optotype(Optotype optotype) {
-    File file = new File(Objects.requireNonNull(getSystemClassLoader().getResource(OPTOTYPE_OBJECT)).getFile());
-    ArrayList<Vertex> vertexArrayList = new ArrayList<>();
-    ArrayList<Integer> indicesArrayList = new ArrayList<>();
-    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    try(InputStream in = this.getClass().getResourceAsStream(OPTOTYPE_OBJECT);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+      ArrayList<Vertex> vertexArrayList = new ArrayList<>();
+      ArrayList<Integer> indicesArrayList = new ArrayList<>();
       while (true) {
         String line = reader.readLine();
-        if (null == line)
+        if (line == null)
           break; // if end of line, then exit
         if (line.length() == 0 || line.charAt(0) != 'g' ||
             !line.substring(2, 3).equals(optotype.toString()))

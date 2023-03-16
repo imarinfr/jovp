@@ -65,7 +65,7 @@ public class Window {
 
   /**
    * Returns the command recorded from the input device
-   * 
+   * @return command
    * @since 0.0.1
    */
   public Command getCommand() {
