@@ -33,7 +33,6 @@ import static org.lwjgl.vulkan.EXTSwapchainColorspace.VK_COLOR_SPACE_HDR10_ST208
 import static org.lwjgl.vulkan.EXTSwapchainColorspace.VK_COLOR_SPACE_PASS_THROUGH_EXT;
 import static org.lwjgl.vulkan.KHRDisplaySwapchain.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR;
 import static org.lwjgl.vulkan.KHRMultiview.VK_KHR_MULTIVIEW_EXTENSION_NAME;
-import static org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSharedPresentableImage.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR;
 import static org.lwjgl.vulkan.KHRSurface.*;
@@ -423,7 +422,6 @@ class VulkanSetup {
   static final Set<String> DEVICE_EXTENSIONS = Stream.of(
       new String[] {
           VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-          VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME,
           VK_KHR_MULTIVIEW_EXTENSION_NAME
       }).collect(toSet());
 

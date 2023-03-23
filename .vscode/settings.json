@@ -4,7 +4,7 @@
   "java.dependency.syncWithFolderExplorer": true,
   "java.dependency.packagePresentation": "hierarchical",
   "java.test.config": {
-    "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"]
+    "vmArgs": [ "${env:LWJGL_MAC_JAVA_VM_FLAGS}", "-Dorg.lwjgl.librarypath=${env:VULKAN_SDK}/lib"]
   },
   "glsl-linter.validatorPath": "/usr/local/bin/glslangValidator",
   "glsl-linter.fileExtensions": {
