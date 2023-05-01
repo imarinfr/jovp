@@ -28,7 +28,7 @@ layout(location = 7) out flat vec4 contrast;
 
 void main() {
     //gl_Position = ubo.proj * ubo.view * ubo.optics * ubo.transform * vec4(position, 1.0);
-    gl_Position = ubo.proj * ubo.transform * vec4(position, 1.0);
+    gl_Position = ubo.transform * vec4(position, 1.0);
     uv_out = uv;
     settings = ubo.settings;
     frequency = ubo.frequency;

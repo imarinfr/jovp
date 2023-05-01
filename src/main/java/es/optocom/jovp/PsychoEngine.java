@@ -56,9 +56,9 @@ public class PsychoEngine {
   /**
    * Main method for the JOVP
    *
-   * @param psychoLogic      Logic for the psychophysics experience
+   * @param psychoLogic Logic for the psychophysics experience
    * @param validationLayers Whether to use validation layers
-   * @param apiDump          Whether to use the VK_LAYER_LUNARG_api_dump layer
+   * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
    *
    * @since 0.0.1
    */

@@ -119,8 +119,8 @@ public class VulkanManagerTest {
     @Override
     public void init(PsychoEngine psychoEngine) {
       Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] {1, 1, 1, 1}));
-      item.position(0, 0, -100);
-      item.size(100, 100);
+      item.position(0, 0);
+      item.size(0.1, 0.1);
       item.rotation(0);
       view.add(item);
     }
