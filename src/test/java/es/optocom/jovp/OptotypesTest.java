@@ -36,7 +36,7 @@ public class OptotypesTest {
   public void showAllOptotypes() {
     final String classPath = System.getProperty("java.class.path", ".");
     System.out.println(classPath);
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
@@ -63,34 +63,34 @@ public class OptotypesTest {
 
     @Override
     public void init(PsychoEngine psychoEngine) {
-      items.add(new Item(new Model(Optotype.A), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.B), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.C), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.D), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.E), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.F), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.G), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.H), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.I), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.J), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.K), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.L), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.M), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.N), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.O), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.P), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.Q), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.R), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.S), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.T), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.U), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.V), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.W), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.X), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
-      items.add(new Item(new Model(Optotype.Y), new Texture(TextureType.SINE, colorBlue, colorYellow)));
-      items.add(new Item(new Model(Optotype.Z), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.A), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.B), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.C), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.D), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.E), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.F), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.G), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.H), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.I), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.J), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.K), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.L), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.M), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.N), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.O), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.P), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.Q), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.R), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.S), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.T), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.U), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.V), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.W), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.X), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
+      view.add(new Item(new Model(Optotype.Y), new Texture(TextureType.SINE, colorBlue, colorYellow)));
+      view.add(new Item(new Model(Optotype.Z), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
       float xpos = initialPos;
-      for (Item item : items) {
+      for (Item item : view.items()) {
         item.position(xpos, 0.0f);
         item.size(size, size);
         xpos += spacing;
@@ -100,13 +100,13 @@ public class OptotypesTest {
       title.setText("Optotype test");
       title.size(1.5);
       title.position(-3, 8);
-      items.add(title);
+      view.add(title);
       // Add text to show FPS
       text = new Text(textColor1);
       text.setText("Refresh rate:");
       text.size(0.75);
       text.position(-15, 7.5);
-      items.add(text);
+      view.add(text);
       timer.start();
       // Start timer
       timer.start();
@@ -123,7 +123,7 @@ public class OptotypesTest {
       theta -= 5;
       float xpos = initialPos;
       float ypos = 0.0f;
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() == ModelType.OPTOTYPE) {
           item.position(xpos, ypos);
           item.rotation(theta);
@@ -134,7 +134,7 @@ public class OptotypesTest {
         fps++;
       else { // restart the timer every second
         if (inverted) {
-          for (Item item : items) {
+          for (Item item : view.items()) {
             if (item.getTexture().getType() == TextureType.CHECKERBOARD)
               item.setColors(colorGreen, colorRed);
             if (item.getTexture().getType() == TextureType.SINE)
@@ -142,7 +142,7 @@ public class OptotypesTest {
           }
           text.setColor(textColor2);
         } else {
-          for (Item item : items) {
+          for (Item item : view.items()) {
             if (item.getTexture().getType() == TextureType.CHECKERBOARD)
               item.setColors(colorRed, colorGreen);
             if (item.getTexture().getType() == TextureType.SINE)

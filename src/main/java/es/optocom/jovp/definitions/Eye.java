@@ -11,5 +11,7 @@ public enum Eye {
   /** Right eye */
   RIGHT,
   /** Both eyes */
-  BOTH
+  BOTH,
+  /** No eye */
+  NONE
 }

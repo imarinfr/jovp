@@ -28,7 +28,7 @@ public class WindowTest {
    */
   @Test
   public void showAndHide() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     try {
       for (int i = 0; i < 5; i++) {
         psychoEngine.show();
@@ -49,7 +49,7 @@ public class WindowTest {
    */
   @Test
   public void showWindowedAndFullScreen() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.show();
     psychoEngine.setFullScreen();
     psychoEngine.setWindowed();
@@ -64,8 +64,8 @@ public class WindowTest {
    */
   @Test
   public void changeWindowPositionAndSize() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
-    assertArrayEquals(new int[] {psychoEngine.getMonitor().getWidth() / 2, 0}, psychoEngine.getPosition());
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
+    assertArrayEquals(new int[] {psychoEngine.getMonitor().getScaledWidth() / 2, 0}, psychoEngine.getPosition());
     // position is relative to monitor workspace in the virtual desktop
     psychoEngine.setPosition(10, 10);
     assertArrayEquals(new int[] {10, 10}, psychoEngine.getPosition());

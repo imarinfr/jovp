@@ -3,11 +3,10 @@ package es.optocom.jovp;
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.ViewMode;
+import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.VulkanManager;
 import jssc.SerialPortException;
 
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
@@ -32,6 +31,7 @@ public class PsychoEngine {
 
   private final PsychoLogic psychoLogic;
   private final Window window;
+  private final Observer observer;
   private final VulkanManager vulkanManager;
   private final List<VkPhysicalDevice> physicalDevices;
 
@@ -46,34 +46,31 @@ public class PsychoEngine {
    * Main method for the JOVP
    *
    * @param psychoLogic Logic for the psychophysics experience
-   * @param distance    Viewing distance of the observer in mm
    *
    * @since 0.0.1
    */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance) {
-    this(psychoLogic, distance, VALIDATION_LAYERS, API_DUMP);
+  public PsychoEngine(PsychoLogic psychoLogic) {
+    this(psychoLogic, VALIDATION_LAYERS, API_DUMP);
   }
 
   /**
    * Main method for the JOVP
    *
    * @param psychoLogic      Logic for the psychophysics experience
-   * @param distance         Viewing distance of the observer in mm
    * @param validationLayers Whether to use validation layers
    * @param apiDump          Whether to use the VK_LAYER_LUNARG_api_dump layer
    *
    * @since 0.0.1
    */
-  public PsychoEngine(PsychoLogic psychoLogic, int distance, boolean validationLayers, boolean apiDump) {
+  public PsychoEngine(PsychoLogic psychoLogic, boolean validationLayers, boolean apiDump) {
     glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
-    if (!glfwInit())
-      throw new RuntimeException("Cannot initialize GLFW");
+    if (!glfwInit()) throw new RuntimeException("Cannot initialize GLFW");
     this.psychoLogic = psychoLogic;
     window = new Window();
-    vulkanManager = new VulkanManager(window, distance, validationLayers, apiDump);
+    observer = new Observer(window);
+    vulkanManager = new VulkanManager(observer, validationLayers, apiDump);
     physicalDevices = vulkanManager.getPhysicalDevices();
     getRunTimeInfo();
-    setView();
   }
 
   /**
@@ -88,7 +85,7 @@ public class PsychoEngine {
   }
 
   /**
-   * Start the psychoEngine in the default physical device, view mode, and input
+   * Start the psychoEngine in the default physical device
    * 
    * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
    * @param paradigm Psychophysics paradigm for mapping input to commands
@@ -96,20 +93,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public void start(String input, Paradigm paradigm) {
-    start(physicalDevices.get(0), input, paradigm, ViewMode.MONO);
-  }
-
-  /**
-   * Start the psychoEngine in the default physical device
-   * 
-   * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
-   * @param paradigm Psychophysics paradigm for mapping input to commands
-   * @param viewMode The view mode
-   *
-   * @since 0.0.1
-   */
-  public void start(String input, Paradigm paradigm, ViewMode viewMode) {
-    start(physicalDevices.get(0), input, paradigm, viewMode);
+    start(physicalDevices.get(0), input, paradigm);
   }
 
   /**
@@ -118,14 +102,13 @@ public class PsychoEngine {
    * @param physicalDevice The physical device for the psychoEngine run
    * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
    * @param paradigm Psychophysics paradigm for mapping input to commands
-   * @param viewMode The view mode
    *
    * @since 0.0.1
    */
-  public void start(VkPhysicalDevice physicalDevice, String input, Paradigm paradigm, ViewMode viewMode) {
+  public void start(VkPhysicalDevice physicalDevice, String input, Paradigm paradigm) {
     try {
       window.setController(input, paradigm);
-      init(physicalDevice, viewMode);
+      init(physicalDevice);
     } catch (SerialPortException e) {
       throw new RuntimeException("Cannot start psychoEngine.", e);
     }
@@ -136,9 +119,9 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  private void init(VkPhysicalDevice physicalDevice, ViewMode viewMode) {
+  private void init(VkPhysicalDevice physicalDevice) {
     psychoLogic.init(this);
-    vulkanManager.start(physicalDevice, viewMode, PsychoLogic.items);
+    vulkanManager.start(physicalDevice, PsychoLogic.view.items);
     loop = true;
     window.show();
     psychoLoop();
@@ -163,6 +146,7 @@ public class PsychoEngine {
    */
   public void cleanup() {
     try {
+      PsychoLogic.view.destroy();
       vulkanManager.cleanup();
       window.cleanup();
       glfwTerminate();
@@ -243,7 +227,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public void setViewMode(ViewMode viewMode) {
-    vulkanManager.setViewMode(viewMode);
+    observer.setViewMode(viewMode);
   }
 
   /**
@@ -254,7 +238,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public ViewMode getViewMode() {
-    return vulkanManager.getViewMode();
+    return observer.getViewMode();
   }
 
   /**
@@ -265,7 +249,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public void setDistance(double distance) {
-    vulkanManager.setDistance(distance);
+    observer.setDistance(distance);
   }
 
   /**
@@ -276,7 +260,7 @@ public class PsychoEngine {
    * @since 0.0.1
    */
   public double getDistance() {
-    return vulkanManager.getDistance();
+    return observer.getDistance();
   }
 
   /**
@@ -286,22 +270,8 @@ public class PsychoEngine {
    *
    * @since 0.0.1
    */
-  public double[] getFieldOfView() {
-    return vulkanManager.getFieldOfView();
-  }
-
-  /**
-   * Set view
-   *
-   * @since 0.0.1
-   */
-  public void setView() { // TODO: set view
-    Vector3f eye = new Vector3f(0.0f, 0.0f, 0.0f);
-    Vector3f center = new Vector3f(0.0f, 0.0f, 1.0f);
-    Vector3f up = new Vector3f(0.0f, -1f, 0.0f);
-    Matrix4f view = new Matrix4f();
-    view.lookAt(eye, center, up);
-    vulkanManager.setView(eye, center, up);
+  public float[] getFieldOfView() {
+    return observer.getFieldOfView();
   }
 
   /**
@@ -362,7 +332,7 @@ public class PsychoEngine {
   public void setSize(int width, int height) {
     window.setSize(width, height);
     window.update();
-    vulkanManager.computeFieldOfView();
+    observer.computeProjection();
   }
 
   /**

@@ -35,7 +35,7 @@ public class VisualAcuityTest {
    */
   @Test
   public void visualAcuityTest() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.start("mouse", Paradigm.M2AFC);
     psychoEngine.cleanup();
   }
@@ -64,20 +64,20 @@ public class VisualAcuityTest {
       Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
       bg.size(8, 8);
       bg.position(0, 0, 99);
-      items.add(bg);
+      view.add(bg);
       // Optotype
       optotype = new Item(new Model(Optotype.E), new Texture(black));
       optotype.position(0, 0, 10);
       optotype.size(size, size);
       theta = 180 * random.nextInt(2);
       optotype.rotation(theta);
-      items.add(optotype);
+      view.add(optotype);
       // Title
       Text title = new Text();
       title.setText("Visual Acuity test");
       title.size(1.5);
       title.position(-5, 8);
-      items.add(title);
+      view.add(title);
       // Info text
       info = new Text();
       info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
@@ -85,7 +85,7 @@ public class VisualAcuityTest {
           "Reversals: " + reversals);
       info.size(1);
       info.position(-15, 6.5);
-      items.add(info);
+      view.add(info);
     }
 
     @Override

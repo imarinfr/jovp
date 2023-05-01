@@ -36,7 +36,7 @@ public class PsychoEngineTest {
   @Test
   public void initializeEngine() {
     // Init psychoEngine and show some general info
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()));
     Window window = psychoEngine.getWindow();
     Monitor monitor = window.getMonitor();
     // Check distance was set correctly
@@ -45,12 +45,12 @@ public class PsychoEngineTest {
     assertEquals(psychoEngine.getDistance(), 300);
     // Check field of view
     int monitorWidthMM = 500;
-    int monitorHeightMM = (int) (monitorWidthMM * monitor.getHeight() / monitor.getWidth());
+    int monitorHeightMM = (int) (monitorWidthMM * monitor.getPixelAspect() * monitor.getHeight() / monitor.getWidth());
     double alpha = 90; // field of view
     monitor.setPhysicalSize(monitorWidthMM, monitorHeightMM);
     psychoEngine.setSize(monitor.getWidth(), monitor.getHeight());
     psychoEngine.setDistance(monitorWidthMM / (2 * Math.tan(Math.PI / 180.0 * alpha / 2.0)));
-    double[] fov = psychoEngine.getFieldOfView();
+    float[] fov = psychoEngine.getFieldOfView();
     assertEquals(90, Math.round(1e3 * fov[0]) / 1e3);
     assertEquals(ViewMode.MONO, psychoEngine.getViewMode());
     psychoEngine.setViewMode(ViewMode.MONO);
@@ -66,7 +66,7 @@ public class PsychoEngineTest {
    */
   @Test
   public void getPhysicalDevices() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()));
     List<VkPhysicalDevice> physicalDevices = psychoEngine.getPhysicalDevices();
     for (VkPhysicalDevice vkPhysicalDevice : physicalDevices)
       System.out.println(vkPhysicalDevice.toString());
@@ -80,7 +80,7 @@ public class PsychoEngineTest {
    */
   @Test
   public void getWindow() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()));
     Window window = psychoEngine.getWindow();
     // window position
     int[] position = psychoEngine.getPosition();
@@ -99,7 +99,7 @@ public class PsychoEngineTest {
   @Test
   public void runPsychoEngine() {
     Timer timer = new Timer();
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(timer), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic(timer));
     new Thread(() -> {
       while (timer.getElapsedTime() == -1) Thread.onSpinWait(); // wait for the beginning of the psychophysics experience
       while (timer.getElapsedTime() < 1000) Thread.onSpinWait(); // close window after 1 second

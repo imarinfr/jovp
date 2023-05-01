@@ -98,8 +98,8 @@ class ViewPass {
   /** create graphics pipeline */
   private void createGraphicsPipeline(long renderPass, int offset) {
     try (MemoryStack stack = stackPush()) {
-      SPIRV vertShaderSPIRV = compileShaderFile("/es/optocom/jovp/shaders/shader.vert", ShaderKind.VERTEX_SHADER);
-      SPIRV fragShaderSPIRV = compileShaderFile("/es/optocom/jovp/shaders/shader.frag", ShaderKind.FRAGMENT_SHADER);
+      SPIRV vertShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.vert", ShaderKind.VERTEX_SHADER);
+      SPIRV fragShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.frag", ShaderKind.FRAGMENT_SHADER);
       long vertShaderModule = createShaderModule(vertShaderSPIRV.bytecode());
       long fragShaderModule = createShaderModule(fragShaderSPIRV.bytecode());
       ByteBuffer entryPoint = stack.UTF8("main");
@@ -214,8 +214,7 @@ class ViewPass {
   /** compile shader file */
   private static SPIRV compileShaderFile(String shaderFile, ShaderKind shaderKind) {
     try {
-      InputStream inputStream = ViewPass.class.getResourceAsStream(shaderFile);
-      ViewPass.class.getResource("shaders/shader.vert");
+      InputStream inputStream = ViewPass.class.getClassLoader().getResourceAsStream(shaderFile);
       String source = IOUtils.toString(inputStream, String.valueOf(StandardCharsets.UTF_8));
       return compileShader(shaderFile, source, shaderKind);
     } catch (IOException e) {

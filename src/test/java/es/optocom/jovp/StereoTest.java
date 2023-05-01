@@ -30,7 +30,7 @@ public class StereoTest {
    */
   @Test
   public void stereoTest() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.setViewMode(ViewMode.STEREO);
     psychoEngine.setPhysicalSize(535, 295);
     psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -54,45 +54,45 @@ public class StereoTest {
     public void init(PsychoEngine psychoEngine) {
       background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor)); // background
       background.position(0, 0, 90);
-      items.add(background);
+      view.add(background);
       fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
       fixation.size(2);
-      items.add(fixation);
+      view.add(fixation);
       stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       stimulus1.position(-3, -3);
       stimulus1.size(4.5, 4.5);
       stimulus1.frequency(0, 0.5);
       stimulus1.rotation(45);
       stimulus1.contrast(0.75);
-      items.add(stimulus1);
+      view.add(stimulus1);
       stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       stimulus2.frequency(0, 2);
       stimulus2.position(3, 2);
       stimulus2.size(3, 1.5);
       stimulus2.eye(Eye.LEFT);
       stimulus2.contrast(0.25);
-      items.add(stimulus2);
+      view.add(stimulus2);
       stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE));
       stimulus3.eye(Eye.RIGHT);
       stimulus3.frequency(0, 2);
       stimulus3.position(3, -2);
       stimulus3.size(2, 2);
       stimulus3.contrast(0.5);
-      items.add(stimulus3);
+      view.add(stimulus3);
       // Add title
       Text title = new Text();
       title.setText("Stereoscopic view");
       title.eye(Eye.LEFT);
       title.size(0.75);
       title.position(-5, 5);
-      items.add(title);
+      view.add(title);
       // Add text to show FPS
       text = new Text();
       text.setText("Refresh rate:");
       text.eye(Eye.LEFT);
       text.size(0.6);
       text.position(-5, 4);
-      items.add(text);
+      view.add(text);
       // Start timer
       timer.start();
       timerFps.start();
@@ -106,7 +106,7 @@ public class StereoTest {
 
     @Override
     public void update(PsychoEngine psychoEngine) {
-      double[] fov = psychoEngine.getFieldOfView();
+      float[] fov = psychoEngine.getFieldOfView();
       background.size(fov[0], fov[1]);
       double time = timer.getElapsedTime();
       stimulus1.contrast(Math.sin(time / 1000.0) / 2 + 0.5);

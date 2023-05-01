@@ -11,6 +11,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
+ * 
  * Manages windows
  *
  * @since 0.0.1
@@ -28,12 +29,11 @@ public class Window {
   private int y;
   private int width;
   private int height;
-  private float xscale;
-  private float yscale;
   protected boolean fullScreen = false;
   protected boolean resized = false;
 
   /**
+   * 
    * Creates a window
    *
    * @since 0.0.1
@@ -48,6 +48,7 @@ public class Window {
   }
 
   /**
+   * 
    * Sets the controller for predefined inputs and paradigms
    *
    * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
@@ -64,6 +65,7 @@ public class Window {
   }
 
   /**
+   * 
    * Returns the command recorded from the input device
    * @return command
    * @since 0.0.1
@@ -73,6 +75,7 @@ public class Window {
   }
 
   /**
+   * 
    * Shows the window
    * 
    * @since 0.0.1
@@ -83,6 +86,7 @@ public class Window {
   }
 
   /**
+   * 
    * Hides the window
    * 
    * @since 0.0.1
@@ -93,6 +97,7 @@ public class Window {
   }
 
   /**
+   * 
    * Check whether the window has been resized
    *
    * @return Whether the window has been resized or not
@@ -104,6 +109,7 @@ public class Window {
   }
 
   /**
+   * 
    * Set resized to true
    *
    * @param resized Whether the window has been resized or not
@@ -115,6 +121,7 @@ public class Window {
   }
 
   /**
+   * 
    * Updates window content
    *
    * @since 0.0.1
@@ -124,6 +131,7 @@ public class Window {
   }
 
   /**
+   * 
    * Close window and clean up
    *
    * @throws SerialPortException
@@ -139,6 +147,7 @@ public class Window {
   }
 
   /**
+   * 
    * Get window handle
    *
    * @return The window handle
@@ -150,6 +159,7 @@ public class Window {
   }
 
   /**
+   * 
    * Sets window position relative to the current monitor
    *
    * @param x The x position in pixels
@@ -160,11 +170,12 @@ public class Window {
   void setPosition(int x, int y) {
     this.x = x;
     this.y = y;
-    int[] workingArea = getWorkingArea(monitor.getHandle());
+    int[] workingArea = getWorkingArea(monitor);
     glfwSetWindowPos(window, this.x + workingArea[0], this.y + workingArea[1]);
   }
 
   /**
+   * 
    * Get the window position (x, y) in pixels relative to Monitor
    *
    * @return The window position (x, y) in pixels relative to Monitor
@@ -176,6 +187,7 @@ public class Window {
   }
 
   /**
+   * 
    * Get monitor manager
    *
    * @return The monitor manager
@@ -187,6 +199,7 @@ public class Window {
   }
 
   /**
+   * 
    * Get monitor
    *
    * @return The monitor
@@ -198,6 +211,7 @@ public class Window {
   }
 
   /**
+   * 
    * Set monitor
    *
    * @param monitor The monitor to set for the window
@@ -207,7 +221,7 @@ public class Window {
   public void setMonitor(int monitor) {
     this.monitor = monitorManager.getMonitor(monitor);
     setContentScale();
-    int[] workingArea = getWorkingArea(this.monitor.getHandle());
+    int[] workingArea = getWorkingArea(this.monitor);
     x = workingArea[2] - width;
     y = 0;
     setPosition(x, y);
@@ -215,6 +229,7 @@ public class Window {
   }
 
   /**
+   * 
    * Get window width
    *
    * @return The window width in screen coordinates
@@ -222,10 +237,11 @@ public class Window {
    * @since 0.0.1
    */
   public int getWidth() {
-    return (int) (xscale * width);
+    return width;
   }
 
   /**
+   * 
    * Get height
    *
    * @return The window height in screen coordinates
@@ -233,43 +249,47 @@ public class Window {
    * @since 0.0.1
    */
   public int getHeight() {
-    return (int) (yscale * height);
+    return height;
   }
 
   /**
+   * 
    * Get pixel width
    *
    * @return The window width in screen coordinates
    *
    * @since 0.0.1
    */
-  public double getPixelWidth() {
+  public float getPixelWidth() {
     return monitor.getPixelWidth();
   }
 
   /**
-   * Get pixel aspect
-   *
-   * @return The aspect ratio between x and y pixel sizes
-   *
-   * @since 0.0.1
-   */
-  public double getPixelAspect() {
-    return monitor.getPixelAspect();
-  }
-
-  /**
+   * 
    * Get pixel height
    *
    * @return The window height in screen coordinates
    *
    * @since 0.0.1
    */
-  public double getPixelHeight() {
+  public float getPixelHeight() {
     return monitor.getPixelHeight();
   }
 
   /**
+   * 
+   * Get pixel aspect
+   *
+   * @return The aspect ratio between x and y pixel sizes
+   *
+   * @since 0.0.1
+   */
+  public float getAspectRatio() {
+    return monitor.getPixelAspect() * (float) getWidth() / getHeight();
+  }
+
+  /**
+   * 
    * Change to full-screen mode on demand
    *
    * @since 0.0.1
@@ -286,6 +306,7 @@ public class Window {
   }
 
   /**
+   * 
    * Change to windowed mode on demand
    *
    * @since 0.0.1
@@ -304,6 +325,7 @@ public class Window {
   }
 
   /**
+   * 
    * Sets window settings and updates window dimensions
    *
    * @since 0.0.1
@@ -341,8 +363,6 @@ public class Window {
     GLFWVidMode videoMode = glfwGetVideoMode(monitor.getHandle());
     if (videoMode == null)
       throw new RuntimeException("Cannot retrieve video mode");
-    xscale = monitor.getWidth() / (float) videoMode.width();
-    yscale = monitor.getHeight() / (float) videoMode.height();
   }
 
   /** Window resize callbacks */
@@ -352,12 +372,8 @@ public class Window {
       this.height = height;
       resized(true);
     });
-    glfwSetWindowContentScaleCallback(window, (window, xscale, yscale) -> {
-      this.xscale = xscale;
-      this.yscale = yscale;
-    });
     glfwSetWindowPosCallback(window, (window, x, y) -> {
-      int[] workingArea = getWorkingArea(monitor.getHandle());
+      int[] workingArea = getWorkingArea(monitor);
       this.x = x - workingArea[0];
       this.y = y - workingArea[1];
     });
@@ -365,14 +381,14 @@ public class Window {
   }
 
   /** Get the working area of a monitor on the virtual Desktop */
-  private int [] getWorkingArea(long monitor) {
+  private int [] getWorkingArea(Monitor monitor) {
     int[] workingArea = new int[4];
     // get working area
     int[] x = new int[1];
     int[] y = new int[1];
     int[] width = new int[1];
     int[] height = new int[1];
-    glfwGetMonitorWorkarea(monitor, x, y, width, height);
+    glfwGetMonitorWorkarea(monitor.getHandle(), x, y, width, height);
     workingArea[0] = x[0];
     workingArea[1] = y[0];
     workingArea[2] = width[0];
@@ -382,7 +398,7 @@ public class Window {
       int[] top = new int[1];
       int[] right = new int[1];
       int[] bottom = new int[1];
-      glfwGetWindowFrameSize(window, left, top, right, bottom);
+      glfwGetWindowFrameSize(monitor.getHandle(), left, top, right, bottom);
       workingArea[0] += left[0];
       workingArea[1] += top[0];
       workingArea[2] -= right[0];
@@ -393,7 +409,7 @@ public class Window {
 
   /** Default window dimensions for windowed mode */
   private void setDefaultDimensions() {
-    int[] workingArea = getWorkingArea(monitor.getHandle());
+    int[] workingArea = getWorkingArea(monitor);
     x = workingArea[2] / 2;
     y = 0;
     width = workingArea[2] / 2;

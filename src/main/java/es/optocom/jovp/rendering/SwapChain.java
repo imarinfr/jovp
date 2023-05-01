@@ -38,24 +38,24 @@ class SwapChain {
     long renderPass;
     List<ViewPass> viewPasses;
     List<Long> frameBuffers;
-    final float aspect;
 
     /**
      * create SwapChain
      *
+     * @param viewMode the view mode for rendering, whether MONO or STEREO
+     * 
      * @since 0.0.1
      */
-    SwapChain() {
+    SwapChain(ViewMode viewMode) {
         commandPool = VulkanSetup.createCommandPool();
         createSwapChain();
         createImageViews();
         createColorResources();
         createDepthResources();
         createRenderPass();
-        if (VulkanSetup.viewMode == ViewMode.STEREO) stereoSwapChain();
+        if (viewMode == ViewMode.STEREO) stereoSwapChain();
         else monoSwapChain();
         createFramebuffers();
-        aspect = (float) extent.width() / (float) extent.height();
     }
 
     /**
@@ -98,7 +98,7 @@ class SwapChain {
             VulkanSetup.SwapChainSupportDetails swapChainSupport = VulkanSetup.swapChainSupport(stack);
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
             int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-            VkExtent2D extent = chooseSwapExtent(VulkanSetup.window.getHandle(), swapChainSupport.capabilities);
+            VkExtent2D extent = chooseSwapExtent(VulkanSetup.observer.window.getHandle(), swapChainSupport.capabilities);
             IntBuffer imageCount = stack.ints(swapChainSupport.capabilities.minImageCount() + 1);
             if (swapChainSupport.capabilities.maxImageCount() > 0 &&
                     imageCount.get(0) > swapChainSupport.capabilities.maxImageCount())

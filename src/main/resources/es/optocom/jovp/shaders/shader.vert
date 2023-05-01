@@ -3,9 +3,9 @@
 layout(binding = 0) uniform UniformBufferObject {
     ivec4 settings;
     mat4 transform;
-    mat4 lens;
-    mat4 view;
     mat4 proj;
+    mat4 view;
+    mat4 optics;
     vec4 frequency;
     vec4 rotation;
     vec4 rgba0;
@@ -27,7 +27,8 @@ layout(location = 6) out flat vec4 envelope;
 layout(location = 7) out flat vec4 contrast;
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.lens * ubo.transform * vec4(position, 1.0);
+    //gl_Position = ubo.proj * ubo.view * ubo.optics * ubo.transform * vec4(position, 1.0);
+    gl_Position = ubo.proj * ubo.transform * vec4(position, 1.0);
     uv_out = uv;
     settings = ubo.settings;
     frequency = ubo.frequency;

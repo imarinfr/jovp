@@ -11,7 +11,7 @@ import es.optocom.jovp.definitions.Command;
 public interface PsychoLogic {
 
   /** Items for the psychophysics experience */
-  Items items = new Items();
+  View view = new View();
 
   /**
    * Initializes the engine

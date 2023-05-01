@@ -27,7 +27,7 @@ public class DeviceSupportTest {
    */
   @Test
   public void listDeviceExtensionSupport() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     for (VkPhysicalDevice physicalDevice : psychoEngine.getPhysicalDevices())
       System.out.println(psychoEngine.getVulkanManager().getPhysicalDeviceDeviceExtensionSupport(physicalDevice));
     psychoEngine.cleanup();

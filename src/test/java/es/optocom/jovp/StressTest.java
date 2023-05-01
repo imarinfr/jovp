@@ -31,7 +31,7 @@ public class StressTest {
    */
   @Test
   public void movingShapesAround() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
@@ -69,8 +69,8 @@ public class StressTest {
       circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
       circle.position(0, ypos, zpos);
       circle.size(size, size);
-      circle.show(false);
-      items.add(circle);
+      circle.eye(Eye.BOTH);
+      view.add(circle);
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
@@ -92,7 +92,7 @@ public class StressTest {
       if (time > 13425) {
         // throw myself at observer
         if (time > 14425) {
-          circle.show();
+          circle.eye(Eye.BOTH);
           circle.position(0, ypos + Math.sin(time / 100), zpos);
         }
         if (time > 16425) {
@@ -102,7 +102,7 @@ public class StressTest {
           circle.position(0, ypos, zpos);
           circle.size(size, size);
         }
-        if (zpos < 2) for (Item item : items) item.show(true);
+        if (zpos < 2) for (Item item : view.items()) item.eye(Eye.BOTH);
         return;
       }
       iteration++;
@@ -110,10 +110,10 @@ public class StressTest {
       float xpos = -16;
       int number = 0;
       // process optotypes
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() != ModelType.OPTOTYPE)
           continue;
-        double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (items.size() - 1)
+        double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1)
             * timer.getElapsedTime()) / 500);
         item.position(xpos, ypos);
         item.rotation(theta);
@@ -122,7 +122,7 @@ public class StressTest {
       }
       // process polygons
       int imageNumber = 0;
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() != ModelType.POLYGON)
           continue;
         int pos = iteration - 38 * imageNumber;
@@ -134,12 +134,12 @@ public class StressTest {
       }
       // process circles
       imageNumber = 0;
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() != ModelType.CIRCLE)
           continue;
         if (time < 8000)
           continue;
-        item.show();
+        item.eye(Eye.BOTH);
         leadPosition += 1 / 60.0;
         if (imageNumber < 10)
           item.position(leadPosition - 5 * imageNumber, 8, 10);
@@ -148,7 +148,7 @@ public class StressTest {
         imageNumber++;
       }
       // process triangle
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() != ModelType.TRIANGLE)
           continue;
         item.size(4 * Math.sin(iteration / 40.0) + 10, 4 * Math.sin(iteration / 30.0) + 10);
@@ -156,7 +156,7 @@ public class StressTest {
       }
       // process squares
       int square = 0;
-      for (Item item : items) {
+      for (Item item : view.items()) {
         if (item.getModel().getType() != ModelType.SQUARE)
           continue;
         if (square == 0)
@@ -180,33 +180,33 @@ public class StressTest {
       double[] colorRed = new double[] { 1, 0, 0, 1 };
       double[] colorGreen = new double[] { 0, 1, 0, 1 };
       double[] colorBlue = new double[] { 0, 0, 1, 1 };
-      items.add(new Item(new Model(Optotype.A), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.B), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.C), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.D), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.E), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.F), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.G), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.H), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.I), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.J), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.K), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.L), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.M), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.N), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.O), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.P), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.Q), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.R), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.S), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.T), new Texture(colorWhite)));
-      items.add(new Item(new Model(Optotype.U), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.V), new Texture(colorRed)));
-      items.add(new Item(new Model(Optotype.W), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.X), new Texture(colorGreen)));
-      items.add(new Item(new Model(Optotype.Y), new Texture(colorBlue)));
-      items.add(new Item(new Model(Optotype.Z), new Texture(colorBlue)));
-      for (Item optotype : items)
+      view.add(new Item(new Model(Optotype.A), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.B), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.C), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.D), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.E), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.F), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.G), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.H), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.I), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.J), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.K), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.L), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.M), new Texture(colorBlue)));
+      view.add(new Item(new Model(Optotype.N), new Texture(colorBlue)));
+      view.add(new Item(new Model(Optotype.O), new Texture(colorBlue)));
+      view.add(new Item(new Model(Optotype.P), new Texture(colorBlue)));
+      view.add(new Item(new Model(Optotype.Q), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.R), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.S), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.T), new Texture(colorWhite)));
+      view.add(new Item(new Model(Optotype.U), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.V), new Texture(colorRed)));
+      view.add(new Item(new Model(Optotype.W), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.X), new Texture(colorGreen)));
+      view.add(new Item(new Model(Optotype.Y), new Texture(colorBlue)));
+      view.add(new Item(new Model(Optotype.Z), new Texture(colorBlue)));
+      for (Item optotype : view.items())
         optotype.size(1, 1);
     }
 
@@ -220,7 +220,7 @@ public class StressTest {
         fileName = "ivanito.jpeg";
       Item polygon = new Item(new Model(12), new Texture(fileName));
       polygon.size(2, 2);
-      items.add(polygon);
+      view.add(polygon);
     }
 
     private void addCircle(int i) {
@@ -231,8 +231,8 @@ public class StressTest {
         fileName = "ivanito.jpeg";
       Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
       circle.size(2.25, 2.25);
-      circle.show(false);
-      items.add(circle);
+      circle.eye(Eye.NONE);
+      view.add(circle);
     }
 
     private void addTriangle() {
@@ -241,7 +241,7 @@ public class StressTest {
       triangle.position(5, 5);
       triangle.size(2, 2);
       triangle.frequency(0, 1);
-      items.add(triangle);
+      view.add(triangle);
     }
 
     private void addSquares() {
@@ -253,8 +253,8 @@ public class StressTest {
       square2.position(-9, -12);
       square1.size(0.05, 10);
       square2.size(0.05, 10);
-      items.add(square1);
-      items.add(square2);
+      view.add(square1);
+      view.add(square2);
     }
 
     private void addText() {
@@ -263,12 +263,12 @@ public class StressTest {
       text.setText("Optotypes and basic shapes moving");
       text.size(0.75);
       text.position(-5, 5);
-      items.add(text);
+      view.add(text);
       text = new Text();
       text.setText("Refresh rate: ");
       text.size(0.6);
       text.position(-5, 4);
-      items.add(text);
+      view.add(text);
     }
 
   }

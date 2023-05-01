@@ -34,7 +34,7 @@ public class PostProcessingTest {
    */
   @Test
   public void showAllOptotypes() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.setPhysicalSize(621, 341);
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
@@ -63,71 +63,71 @@ public class PostProcessingTest {
     public void init(PsychoEngine psychoEngine) {
       Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
       item.size(1, 1);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.G1));
       item.position(3, -2);
       item.size(2, 6);
       item.frequency(0.5, 0.25);
       item.envelope(PostType.GAUSSIAN, envelope4[0], envelope4[1]);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.G2));
       item.position(-3, -2);
       item.size(2, 6);
       item.frequency(0.5, 0.25);
       item.envelope(PostType.GAUSSIAN, envelope4[0], envelope4[1]);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(new double [] {1, 1, 1, 1}));
       item.position(-7.75, -3.25, 20);
       item.size(2, 2);
       item.envelope(PostType.GAUSSIAN, 0.25);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture());
       item.position(-7.75, -3.25, 20);
       item.size(2, 2);
       item.envelope(PostType.GAUSSIAN, 0.25);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       item.position(-10, 0);
       item.size(10);
       item.frequency(0.5, 0.5);
       item.envelope(PostType.GAUSSIAN, envelope1);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       item.position(10, 0);
       item.size(10);
       item.frequency(0.5, 0.5);
       item.defocus(1);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, green, red));
       item.position(0, -4);
       item.size(3, 3);
       item.frequency(0, 0.5);
       item.rotation(90);
       item.envelope(PostType.GAUSSIAN, envelope3);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, red, blue));
       item.position(-2, 4);
       item.size(3, 3);
       item.frequency(0.5, 0.5);
       item.envelope(PostType.CIRCLE, envelope2[0], envelope2[1], 45);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.ANNULUS, 0.3f), new Texture(TextureType.G3));
       item.position(2, 4);
       item.size(3, 3);
       item.frequency(0, 1);
-      items.add(item);
+      view.add(item);
       // Add title
       Text title = new Text();
       title.setText("Post-processing testing");
       title.size(1.5);
       title.position(-8, 8);
-      items.add(title);
+      view.add(title);
       // Add text to show FPS
       text = new Text();
       text.setText("Refresh rate:");
       text.size(0.75);
       text.position(-15, 7);
-      items.add(text);
+      view.add(text);
       timer.start();
       // Start timers
       timer.start();
@@ -143,24 +143,24 @@ public class PostProcessingTest {
     @Override
     public void update(PsychoEngine psychoEngine) {
       double time = timer.getElapsedTime();
-      items.get(1).rotation(time / 10.0);
-      items.get(2).rotation(-time / 10.0);
+      view.items().get(1).rotation(time / 10.0);
+      view.items().get(2).rotation(-time / 10.0);
       double theta = time / 500.0;
-      items.get(3).position(3.75 * Math.cos(theta) - 10, 3.75 * Math.sin(theta));
-      items.get(4).position(-3.75 * Math.cos(theta) - 10, -3.75 * Math.sin(theta));
-      items.get(5).rotation(-time / 20.0);
+      view.items().get(3).position(3.75 * Math.cos(theta) - 10, 3.75 * Math.sin(theta));
+      view.items().get(4).position(-3.75 * Math.cos(theta) - 10, -3.75 * Math.sin(theta));
+      view.items().get(5).rotation(-time / 20.0);
       if (timerFps.getElapsedTime() <= refreshTime)
         fps++;
       else {
         if (inverted) {
-          for (Item item : items) {
+          for (Item item : view.items()) {
             if (item.getTexture().getType() == TextureType.CHECKERBOARD)
               item.envelope(PostType.CIRCLE, envelope2[0], envelope2[1], 45);
             if (item.getTexture().getType() == TextureType.SQUARESINE)
               item.removeEnvelope();
           }
         } else {
-          for (Item item : items) {
+          for (Item item : view.items()) {
             if (item.getTexture().getType() == TextureType.CHECKERBOARD)
               item.removeEnvelope();
             if (item.getTexture().getType() == TextureType.SQUARESINE)

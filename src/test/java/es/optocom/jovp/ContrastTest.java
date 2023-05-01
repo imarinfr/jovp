@@ -33,7 +33,7 @@ public class ContrastTest {
    */
   @Test
   public void funWithContrast() {
-    PsychoEngine psychoEngine = new PsychoEngine(new Logic(), 500);
+    PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
@@ -59,58 +59,58 @@ public class ContrastTest {
     public void init(PsychoEngine psychoEngine) {
       Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
       item.size(1, 1);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
       item.position(14, 4);
       item.frequency(0, 3);
       item.rotation(45);
       item.contrast(0.5);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, black, white));
       item.position(6, -3);
       item.frequency(0.25, 2);
       item.size(6, 3);
       item.contrast(0.1);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
       item.position(5, 3);
       item.frequency(0.5, 3, 0.25, 2);
       item.size(4, 2);
       item.rotation(75);
-      items.add(item);
+      view.add(item);
       item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
       item.position(9, 0);
       item.frequency(0.25, 0.5);
       item.size(15, 12);
-      items.add(item);
+      view.add(item);
       stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
       stimulus1.position(-8, -4);
       stimulus1.size(6, 6);
       stimulus1.frequency(0, 0.5);
       stimulus1.rotation(45);
-      items.add(stimulus1);
+      view.add(stimulus1);
       stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
       stimulus2.frequency(0, 2);
       stimulus2.position(-12, 2);
       stimulus2.size(6, 3);
-      items.add(stimulus2);
+      view.add(stimulus2);
       stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE, red, green));
       stimulus3.frequency(0, 2);
       stimulus3.position(-3, 0);
       stimulus3.size(2, 2);
-      items.add(stimulus3);
+      view.add(stimulus3);
       // Add title
       Text title = new Text();
       title.setText("Fun with contrasts");
       title.size(1.5);
       title.position(-5, 8);
-      items.add(title);
+      view.add(title);
       // Add text to show FPS
       text = new Text();
       text.setText("Refresh rate:");
       text.size(0.75);
       text.position(-15, 7);
-      items.add(text);
+      view.add(text);
       // Start timers
       timer.start();
       timerFps.start();

@@ -89,9 +89,6 @@ import org.lwjgl.vulkan.VkSubmitInfo;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
-import es.optocom.jovp.Window;
-import es.optocom.jovp.definitions.ViewMode;
-
 /**
  *
  * A record with all the settings used for Vulkan
@@ -120,8 +117,6 @@ class VulkanSetup {
   static final int UNIFORM_SIZEOF = Float.BYTES * (4 + 4 * 16 + 7 * 4);
   // VulkanManager
   static final int MAX_FRAMES_IN_FLIGHT = 2;
-  public static final float Z_NEAR = 0.1f;
-  public static final float Z_FAR = 100.0f;
   // LogicalDevice
   static final boolean SAMPLER_ANISOTROPY = true;
   static final boolean SAMPLE_RATE_SHADING = true;  
@@ -186,22 +181,12 @@ class VulkanSetup {
   static boolean validationLayers;
   static long messenger;
   static boolean apiDump;
-  static Window window;
+  static Observer observer;
   static long surface;
   static List<VkPhysicalDevice> physicalDevices;
   static VkPhysicalDevice physicalDevice;
   static LogicalDevice logicalDevice;
   static SwapChain swapChain;
-  static VulkanCommands vulkanCommands;
-  static ViewMode viewMode = ViewMode.MONO;
-  static double distance; // in mm
-  static double fovx; // in radians;
-  static double fovy; // in radians;
-  static double separation = 0.08f; // TODO: separation for stereoscoping viewing
-  static double focalLength = 0.5f; // TODO: focal length to set up optical distorsions
-  static Matrix4f projection = new Matrix4f();
-  static Matrix4f view = new Matrix4f();
-  static Matrix4f lens = new Matrix4f();
 
   /** clean after use */
   static void cleanup() {
@@ -209,22 +194,12 @@ class VulkanSetup {
     validationLayers = true;
     messenger = -1;
     apiDump = true;
-    window = null;
+    observer = null;
     surface = -1;
     physicalDevices = null;
     physicalDevice = null;
     logicalDevice = null;
     swapChain = null;
-    vulkanCommands = null;
-    viewMode = ViewMode.MONO;
-    distance = - 1;
-    fovx = -1;
-    fovy = -1;
-    separation = - 1;
-    focalLength = -1;
-    projection = new Matrix4f();
-    view = new Matrix4f();
-    lens = new Matrix4f();
   }
 
   /** result translator */

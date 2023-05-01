@@ -91,7 +91,6 @@ public class Text extends Item {
         }
         createFontTexture(rgba);
         model = new Model();
-        buffers = new ItemBuffers(this);
     }
 
     /**

@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
+ * 
  * Retrieves and stores the monitor capabilities including size in mm, pixel
  * size for the calculation of the
  * observer's field of view.
@@ -18,16 +19,21 @@ public class Monitor {
   private final GLFWVidMode videoMode; // default user's video mode
   private int width; // in pixels
   private int height;
+  private int scaledWidth; // in pixels
+  private int scaledHeight;
   private int refreshRate;
   private int widthMM; // in mm
   private int heightMM;
-  private double pixelWidth; // pixel width in mm
-  private double pixelHeight; // pixel height in mm
-  private double aspect; // Aspect ratio between pixels
+  private float pixelWidth; // pixel width in mm
+  private float pixelHeight; // pixel height in mm
+  private float scaledPixelWidth; // scaled pixel width in mm
+  private float scaledPixelHeight; // scaled pixel height in mm
+  private float aspect; // Aspect ratio between pixels
   private int[] colorDepth = new int[3]; // Bit depths for all channels
   private GLFWVidMode.Buffer videoModes;
 
   /**
+   * 
    * Monitor manager
    * 
    * @param monitor The monitor handle
@@ -42,6 +48,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor handle
    *
    * @return The monitor handle
@@ -53,6 +60,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor name
    *
    * @return The monitor name
@@ -64,6 +72,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor width
    *
    * @return The monitor width in pixels
@@ -75,6 +84,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor height
    *
    * @return The monitor height in pixels
@@ -85,7 +95,32 @@ public class Monitor {
     return height;
   }
 
-    /**
+  /**
+   *
+   * Get monitor scale width
+   *
+   * @return The monitor scale width in pixels
+   *
+   * @since 0.0.1
+   */
+  public int getScaledWidth() {
+    return scaledWidth;
+  }
+
+  /**
+   * 
+   * Get monitor scale height
+   *
+   * @return The monitor scale height in pixels
+   *
+   * @since 0.0.1
+   */
+  public int getScaledHeight() {
+    return scaledHeight;
+  }
+
+  /**
+   *
    * Get monitor physical width
    *
    * @return The monitor width in mm
@@ -97,6 +132,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor physical height
    *
    * @return The monitor height in mm
@@ -108,7 +144,8 @@ public class Monitor {
   }
 
   /**
-   * Allow to input the physical size manually
+   * 
+   * Manual input the pixel size
    *
    * @param width  The width of the monitor in pixels
    * @param height The height of the monitor in pixels
@@ -122,7 +159,8 @@ public class Monitor {
   }
 
   /**
-   * Allow to input the physical size manually
+   * 
+   * Manual input the physical size
    *
    * @param widthMM  The width of the monitor in mm
    * @param heightMM The height of the monitor in mm
@@ -136,50 +174,91 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get monitor pixel width
    *
    * @return The pixel width in mm
    *
    * @since 0.0.1
    */
-  public double getPixelWidth() {
+  public float getPixelWidth() {
     return pixelWidth;
   }
 
   /**
+   * 
+   * Get monitor scaled pixel width
+   *
+   * @return The scaled pixel width in mm
+   *
+   * @since 0.0.1
+   */
+  public float getScaledPixelWidth() {
+    return scaledPixelWidth;
+  }
+
+  /**
+   * 
    * Get monitor pixel height
    *
    * @return The pixel height in mm
    *
    * @since 0.0.1
    */
-  public double getPixelHeight() {
+  public float getPixelHeight() {
     return pixelHeight;
   }
 
   /**
+   * 
+   * Get monitor scaled pixel height
+   *
+   * @return The scaled pixel height in mm
+   *
+   * @since 0.0.1
+   */
+  public float getScaledPixelHeight() {
+    return scaledPixelHeight;
+  }
+
+  /**
+   * 
    * Get monitor pixel aspect ratio
    *
    * @return The aspect ratio between x and y pixel sizes
    *
    * @since 0.0.1
    */
-  public double getPixelAspect() {
+  public float getPixelAspect() {
     return aspect;
   }
 
   /**
-   * Get pixel density in dots per inch
+   * 
+   * Get the pixel density in dots per inch
    *
    * @return The dots per inch
    *
    * @since 0.0.1
    */
-  public double[] getDpi() {
-    return new double[] { 25.4 / pixelWidth, 25.4 / pixelHeight };
+  public float[] getDpi() {
+    return new float[] { 25.4f / pixelWidth, 25.4f / pixelHeight };
   }
 
   /**
+   * 
+   * Get the scaled pixel density in dots per inch
+   *
+   * @return The scaled dots per inch
+   *
+   * @since 0.0.1
+   */
+  public float[] getScaledDpi() {
+    return new float[] { 25.4f / scaledPixelWidth, 25.4f / scaledPixelHeight };
+  }
+
+  /**
+   * 
    * Give the option to input the refresh rate manually
    *
    * @param refreshRate Refresh rate for full-screen mode
@@ -191,6 +270,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get refresh rate
    *
    * @return The refresh rate for full-screen mode
@@ -202,6 +282,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * RGB color depth
    *
    * @return The color depth in the R, G, and B channels in bits
@@ -213,6 +294,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get stored video mode
    *
    * @return Get stored video mode
@@ -224,6 +306,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get current video mode
    *
    * @return Get current video mode
@@ -235,6 +318,7 @@ public class Monitor {
   }
 
   /**
+   * 
    * Get video modes
    *
    * @return Get all possible video modes
@@ -281,6 +365,9 @@ public class Monitor {
         fullScreenVideoMode = videoModes.get(i);
     width = fullScreenVideoMode.width();
     height = fullScreenVideoMode.height();
+    GLFWVidMode videoMode = glfwGetVideoMode(monitor);
+    scaledWidth = videoMode.width(); // for some reason, content scale retrieved with GLFW is incorrect
+    scaledHeight = videoMode.height();
     refreshRate = fullScreenVideoMode.refreshRate();
     colorDepth[0] = fullScreenVideoMode.redBits();
     colorDepth[1] = fullScreenVideoMode.greenBits();
@@ -305,8 +392,10 @@ public class Monitor {
    * physical dimensions
    */
   private void computePixelSize() {
-    pixelWidth = widthMM / (double) width;
-    pixelHeight = heightMM / (double) height;
+    pixelWidth = widthMM / (float) width;
+    pixelHeight = heightMM / (float) height;
+    scaledPixelWidth = widthMM / (float) scaledWidth;
+    scaledPixelHeight = heightMM / (float) scaledHeight;
     aspect = pixelWidth / pixelHeight;
   }
 
