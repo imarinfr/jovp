@@ -411,10 +411,6 @@ class VulkanSetup {
       VALIDATION_LAYERS = new HashSet<>();
       VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_validation");
       VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_synchronization2");
-      if (System.getenv("VK_DEVSIM_FILENAME") != null)
-        VALIDATION_LAYERS.add("VK_LAYER_LUNARG_device_simulation"); // TODO: add device simulation
-      if (System.getenv("VP_DEFAULT") != null)
-        VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_profiles"); // TODO: add profiles
       if (apiDump)
         VALIDATION_LAYERS.add("VK_LAYER_LUNARG_api_dump");
     } else
