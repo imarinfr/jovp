@@ -53,8 +53,10 @@ class SwapChain {
         createColorResources();
         createDepthResources();
         createRenderPass();
-        if (viewMode == ViewMode.STEREO) stereoSwapChain();
-        else monoSwapChain();
+        if (viewMode == ViewMode.STEREO)
+            stereoSwapChain();
+        else
+            monoSwapChain();
         createFramebuffers();
     }
 
@@ -65,7 +67,8 @@ class SwapChain {
      */
     void destroy() {
         frameBuffers.forEach(framebuffer -> vkDestroyFramebuffer(VulkanSetup.logicalDevice.device, framebuffer, null));
-        for (ViewPass viewPass : viewPasses) viewPass.destroy();
+        for (ViewPass viewPass : viewPasses)
+            viewPass.destroy();
         vkDestroyRenderPass(VulkanSetup.logicalDevice.device, renderPass, null);
         vkDestroyImage(VulkanSetup.logicalDevice.device, depthImage, null);
         vkFreeMemory(VulkanSetup.logicalDevice.device, depthImageMemory, null);
@@ -98,7 +101,8 @@ class SwapChain {
             VulkanSetup.SwapChainSupportDetails swapChainSupport = VulkanSetup.swapChainSupport(stack);
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
             int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-            VkExtent2D extent = chooseSwapExtent(VulkanSetup.observer.window.getHandle(), swapChainSupport.capabilities);
+            VkExtent2D extent = chooseSwapExtent(VulkanSetup.observer.window.getHandle(),
+                    swapChainSupport.capabilities);
             IntBuffer imageCount = stack.ints(swapChainSupport.capabilities.minImageCount() + 1);
             if (swapChainSupport.capabilities.maxImageCount() > 0 &&
                     imageCount.get(0) > swapChainSupport.capabilities.maxImageCount())
@@ -116,7 +120,8 @@ class SwapChain {
             if (!indices.graphicsFamily.equals(indices.presentFamily)) {
                 createInfo.imageSharingMode(VK_SHARING_MODE_CONCURRENT)
                         .pQueueFamilyIndices(stack.ints(indices.graphicsFamily, indices.presentFamily));
-            } else createInfo.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE);
+            } else
+                createInfo.imageSharingMode(VK_SHARING_MODE_EXCLUSIVE);
             createInfo.preTransform(swapChainSupport.capabilities.currentTransform())
                     .compositeAlpha(VulkanSetup.COMPOSITE_ALPHA_MODE)
                     .presentMode(presentMode)
@@ -131,7 +136,8 @@ class SwapChain {
             LongBuffer pSwapchainImages = stack.mallocLong(imageCount.get(0));
             vkGetSwapchainImagesKHR(VulkanSetup.logicalDevice.device, swapChain, imageCount, pSwapchainImages);
             images = new ArrayList<>(imageCount.get(0));
-            for (int i = 0; i < pSwapchainImages.capacity(); i++) images.add(pSwapchainImages.get(i));
+            for (int i = 0; i < pSwapchainImages.capacity(); i++)
+                images.add(pSwapchainImages.get(i));
             imageFormat = surfaceFormat.format();
             this.extent = VkExtent2D.create().set(extent);
         }
@@ -150,7 +156,8 @@ class SwapChain {
         try (MemoryStack stack = stackPush()) {
             LongBuffer pColorImage = stack.mallocLong(1);
             LongBuffer pColorImageMemory = stack.mallocLong(1);
-            VulkanSetup.createImage(extent.width(), extent.height(), VulkanSetup.MIP_LEVELS, VulkanSetup.logicalDevice.msaaSamples, imageFormat,
+            VulkanSetup.createImage(extent.width(), extent.height(), VulkanSetup.MIP_LEVELS,
+                    VulkanSetup.logicalDevice.msaaSamples, imageFormat,
                     VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
                     pColorImage, pColorImageMemory);
             colorImage = pColorImage.get(0);
@@ -188,17 +195,16 @@ class SwapChain {
             depthAttachment.format(VulkanSetup.findDepthFormat()).samples(VulkanSetup.logicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR).storeOp(VK_ATTACHMENT_STORE_OP_STORE)
                     .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE).stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED).finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                    .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             VkAttachmentReference depthAttachmentRef = attachmentRefs.get(1);
             depthAttachmentRef.attachment(1).layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             // Pipeline bind point
             VkSubpassDescription.Buffer subpass = VkSubpassDescription.calloc(1, stack)
                     .pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS).colorAttachmentCount(1)
-                    .pColorAttachments(VkAttachmentReference.calloc(1, stack).
-                            put(0, colorAttachmentRef))
+                    .pColorAttachments(VkAttachmentReference.calloc(1, stack).put(0, colorAttachmentRef))
                     .pDepthStencilAttachment(depthAttachmentRef)
-                    .pResolveAttachments(VkAttachmentReference.calloc(1, stack).
-                            put(0, colorAttachmentResolveRef));
+                    .pResolveAttachments(VkAttachmentReference.calloc(1, stack).put(0, colorAttachmentResolveRef));
             VkSubpassDependency.Buffer dependency = VkSubpassDependency.calloc(1, stack)
                     .srcSubpass(VK_SUBPASS_EXTERNAL).dstSubpass(0)
                     .srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT).srcAccessMask(0)
@@ -221,7 +227,8 @@ class SwapChain {
             int depthFormat = VulkanSetup.findDepthFormat();
             LongBuffer pDepthImage = stack.mallocLong(1);
             LongBuffer pDepthImageMemory = stack.mallocLong(1);
-            VulkanSetup.createImage(extent.width(), extent.height(), VulkanSetup.MIP_LEVELS, VulkanSetup.logicalDevice.msaaSamples, depthFormat,
+            VulkanSetup.createImage(extent.width(), extent.height(), VulkanSetup.MIP_LEVELS,
+                    VulkanSetup.logicalDevice.msaaSamples, depthFormat,
                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, pDepthImage, pDepthImageMemory);
             depthImage = pDepthImage.get(0);
             depthImageMemory = pDepthImageMemory.get(0);
@@ -265,7 +272,7 @@ class SwapChain {
     /** choose swap present mode */
     private static int chooseSwapPresentMode(IntBuffer availablePresentModes) {
         for (int i = 0; i < availablePresentModes.capacity(); i++) {
-            if(availablePresentModes.get(i) == VulkanSetup.PRESENT_MODE)
+            if (availablePresentModes.get(i) == VulkanSetup.PRESENT_MODE)
                 return availablePresentModes.get(i);
         }
         return VK_PRESENT_MODE_FIFO_KHR;
@@ -273,7 +280,8 @@ class SwapChain {
 
     /** choose swap extent */
     private static VkExtent2D chooseSwapExtent(long window, VkSurfaceCapabilitiesKHR capabilities) {
-        if(capabilities.currentExtent().width() != VulkanSetup.UINT32_MAX) return capabilities.currentExtent();
+        if (capabilities.currentExtent().width() != VulkanSetup.UINT32_MAX)
+            return capabilities.currentExtent();
         IntBuffer width = stackGet().ints(0);
         IntBuffer height = stackGet().ints(0);
         glfwGetFramebufferSize(window, width, height);

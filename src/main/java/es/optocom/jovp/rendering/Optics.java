@@ -9,24 +9,24 @@ import org.joml.Matrix4f;
  */
 public class Optics {
 
-  Matrix4f lens = new Matrix4f();
+    Matrix4f lens = new Matrix4f();
 
-  /**
-   * 
-   * TODO
-   *
-   * @since 0.0.1
-   */
-  public Optics() {
-  }
+    /**
+     * 
+     * TODO
+     *
+     * @since 0.0.1
+     */
+    public Optics() {
+    }
 
-  /**
-   *
-   * Clean after use
-   *
-   * @since 0.0.1
-   */
-  public void cleanup() {
-  }
+    /**
+     *
+     * Clean after use
+     *
+     * @since 0.0.1
+     */
+    public void cleanup() {
+    }
 
 }

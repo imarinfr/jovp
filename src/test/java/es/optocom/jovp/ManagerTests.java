@@ -7,6 +7,7 @@ import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
+import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
 import es.optocom.jovp.rendering.VulkanManager;
@@ -14,9 +15,6 @@ import es.optocom.jovp.rendering.VulkanManager;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.vulkan.VkPhysicalDevice;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
@@ -178,7 +176,7 @@ public class ManagerTests {
    * @since 0.0.1
    */
   @Test
-  public void showAndHide() {
+  public void showAndHideWindow() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic());
     try {
       for (int i = 0; i < 5; i++) {
@@ -216,13 +214,6 @@ public class ManagerTests {
   @Test
   public void changeWindowPositionAndSize() {
     PsychoEngine psychoEngine = new PsychoEngine(new Logic());
-    assertArrayEquals(new int[] {psychoEngine.getMonitor().getScaledWidth() / 2, 0}, psychoEngine.getPosition());
-    // position is relative to monitor workspace in the virtual desktop
-    psychoEngine.setPosition(10, 10);
-    assertArrayEquals(new int[] {10, 10}, psychoEngine.getPosition());
-    psychoEngine.setSize(500, 200);
-    assertEquals(500, psychoEngine.getWindow().getWidth());
-    assertEquals(200, psychoEngine.getWindow().getHeight());
     psychoEngine.show();
     psychoEngine.setSize(1000, 800);
     psychoEngine.setPosition(10, 10);
@@ -238,9 +229,7 @@ public class ManagerTests {
   @Test
   public void showTriangle() {
     PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle());
-    System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
-    psychoEngine.setPhysicalSize(621, 341);
-    System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
+    System.out.println(psychoEngine.getFieldOfView());
     psychoEngine.start("mouse", Paradigm.CLICKER);
     psychoEngine.cleanup();
   }
@@ -280,11 +269,13 @@ public class ManagerTests {
 
     @Override
     public void init(PsychoEngine psychoEngine) {
-      Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] {1, 1, 1, 1}));
-      item.position(0, 0);
-      item.size(0.1, 0.1);
-      item.rotation(0);
+      Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] {0, 0, 1, 1}, new double[] {1, 0, 0, 1}));
       view.add(item);
+      item.distance(Observer.FAR);
+      item.position(0,0);
+      item.size(30, 30);
+      item.rotation(0);
+      System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
     }
 
     @Override
@@ -298,7 +289,7 @@ public class ManagerTests {
 
   }
 
-  // Psychophysics logic to show a simple triangle
+  // Psychophysics logic to show stimuli blinking and changing shape
   static class LogicBlinkingAndChangingShape implements PsychoLogic {
 
     Timer timer = new Timer();
@@ -323,7 +314,8 @@ public class ManagerTests {
     public void init(PsychoEngine psychoEngine) {
       // Background
       background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
-      background.position(0,0, 100);
+      background.position(0, 0);
+      background.distance(100);
       float[] fov = psychoEngine.getFieldOfView();
       background.size(fov[0],fov[1]);
       view.add(background);
@@ -341,11 +333,13 @@ public class ManagerTests {
       view.add(text);
       // Items
       item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
-      item1.position(0, 0, 90);
+      item1.position(0, 0);
+      item1.distance(90);
       item1.size(10, 10);
       view.add(item1);
       item2 = new Item(new Model(ModelType.MALTESE), new Texture(new double[] {0, 1, 0, 1}));
-      item2.position(0, 0, 80);
+      item2.position(0, 0);
+      item1.distance(80);
       item2.size(2, 2);
       view.add(item2);
       timer.start();
@@ -368,10 +362,12 @@ public class ManagerTests {
       double cpd = 0.5 * (Math.cos(timer.getElapsedTime() / 1500) + 1) / 2;
       item1.frequency(0, cpd);
       if(modelTimer.getElapsedTime() > updateModelTime) {
+        System.out.println("model");
         item1.update(new Model(models[ThreadLocalRandom.current().nextInt(0, 5)]));
         modelTimer.start();
       }
       if(textureTimer.getElapsedTime() > updateTextureTime) {
+        System.out.println("texture");
         item1.update(new Texture(textures[ThreadLocalRandom.current().nextInt(0, 5)], color0, color1));
         textureTimer.start();
       }

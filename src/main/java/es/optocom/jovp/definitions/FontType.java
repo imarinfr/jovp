@@ -6,12 +6,12 @@ package es.optocom.jovp.definitions;
  * @since 0.0.1
  */
 public enum FontType {
-  /** Monserrat */
-  MONSERRAT,
-  /** Monserrat bold */
-  MONSERRAT_BOLD,
-  /** Sans */
-  SANS,
-  /** Sans bold */
-  SANS_BOLD,
+    /** Monserrat */
+    MONSERRAT,
+    /** Monserrat bold */
+    MONSERRAT_BOLD,
+    /** Sans */
+    SANS,
+    /** Sans bold */
+    SANS_BOLD,
 }

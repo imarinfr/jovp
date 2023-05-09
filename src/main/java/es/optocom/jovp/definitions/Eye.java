@@ -6,12 +6,12 @@ package es.optocom.jovp.definitions;
  * @since 0.0.1
  */
 public enum Eye {
-  /** Left eye */
-  LEFT,
-  /** Right eye */
-  RIGHT,
-  /** Both eyes */
-  BOTH,
-  /** No eye */
-  NONE
+    /** Left eye */
+    LEFT,
+    /** Right eye */
+    RIGHT,
+    /** Both eyes */
+    BOTH,
+    /** No eye */
+    NONE
 }

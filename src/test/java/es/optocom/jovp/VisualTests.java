@@ -214,11 +214,13 @@ public class VisualTests {
       // Background
       Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
       bg.size(8, 8);
-      bg.position(0, 0, 99);
+      bg.position(0, 0);
+      bg.distance(99);
       view.add(bg);
       // Optotype
       optotype = new Item(new Model(Optotype.E), new Texture(black));
-      optotype.position(0, 0, 10);
+      optotype.position(0, 0);
+      optotype.distance(10);
       optotype.size(size, size);
       theta = 180 * random.nextInt(2);
       optotype.rotation(theta);
@@ -434,7 +436,8 @@ public class VisualTests {
       addSquares();
       addText();
       circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
-      circle.position(0, ypos, zpos);
+      circle.position(0, ypos);
+      circle.distance(zpos);
       circle.size(size, size);
       circle.eye(Eye.BOTH);
       view.add(circle);
@@ -460,13 +463,15 @@ public class VisualTests {
         // throw myself at observer
         if (time > 14425) {
           circle.eye(Eye.BOTH);
-          circle.position(0, ypos + Math.sin(time / 100), zpos);
+          circle.position(0, ypos + Math.sin(time / 100));
+          circle.distance(zpos);
         }
         if (time > 16425) {
           size += 2;
           ypos += 0.6;
           zpos -= 0.5;
-          circle.position(0, ypos, zpos);
+          circle.position(0, ypos);
+          circle.distance(zpos);
           circle.size(size, size);
         }
         if (zpos < 2) for (Item item : view.items()) item.eye(Eye.BOTH);
@@ -495,7 +500,8 @@ public class VisualTests {
         int pos = iteration - 38 * imageNumber;
         if (pos < 0)
           pos = 0;
-        item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0), 20);
+        item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0));
+        item.distance(20);
         item.rotation(-theta / 5, new Vector3f(0.5f, 0.8f, 1.2f));
         imageNumber++;
       }
@@ -509,9 +515,11 @@ public class VisualTests {
         item.eye(Eye.BOTH);
         leadPosition += 1 / 60.0;
         if (imageNumber < 10)
-          item.position(leadPosition - 5 * imageNumber, 8, 10);
+          item.position(leadPosition - 5 * imageNumber, 8);
+          item.distance(10);
         if (imageNumber >= 10 & imageNumber < 20)
-          item.position(-leadPosition + 5 * (imageNumber - 10), -8, 10);
+          item.position(-leadPosition + 5 * (imageNumber - 10), -8);
+          item.distance(10);
         imageNumber++;
       }
       // process triangle

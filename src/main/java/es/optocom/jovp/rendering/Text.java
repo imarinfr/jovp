@@ -23,7 +23,7 @@ public class Text extends Item {
 
     private static final float FONT_SIZE = 200.0f;
     private static final FontType DEFAULT_FONT_TYPE = FontType.MONSERRAT;
-    private static final double[] DEFAULT_RGBA = new double[] {1, 1, 1, 1};
+    private static final double[] DEFAULT_RGBA = new double[] { 1, 1, 1, 1 };
 
     private final FontRenderContext fontRenderContext;
     private final Font font;
@@ -67,7 +67,7 @@ public class Text extends Item {
      * Generate a text item
      *
      * @param fontType FontType type
-     * @param rgba The R, G, B, and alpha color values from 0 to 1
+     * @param rgba     The R, G, B, and alpha color values from 0 to 1
      *
      * @since 0.0.1
      */
@@ -84,7 +84,8 @@ public class Text extends Item {
             default -> file = null;
         }
         try (InputStream reader = Thread.currentThread().getContextClassLoader().getResourceAsStream(file)) {
-            if (reader == null) throw new RuntimeException("Could not read font");
+            if (reader == null)
+                throw new RuntimeException("Could not read font");
             font = Font.createFont(Font.TRUETYPE_FONT, reader).deriveFont(FONT_SIZE);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -131,7 +132,7 @@ public class Text extends Item {
         }
         model.setVertices(vertices);
         model.setIndices(indices);
-        size(FONT_SIZE * width / 2 * height, height, 1);
+        size(FONT_SIZE * width / 2 * height, height);
         update(model);
     }
 
@@ -144,14 +145,16 @@ public class Text extends Item {
      */
     public void size(double height) {
         this.height = height;
-        size(FONT_SIZE * width / 2 * height, height, 1);
+        size(FONT_SIZE * width / 2 * height, height);
     }
 
     /** creates a font texture */
     private void createFontTexture(double[] rgba) {
         StringBuilder text = new StringBuilder();
         // Consider only standard ASCII characters
-        for (int i = 32; i < 127; i++) if (font.canDisplay(i)) text.append((char) i);
+        for (int i = 32; i < 127; i++)
+            if (font.canDisplay(i))
+                text.append((char) i);
         GlyphVector glyphs = font.createGlyphVector(fontRenderContext, text.toString());
         int height = glyphs.getLogicalBounds().getBounds().height;
         int width = glyphs.getLogicalBounds().getBounds().width;
@@ -163,8 +166,9 @@ public class Text extends Item {
             double charWidth = glyphs.getGlyphMetrics(glyph).getAdvanceX();
             int advance = (int) charWidth;
             boolean[] glyphFill = getFillRegion(glyphs.getGlyphOutline(glyph), advance, height, ascent);
-            for (int i = 0; i < height; i++) for (int j = 0; j < advance; j++)
-                fill[i * width + x + j] = glyphFill[i * advance + j];
+            for (int i = 0; i < height; i++)
+                for (int j = 0; j < advance; j++)
+                    fill[i * width + x + j] = glyphFill[i * advance + j];
             // Add map to the catalog
             map.put(text.charAt(glyph), new CharInfo(x / (float) width, (float) charWidth / width));
             x += advance;
@@ -172,10 +176,12 @@ public class Text extends Item {
         // Colors for the texture
         float[] pixels = new float[4 * width * height];
         for (int i = 0; i < fill.length; i++) {
-            if (fill[i]) for (int pos = 0; pos < 4; pos++) // Fill regions with value -1
-                pixels[4 * i + pos] = 1.0f;
-            else for (int pos = 0; pos < 4; pos++)
-                pixels[4 * i + pos] = 0.0f;
+            if (fill[i])
+                for (int pos = 0; pos < 4; pos++) // Fill regions with value -1
+                    pixels[4 * i + pos] = 1.0f;
+            else
+                for (int pos = 0; pos < 4; pos++)
+                    pixels[4 * i + pos] = 0.0f;
         }
         texture = new Texture(rgba, pixels, width, height);
     }
@@ -186,12 +192,14 @@ public class Text extends Item {
         int xmin = glyphShape.getBounds().x;
         int ymin = glyphShape.getBounds().y - ascent;
         int ymax = ymin + glyphShape.getBounds().height;
-        for (int y = ymin; y < ymax; y++) for (int x = 0; x < width; x++)
-            fill[y * width + x] = glyphShape.contains(x + xmin, y + ascent);
+        for (int y = ymin; y < ymax; y++)
+            for (int x = 0; x < width; x++)
+                fill[y * width + x] = glyphShape.contains(x + xmin, y + ascent);
         return fill;
     }
 
     /** map characters with position and width in Atlas */
-    record CharInfo(float x, float width) {}
+    record CharInfo(float x, float width) {
+    }
 
 }

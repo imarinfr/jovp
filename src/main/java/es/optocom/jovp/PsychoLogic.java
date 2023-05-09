@@ -10,35 +10,35 @@ import es.optocom.jovp.definitions.Command;
  */
 public interface PsychoLogic {
 
-  /** Items for the psychophysics experience */
-  View view = new View();
+    /** Items for the psychophysics experience */
+    View view = new View();
 
-  /**
-   * Initializes the engine
-   *
-   * @param psychoEngine The engine to retrieve info as required
-   *
-   * @since 0.0.1
-   */
-  void init(PsychoEngine psychoEngine);
+    /**
+     * Initializes the engine
+     *
+     * @param psychoEngine The engine to retrieve info as required
+     *
+     * @since 0.0.1
+     */
+    void init(PsychoEngine psychoEngine);
 
-  /**
-   * Reads input from controller
-   *
-   * @param psychoEngine The engine to retrieve info as required
-   * @param command The command received
-   * 
-   * @since 0.0.1
-   */
-  void input(PsychoEngine psychoEngine, Command command);
+    /**
+     * Reads input from controller
+     *
+     * @param psychoEngine The engine to retrieve info as required
+     * @param command      The command received
+     * 
+     * @since 0.0.1
+     */
+    void input(PsychoEngine psychoEngine, Command command);
 
-  /**
-   * Updates state
-   *
-   * @param psychoEngine The engine to retrieve info as required
-   *
-   * @since 0.0.1
-   */
-  void update(PsychoEngine psychoEngine);
+    /**
+     * Updates state
+     *
+     * @param psychoEngine The engine to retrieve info as required
+     *
+     * @since 0.0.1
+     */
+    void update(PsychoEngine psychoEngine);
 
 }

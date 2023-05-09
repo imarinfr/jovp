@@ -6,8 +6,8 @@ package es.optocom.jovp.definitions;
  * @since 0.0.1
  */
 public enum ViewMode {
-  /** Monocular presentation */
-  MONO,
-  /** Stereoscopic presentation (split screen) */
-  STEREO
+    /** Monocular presentation */
+    MONO,
+    /** Stereoscopic presentation (split screen) */
+    STEREO
 }
