@@ -3,6 +3,7 @@ package es.optocom.jovp.definitions;
 import org.joml.*;
 
 /**
+ * 
  * Vertex properties of a model
  *
  * @since 0.0.1

@@ -1,11 +1,12 @@
 package es.optocom.jovp.definitions;
 
 /**
- * Postprocessing types
+ *
+ * Envelope types
  *
  * @since 0.0.1
  */
-public enum PostType {
+public enum EnvelopeType {
     /** No postprocessing type */
     NONE,
     /** Postprocessing type square */

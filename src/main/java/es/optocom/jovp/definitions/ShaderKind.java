@@ -3,6 +3,7 @@ package es.optocom.jovp.definitions;
 import static org.lwjgl.util.shaderc.Shaderc.*;
 
 /**
+ * 
  * ShaderKind
  *
  * @since 0.0.1

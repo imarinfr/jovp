@@ -1,6 +1,7 @@
 package es.optocom.jovp.definitions;
 
 /**
+ * 
  * Paradigm
  *
  * @since 0.0.1

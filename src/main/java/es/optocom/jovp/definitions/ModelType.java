@@ -1,6 +1,7 @@
 package es.optocom.jovp.definitions;
 
 /**
+ * 
  * ModelType
  *
  * @since 0.0.1

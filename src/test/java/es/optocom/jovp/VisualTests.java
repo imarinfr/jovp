@@ -13,7 +13,6 @@ import es.optocom.jovp.rendering.Texture;
 
 import java.util.Random;
 
-import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -506,7 +505,7 @@ public class VisualTests {
                     pos = 0;
                 item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0));
                 item.distance(20);
-                item.rotation(-theta / 5, new Vector3f(0.5f, 0.8f, 1.2f));
+                item.rotation(-theta / 5);
                 imageNumber++;
             }
             // process circles

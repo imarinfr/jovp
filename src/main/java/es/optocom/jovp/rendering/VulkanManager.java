@@ -7,6 +7,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;
 import org.lwjgl.vulkan.*;
 
+import es.optocom.jovp.definitions.ViewMode;
+
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.*;
@@ -19,6 +21,7 @@ import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
+ * 
  * Manages all things Vulkan: instantiation, physical and logical device,
  * queues, swap chain, views.
  *
@@ -32,11 +35,12 @@ public class VulkanManager {
     private int currentFrame;
 
     /**
+     * 
      * Initiates the Vulkan manager
      *
-     * @param window           The window for the Vulkan manager
+     * @param observer The observer for the Vulkan manager
      * @param validationLayers Whether to use validation layers
-     * @param apiDump          Whether to echo api dump
+     * @param apiDump Whether to echo api dump
      *
      * @since 0.0.1
      */
@@ -47,8 +51,7 @@ public class VulkanManager {
         VulkanSetup.addValidationLayers();
         createInstance();
         createSurface();
-        if (validationLayers)
-            VulkanSetup.setupDebugMessenger();
+        if (validationLayers) VulkanSetup.setupDebugMessenger();
         enumerateSuitablePhysicalDevices();
     }
 
@@ -65,14 +68,28 @@ public class VulkanManager {
         VulkanSetup.physicalDevice = physicalDevice;
         VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
-        for (Item item : items)
-            item.createBuffers();
+        for (Item item : items) item.createBuffers();
         vulkanCommands = new VulkanCommands(items);
         createSyncObjects();
-        VulkanSetup.observer.computeProjection();
+        VulkanSetup.observer.computeFieldOfView();
     }
 
     /**
+     * 
+     * Set the view mode
+     *
+     * @param viewMode The view mode, whether MONO or STEREO
+     *
+     * @since 0.0.1
+     */
+    public void setViewMode(ViewMode viewMode) {
+        if (VulkanSetup.observer.getViewMode() == viewMode) return;
+        VulkanSetup.observer.setViewMode(viewMode);
+        recreateSwapChain();
+    }
+
+    /**
+     * 
      * Draw a frame
      *
      * @since 0.0.1
@@ -129,6 +146,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Clean up after use
      *
      * @since 0.0.1
@@ -147,6 +165,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Get list of physical devices
      *
      * @return The list of physical devices
@@ -158,6 +177,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Get the current Vulkan logical device
      *
      * @return The Vulkan logical device
@@ -169,6 +189,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Get physical device properties
      *
      * @param physicalDevice The physical device
@@ -182,6 +203,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Get physical device properties
      *
      * @param physicalDevice The physical device
@@ -201,6 +223,7 @@ public class VulkanManager {
     }
 
     /**
+     * 
      * Get swap chain support
      *
      * @return A string with the swap chain support
@@ -296,7 +319,7 @@ public class VulkanManager {
     }
 
     /** recreate the swap chain as necessary */
-    private void recreateSwapChain() {
+    public void recreateSwapChain() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer width = stack.ints(0);
             IntBuffer height = stack.ints(0);
@@ -308,7 +331,7 @@ public class VulkanManager {
         vkDeviceWaitIdle(VulkanSetup.logicalDevice.device);
         VulkanSetup.swapChain.destroy();
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
-        VulkanSetup.observer.computeProjection();
+        VulkanSetup.observer.computeFieldOfView();
     }
 
     /** create synchronization objects */

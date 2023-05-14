@@ -1,6 +1,7 @@
 package es.optocom.jovp.definitions;
 
 /**
+ * 
  * Type of presentation mode: monocular or stereoscopic
  *
  * @since 0.0.1

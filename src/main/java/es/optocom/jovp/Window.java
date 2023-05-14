@@ -3,6 +3,7 @@ package es.optocom.jovp;
 import org.lwjgl.glfw.GLFWVidMode;
 
 import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
 import jssc.SerialPortException;
 
@@ -67,8 +68,8 @@ public class Window {
      * 
      * @since 0.0.1
      */
-    public void setController(String input, Paradigm paradigm) throws NullPointerException, SerialPortException {
-        controller = new Controller(window, input, paradigm);
+    public void setController(String input, InputType inputType, Paradigm paradigm) throws NullPointerException, SerialPortException {
+        controller = new Controller(window, input, inputType, paradigm);
         if (controller.isUsb())
             controller.open();
     }
@@ -120,7 +121,7 @@ public class Window {
 
     /**
      * 
-     * Set resized to true
+     * Set resized to true or falsed
      *
      * @param resized Whether the window has been resized or not
      *
@@ -264,18 +265,6 @@ public class Window {
      */
     public int getHeight() {
         return (int) (yscale * height);
-    }
-
-    /**
-     * 
-     * Get monitor aspect ratio
-     *
-     * @return The monitor aspect ratio
-     *
-     * @since 0.0.1
-     */
-    public float getAspect() {
-        return monitor.getAspect();
     }
 
     /**

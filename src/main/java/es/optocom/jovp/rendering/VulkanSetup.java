@@ -108,14 +108,8 @@ class VulkanSetup {
     static final int UINT32_MAX = 0xFFFFFFFF;
     static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
     static final int MODEL_SIZEOF = (3 + 2) * Float.BYTES;
-    /**
-     * Uniform size: 4 blocks for type
-     * Spatial properties in vertex shader: 4 4x4 model transforms + 1 4x1 texture
-     * transform + 1 3x1 texture rotation
-     * Color modulation in fragment shader: 4 4x1: min and max colors, level, and
-     * contrast
-     */
-    static final int UNIFORM_SIZEOF = Float.BYTES * (4 + 4 * 16 + 7 * 4);
+    // Uniform size: remember that the GPU reads in blocks of 4 bits, even if the variable sent is smaller than that.
+    static final int UNIFORM_SIZEOF = 72 * Float.BYTES;
     // VulkanManager
     static final int MAX_FRAMES_IN_FLIGHT = 2;
     // LogicalDevice

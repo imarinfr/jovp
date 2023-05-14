@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Input;
+import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -16,6 +17,7 @@ import jssc.SerialPortList;
 import jssc.SerialPortTimeoutException;
 
 /**
+ * 
  * Input schemes for different psychophysics paradigms
  *
  * @since 0.0.1
@@ -49,6 +51,7 @@ public class Controller implements SerialPortEventListener {
     private static final String CANNOT_SET_CONTROLLER = "The input device '%s' is not suitable as a controller";
 
     /**
+     * 
      * Scans the port for suitable USB connections
      *
      * @return The list of suitable USB connections
@@ -67,6 +70,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Find a connection matching name
      *
      * @param name Name to match
@@ -83,6 +87,8 @@ public class Controller implements SerialPortEventListener {
 
     /** Input device */
     private final Input input;
+    /** Input type */
+    private final int inputType;
     /** USB port */
     private SerialPort usb = null;
     /** Psychophysics paradigm to map input to commands */
@@ -91,18 +97,19 @@ public class Controller implements SerialPortEventListener {
     private Command command = Command.NONE;
 
     /**
+     * 
      * Controller type and settings
      *
      * @param windowHandle The window handle
-     * @param input        Either 'mouse', 'keypad', or the name of a suitable USB
-     *                     controller
-     * @param paradigm     Preset scheme for the psychophysics paradigm
+     * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
+     * @param inputType Whether command is when pressed, released, or repeat.
+     * @param paradigm Preset scheme for the psychophysics paradigm
      * 
      * @throws NullPointerException if no suitable controller is found
      *
      * @since 0.0.1
      */
-    Controller(long windowHandle, String input, Paradigm paradigm) throws NullPointerException {
+    Controller(long windowHandle, String input, InputType inputType, Paradigm paradigm) throws NullPointerException {
         switch (input.toUpperCase()) {
             case "MOUSE" -> {
                 this.input = Input.MOUSE;
@@ -121,11 +128,17 @@ public class Controller implements SerialPortEventListener {
                 }
             }
         }
+        this.inputType = switch (inputType) {
+            case PRESS -> GLFW_PRESS;
+            case RELEASE -> GLFW_RELEASE;
+            case REPEAT -> GLFW_REPEAT;
+        };
         this.paradigm = paradigm;
         glfwSetWindowCloseCallback(windowHandle, (window) -> closeWindowClicked());
     }
 
     /**
+     * 
      * Check whether controller is connected through a USB serial port
      *
      * @return whether controller is connected through a USB serial port
@@ -137,6 +150,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Opens a serial controller for a specific device
      *
      * @throws SerialPortException if port cannot be opened
@@ -150,6 +164,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Closes the port
      *
      * @throws SerialPortException if port cannot be closed
@@ -161,6 +176,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Purges the Serial port upon request and if it contains data
      *
      * @throws SerialPortException if device cannot be purged
@@ -173,6 +189,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * For USB controllers, this is where the event is captured and processed
      *
      * @since 0.0.1
@@ -181,8 +198,8 @@ public class Controller implements SerialPortEventListener {
         if (event.isRXCHAR()) {
             try {
                 // TODO Code specifically for the ImoVifa button
-                // TODO On click it sends 5 bytes (as ints: 42 79 78 78 35)
-                // TODO On release it sends 5 bytes (as ints: 42 79 70 70 35)
+                // On click it sends 5 bytes (as ints: 42 79 78 78 35)
+                // On release it sends 5 bytes (as ints: 42 79 70 70 35)
                 int[] msg = usb.readIntArray(BYTE_COUNT, TIMEOUT);
                 for (int i : msg)
                     System.out.print(i + " ");
@@ -191,7 +208,7 @@ public class Controller implements SerialPortEventListener {
                 if (msg[3] == 70)
                     System.out.println("Released");
                 if (msg[3] == 78)
-                    usbButton(1, GLFW_PRESS);
+                    usbButton(1, inputType);
             } catch (SerialPortException | SerialPortTimeoutException e) {
                 throw new RuntimeException(e);
             }
@@ -199,6 +216,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Process command
      *
      * @param command Command to be processed
@@ -221,6 +239,7 @@ public class Controller implements SerialPortEventListener {
     }
 
     /**
+     * 
      * Get Command
      *
      * @return the last command read from the input
@@ -235,13 +254,13 @@ public class Controller implements SerialPortEventListener {
 
     /** add callbacks to keys in the specified window */
     private void mouseCallbacks(long windowHandle) {
-        glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> buttonPressed(button, action));
+        glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> processButton(button, action));
     }
 
     /** add callbacks to keys in the specified window */
     private void keypadCallbacks(long windowHandle) {
         glfwSetMouseButtonCallback(windowHandle, null);
-        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> keyPressed(key, action));
+        glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> processKey(key, action));
     }
 
     /** close window icon clicked */
@@ -251,20 +270,17 @@ public class Controller implements SerialPortEventListener {
 
     /** mouse button pressed */
     private void usbButton(int button, int action) {
-        if (action == GLFW_PRESS)
-            command = processCommand(button);
+        if (action == inputType) command = processCommand(button);
     }
 
     /** mouse button pressed */
-    private void buttonPressed(int button, int action) {
-        if (action == GLFW_PRESS)
-            command = processCommand(button);
+    private void processButton(int button, int action) {
+        if (action == inputType) command = processCommand(button);
     }
 
     /** keypad key pressed */
-    private void keyPressed(int key, int action) {
-        if (action == GLFW_PRESS)
-            command = processCommand(key);
+    private void processKey(int key, int action) {
+        if (action == inputType || (inputType == GLFW_REPEAT & action != 0)) command = processCommand(key);
     }
 
     /** response for a clicker paradigm */

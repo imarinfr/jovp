@@ -1,6 +1,7 @@
 package es.optocom.jovp.definitions;
 
 /**
+ * 
  * Eye for monocular or stereoscopic view
  *
  * @since 0.0.1

@@ -1,6 +1,7 @@
 package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Observer;
@@ -128,14 +129,27 @@ public class PsychoEngine {
      * 
      * Start the psychoEngine in the default physical device
      * 
-     * @param input    Either 'mouse', 'keypad', or the name of a suitable USB
-     *                 controller
+     * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
      * @param paradigm Psychophysics paradigm for mapping input to commands
      *
      * @since 0.0.1
      */
     public void start(String input, Paradigm paradigm) {
-        start(physicalDevices.get(0), input, paradigm);
+        start(physicalDevices.get(0), input, InputType.PRESS, paradigm);
+    }
+
+    /**
+     * 
+     * Start the psychoEngine in the default physical device
+     * 
+     * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
+     * @param inputType Whether command is when pressed, released, or repeat.
+     * @param paradigm Psychophysics paradigm for mapping input to commands
+     *
+     * @since 0.0.1
+     */
+    public void start(String input, InputType inputType, Paradigm paradigm) {
+        start(physicalDevices.get(0), input, inputType, paradigm);
     }
 
     /**
@@ -143,15 +157,15 @@ public class PsychoEngine {
      * Run the psychoEngine in a selected physical device
      *
      * @param physicalDevice The physical device for the psychoEngine run
-     * @param input          Either 'mouse', 'keypad', or the name of a suitable USB
-     *                       controller
-     * @param paradigm       Psychophysics paradigm for mapping input to commands
+     * @param input Either 'mouse', 'keypad', or the name of a suitable USB controller
+     * @param inputType Whether command is when pressed, released, or repeat.
+     * @param paradigm Psychophysics paradigm for mapping input to commands
      *
      * @since 0.0.1
      */
-    public void start(VkPhysicalDevice physicalDevice, String input, Paradigm paradigm) {
+    public void start(VkPhysicalDevice physicalDevice, String input, InputType inputType, Paradigm paradigm) {
         try {
-            window.setController(input, paradigm);
+            window.setController(input, inputType, paradigm);
             init(physicalDevice);
         } catch (SerialPortException e) {
             throw new RuntimeException("Cannot start psychoEngine.", e);
@@ -280,7 +294,7 @@ public class PsychoEngine {
      * @since 0.0.1
      */
     public void setViewMode(ViewMode viewMode) {
-        observer.setViewMode(viewMode);
+        vulkanManager.setViewMode(viewMode);
     }
 
     /**
@@ -321,6 +335,30 @@ public class PsychoEngine {
 
     /**
      * 
+     * Get the intra-pupil distance distance
+     *
+     * @return The intra-pupil distance in mm
+     *
+     * @since 0.0.1
+     */
+    public float getPupilDistance() {
+        return observer.getPupilDistance();
+    }
+
+    /**
+     * 
+     * Set intra-pupil distance
+     * 
+     * @param ipd Intra-pupil distance in mm
+     *
+     * @since 0.0.1
+     */
+    void setPupilDistance(double ipd) {
+        observer.setPupilDistance(ipd);
+    }
+
+    /**
+     * 
      * Set the viewing mode
      *
      * @param viewMode The viewing mode
@@ -353,6 +391,70 @@ public class PsychoEngine {
      */
     public float[] getFieldOfView() {
         return observer.getFieldOfView();
+    }
+
+    /**
+     *
+     * Set Brown-Conrady model distortion coefficients
+     * 
+     * @param k1 coefficient k1
+     *
+     * @since 0.0.1
+     */
+    void setDistortion(double k1) {
+        observer.setCoefficients(k1, 0.0f, 0.0f, 0.0f);
+    }
+
+        /**
+     *
+     * Set Brown-Conrady model distortion coefficients
+     * 
+     * @param k1 coefficient k1
+     * @param k2 coefficient k2
+     *
+     * @since 0.0.1
+     */
+    void setDistortion(double k1, double k2) {
+        observer.setCoefficients(k1, k2, 0.0f, 0.0f);
+    }
+
+    /**
+     *
+     * Set Brown-Conrady model distortion coefficients
+     * 
+     * @param k1 coefficient k1
+     * @param k2 coefficient k2
+     * @param k3 coefficient k3
+     *
+     * @since 0.0.1
+     */
+    void setDistortion(double k1, double k2, double k3) {
+        observer.setCoefficients(k1, k2, k3, 0.0f);
+    }
+
+    /**
+     *
+     * Set Brown-Conrady model distortion coefficients
+     * 
+     * @param k1 coefficient k1
+     * @param k2 coefficient k2
+     * @param k3 coefficient k3
+     * @param k4 coefficient k4
+     *
+     * @since 0.0.1
+     */
+    void setDistortion(double k1, double k2, double k3, double k4) {
+        observer.setCoefficients(k1, k2, k3, k4);
+    }
+
+    /**
+     *
+     * Set default Brown-Conrady model distortion coefficients
+     *
+     * @since 0.0.1
+     */
+    void setNoDistortion() {
+        observer.setCoefficients(0, 0, 0, 0);
     }
 
     /**
@@ -418,7 +520,7 @@ public class PsychoEngine {
     public void setSize(int width, int height) {
         window.setSize(width, height);
         window.update();
-        observer.computeProjection();
+        observer.computeFieldOfView();
     }
 
     /**

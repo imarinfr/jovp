@@ -1,21 +1,23 @@
 package es.optocom.jovp;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
-import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
+ * 
  * Unitary tests for the psychophysics engine
  *
  * @since 0.0.1
@@ -30,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PsychoEngineTest {
 
     /**
+     * 
      * Unitary tests for the psychophysics engine
      *
      * @since 0.0.1
@@ -38,6 +42,7 @@ public class PsychoEngineTest {
     }
 
     /**
+     * 
      * Gets information about the system and attached devices
      *
      * @since 0.0.1
@@ -64,6 +69,7 @@ public class PsychoEngineTest {
     }
 
     /**
+     * 
      * Get physical device
      *
      * @since 0.0.1
@@ -78,6 +84,7 @@ public class PsychoEngineTest {
     }
 
     /**
+     * 
      * Get window, check window position, and set window monitor
      *
      * @since 0.0.1
@@ -96,6 +103,7 @@ public class PsychoEngineTest {
     }
 
     /**
+     * 
      * Sets background for single-screen mode, and for split-screen mode
      *
      * @since 0.0.1
@@ -125,8 +133,7 @@ public class PsychoEngineTest {
     @Test
     public void viewVirtualWorld() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicWorld());
-        psychoEngine.setPhysicalSize(621, 341);
-        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
         psychoEngine.cleanup();
     }
 
@@ -261,44 +268,130 @@ public class PsychoEngineTest {
     // Psychophysics logic to show a simple triangle
     static class LogicWorld implements PsychoLogic {
 
-        Vector3f eye = new Vector3f(0, 0, 0);
+        private static final float STEP = 0.5f;
+        private boolean distortion = false;
+        private boolean rotate = false;
+
+        Item background = new Item(new Model(ModelType.SQUARE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }));
+        ArrayList<Item> items = new ArrayList<Item>();
+
+        Vector3f camera = new Vector3f(0, 0, 0);
         Vector3f center = new Vector3f(0, 0, 1);
         Vector3f up = new Vector3f(0, 1, 0);
+        Matrix4f pov;
 
         @Override
         public void init(PsychoEngine psychoEngine) {
-            Item leftEye = new Item(new Model(
-                    "/Users/imarinfr/06.optocom/03.software/jovp/src/test/resources/es/optocom/jovp/models/eyeball.obj"),
-                    new Texture(new double[] { 1, 1, 1, 1 }));
-            Item rightEye = new Item(new Model(
-                    "/Users/imarinfr/06.optocom/03.software/jovp/src/test/resources/es/optocom/jovp/models/eyeball.obj"),
-                    new Texture(new double[] { 1, 1, 1, 1 }));
-            Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));
-            view.add(leftEye);
-            view.add(rightEye);
-            view.add(item);
-            leftEye.distance(0.2);
-            leftEye.position(-4, 0);
-            leftEye.size(0.5);
-            rightEye.distance(0.2);
-            rightEye.position(10, 10);
-            rightEye.size(0.5);
-            item.distance(Observer.FAR);
-            item.position(15, 15);
-            item.size(2);
-            item.rotation(0);
+            view.add(background);
+            background.distance(20);
+            addItems();
+        }
+
+        private void addItems() {
+            for (int i = 0; i < 181; i++) {
+                int k = 2 * i;
+                items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
+                items.get(k).distance(10);
+                items.get(k).position(0, i - 90);
+                items.get(k).size(1);
+                items.get(k).rotation(0);
+                view.add(items.get(k));
+
+                items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
+                items.get(k + 1).distance(10);
+                items.get(k + 1).position(i - 90, 0);
+                items.get(k + 1).size(1);
+                items.get(k + 1).rotation(0);
+                view.add(items.get(k + 1));
+            }
         }
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command == Command.NONE) return;
+            pov = psychoEngine.getView();
+            switch (command) {
+                case ITEM1 -> up(STEP);
+                case ITEM2 -> forward(STEP);
+                case ITEM3 -> toggleDistortion(psychoEngine);
+                case ITEM4 -> right(STEP);
+                case ITEM5 -> toggleRotation();
+                case ITEM6 -> left(STEP);
+                case ITEM7 -> down(STEP);
+                case ITEM8 -> back(STEP);
+                case ITEM9 -> toggleViewMode(psychoEngine);
+                default -> {}
+            };
         }
 
-        @Override
+        private void toggleRotation() {
+			rotate = !rotate;
+		}
+
+		@Override
         public void update(PsychoEngine psychoEngine) {
-            psychoEngine.setView(eye, center, up);
+            float[] fov = psychoEngine.getFieldOfView();
+            background.size(fov[0], fov[1]);
+            psychoEngine.setView(camera, center, up);
         }
+
+        private void forward(float d) {
+            camera.z += d;
+        }
+
+        private void back(float d) {
+            camera.z -= d;
+        }
+
+        private void left(float d) {
+            if (rotate) {
+                camera.x -= d;
+            } else {
+                camera.x -= d;
+                center.x -= d;
+            }
+        }
+
+        private void right(float d) {
+            if (rotate) {
+                camera.x += d;
+            } else {
+                camera.x += d;
+                center.x += d;
+            }
+        }
+
+        private void up(float d) {
+            if (rotate) {
+                camera.y += d;
+            } else {
+                camera.y += d;
+                center.y += d;
+            }
+        }
+
+        private void down(float d) {
+            if (rotate) {
+                camera.y -= d;
+            } else {
+                camera.y -= d;
+                center.y -= d;
+            }
+        }
+
+        private void toggleViewMode(PsychoEngine psychoEngine) {
+            if (psychoEngine.getViewMode() == ViewMode.MONO) {
+                psychoEngine.setViewMode(ViewMode.STEREO);
+                psychoEngine.setPupilDistance(0);
+            } else
+                psychoEngine.setViewMode(ViewMode.MONO);
+        }
+
+        private void toggleDistortion(PsychoEngine psychoEngine) {
+            if (distortion) psychoEngine.setNoDistortion();
+            else psychoEngine.setDistortion(-0.035, 0.05);
+            distortion = !distortion;
+        };
     }
 
 }

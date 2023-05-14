@@ -1,6 +1,7 @@
 package es.optocom.jovp.definitions;
 
 /**
+ * 
  * Font Type
  *
  * @since 0.0.1

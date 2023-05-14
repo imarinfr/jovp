@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
-import org.joml.Vector4i;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkBufferCopy;
@@ -30,11 +29,13 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK13.*;
 
 import es.optocom.jovp.definitions.Eye;
-import es.optocom.jovp.definitions.PostType;
+import es.optocom.jovp.definitions.TextureType;
+import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Vertex;
 import es.optocom.jovp.definitions.ViewMode;
 
 /**
+ * 
  * Item to construct the psychophysical experience
  *
  * @since 0.0.1
@@ -44,16 +45,12 @@ public class Item {
     Eye eye;
     Model model;
     Texture texture;
-    private Vector4i settings;
     private float distance; // distance of the item in meters
-    private Vector3f position; // position in x, y, and z in meters
+    private Vector2f position; // x and y position in meters
     private Vector3f scale; // scale for x and y, and z in meters
-    private float theta; // rotation angle in degrees
-    private Vector3f mRotation; // model rotation axis
-    private Vector4f frequency;
-    private Vector3f tRotation; // texture rotation axis
-    private Vector4f contrast;
-    private Post post;
+    private Vector3f rotation; // angles of rotation in each axis
+    private Matrix4f modelMatrix; // modelMatrix matrix
+    private Processing processing;
     private long commandPool;
     private long vertexBuffer;
     private long indexBuffer;
@@ -69,6 +66,7 @@ public class Item {
     private List<Long> descriptorSets;
 
     /**
+     * 
      * Create an item for psychophysics experience
      *
      * @param model   The model (square, circle, etc)
@@ -80,21 +78,31 @@ public class Item {
         this();
         this.model = model;
         this.texture = texture;
-        defaults();
+        position = new Vector2f(0, 0);
+        scale = new Vector3f();
+        rotation = new Vector3f();
+        modelMatrix = new Matrix4f();
+        processing = new Processing(texture.getType());
         createBuffers();
     }
 
     /**
-     * Init an item, for use with Text. CARE: only for Text
+     * 
+     * Init an item, for use with Text.
      *
      * @since 0.0.1
      */
     Item() {
         eye = Eye.BOTH;
-        defaults();
+        position = new Vector2f(0, 0);
+        scale = new Vector3f();
+        rotation = new Vector3f();
+        modelMatrix = new Matrix4f();
+        processing = new Processing(TextureType.TEXT);
     }
 
     /**
+     * 
      * Recreate buffers
      * 
      * @param model   The new model
@@ -105,49 +113,44 @@ public class Item {
     public void update(Model model, Texture texture) {
         this.model = model;
         this.texture = texture;
-        if (commandPool == 0)
-            return;
+        if (commandPool == 0) return;
         recreateModel();
         recreateTexture();
     }
 
     /**
+     * 
      * Render item
      *
      * @param stack         Memory stack
      * @param commandBuffer Command buffer
-     * @param observer      The optical configuration for rendering
      * @param image         in-flight frame to render
      *
      * @since 0.0.1
      */
     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
-        Eye renderEye = eye;
-        // For monocular view there is only 1 view pass and equivalent to binocular
-        // view rendering for the left eye
-        if (VulkanSetup.observer.viewMode == ViewMode.MONO & renderEye != Eye.NONE)
-            renderEye = Eye.LEFT;
-        // For binocular, left is to be rendered to pass = 0 eye and right eye to pass =
-        // 1
-        switch (renderEye) {
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO) { // monoscopic view
+            renderEye(stack, commandBuffer, image, 0);
+            return;
+        }
+        switch (eye) { // stereoscopic view
             case LEFT -> renderEye(stack, commandBuffer, image, 0);
             case RIGHT -> renderEye(stack, commandBuffer, image, 1);
             case BOTH -> {
                 renderEye(stack, commandBuffer, image, 0);
                 renderEye(stack, commandBuffer, image, 1);
             }
-            case NONE -> {
-            }
+            case NONE -> {}
         }
     }
 
     /**
+     * 
      * Render item
      * 
      * @param stack         Memory stack
      * @param commandBuffer Command buffer
      * @param image         in-flight frame to render
-     * @param observer      the observer of the device for rendering
      * @param passNumber    pass number. For MONO vision, it ought to be 0. For
      *                      STEREO, left is 0 and right is 1
      *
@@ -156,7 +159,7 @@ public class Item {
     void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
-        updateUniforms(image);
+        updateUniforms(image, passNumber);
         LongBuffer vertexBuffers = stack.longs(vertexBuffer);
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
@@ -169,6 +172,7 @@ public class Item {
     }
 
     /**
+     * 
      * Recreate buffers
      * 
      * @param model The new model
@@ -177,12 +181,12 @@ public class Item {
      */
     public void update(Model model) {
         this.model = model;
-        if (commandPool == 0)
-            return;
+        if (commandPool == 0) return;
         recreateModel();
     }
 
     /**
+     * 
      * Recreate buffers
      * 
      * @param texture The new texture
@@ -191,12 +195,12 @@ public class Item {
      */
     public void update(Texture texture) {
         this.texture = texture;
-        if (commandPool == 0)
-            return;
+        if (commandPool == 0) return;
         recreateTexture();
     }
 
     /**
+     * 
      * Clean up after use
      *
      * @since 0.0.1
@@ -211,6 +215,7 @@ public class Item {
     }
 
     /**
+     * 
      * Set eye where to render the item
      *
      * @param eye Eye to display
@@ -222,6 +227,7 @@ public class Item {
     }
 
     /**
+     * 
      * Get eye where to render the item
      *
      * @return the eye to render
@@ -230,6 +236,30 @@ public class Item {
      */
     public Eye eye() {
         return eye;
+    }
+
+    /**
+     * 
+     * Get model
+     *
+     * @return The model
+     *
+     * @since 0.0.1
+     */
+    public Model getModel() {
+        return model;
+    }
+
+    /**
+     * 
+     * Get texture
+     *
+     * @return The texture
+     *
+     * @since 0.0.1
+     */
+    public Texture getTexture() {
+        return texture;
     }
 
     /**
@@ -257,7 +287,7 @@ public class Item {
     public void position(float x, float y) {
         position.x = distance * (float) Math.tan(Math.toRadians(x));
         position.y = distance * (float) Math.tan(Math.toRadians(y));
-        position.z = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(position.x, 2) - Math.pow(position.y, 2));
+        computeModelMatrix();
     }
 
     /**
@@ -282,7 +312,7 @@ public class Item {
      */
     public void distance(float distance) {
         this.distance = distance;
-        position.z = distance;
+        computeModelMatrix();
     }
 
     /**
@@ -338,6 +368,7 @@ public class Item {
         scale.x = distance * (float) Math.tan(Math.toRadians(x) / 2.0f);
         scale.y = distance * (float) Math.tan(Math.toRadians(y) / 2.0f);
         scale.z = z;
+        computeModelMatrix();
     }
 
     /**
@@ -352,64 +383,46 @@ public class Item {
     }
 
     /**
+     *
      * Rotate the item
      *
-     * @param rotation Angle of rotation in degrees
+     * @param theta Angle of rotation in degrees
      *
      * @since 0.0.1
      */
     public void rotation(float theta) {
-        rotation((float) theta, new Vector3f(0.0f, 0.0f, 1.0f));
+        rotation(0, 0, theta);
     }
 
     /**
      * Rotate the item
      *
-     * @param theta    Angle of rotation in degrees
-     * @param rotation Axis of rotation
+     * @param x Angle on the x axis in degrees
+     * @param y Angle on the y axis in degrees
+     * @param z Angle on the z axis in degrees
      *
      * @since 0.0.1
      */
-    public void rotation(double theta, Vector3f rotation) {
-        rotation((float) theta, rotation);
+    public void rotation(double x, double y, double z) {
+        rotation((float) x, (float) y, (float) z);
     }
 
     /**
      * Rotate the item
      *
-     * @param theta    Angle of rotation in degrees
-     * @param rotation Axis of rotation
+     * @param x Angle on the x axis in degrees
+     * @param y Angle on the y axis in degrees
+     * @param z Angle on the z axis in degrees
      *
      * @since 0.0.1
      */
-    public void rotation(float theta, Vector3f rotation) {
-        this.theta = theta;
-        this.mRotation = rotation;
+    public void rotation(float x, float y, float z) {
+        rotation = new Vector3f((float) Math.toRadians(x), (float) Math.toRadians(y), (float) Math.toRadians(z));
+        computeModelMatrix();
     }
 
     /**
-     * Get model
-     *
-     * @return The model
-     *
-     * @since 0.0.1
-     */
-    public Model getModel() {
-        return model;
-    }
-
-    /**
-     * Get texture
-     *
-     * @return The texture
-     *
-     * @since 0.0.1
-     */
-    public Texture getTexture() {
-        return texture;
-    }
-
-    /**
+     * 
      * Set texture color
      *
      * @param rgba The RGBA channels to use
@@ -418,28 +431,6 @@ public class Item {
      */
     public void setColor(double[] rgba) {
         texture.setColor(rgba);
-    }
-
-    /**
-     * Get texture color 1 for grids
-     *
-     * @return The RGBA values of the minimum color
-     *
-     * @since 0.0.1
-     */
-    public Vector4f rgba0() {
-        return texture.rgba0();
-    }
-
-    /**
-     * Get texture color 2 for grids
-     *
-     * @return The RGBA values of the maximum color
-     *
-     * @since 0.0.1
-     */
-    public Vector4f rgba1() {
-        return texture.rgba1();
     }
 
     /**
@@ -456,20 +447,6 @@ public class Item {
     }
 
     /**
-     * 
-     * Spatial frequency properties of the texture
-     *
-     * @param xp Phase on the x-axis
-     * @param xf Frequency on the x-axis
-     * @param yp Phase on the y-axis
-     * @param yf Frequency on the y-axis
-     *
-     * @since 0.0.1
-     */
-    public void frequency(float xp, float xf, float yp, float yf) {
-    }
-
-    /**
      * Spatial frequency properties of the texture
      *
      * @param xp Phase on the x-axis
@@ -480,7 +457,7 @@ public class Item {
      * @since 0.0.1
      */
     public void frequency(double xp, double xf, double yp, double yf) {
-        frequency((float) xp, (float) xf, (float) yp, (float) yf);
+        processing.frequency((float) xp, (float) xf, (float) yp, (float) yf);
     }
 
     /**
@@ -492,7 +469,7 @@ public class Item {
      * @since 0.0.1
      */
     public void frequency(double xp, double xf) {
-        frequency((float) xp, (float) xf, (float) xp, (float) xf);
+        processing.frequency((float) xp, (float) xf, (float) xp, (float) xf);
     }
 
     /**
@@ -531,25 +508,11 @@ public class Item {
      * @since 0.0.1
      */
     public void contrast(double r, double g, double b, double a) {
-        this.contrast = new Vector4f((float) r, (float) g, (float) b, (float) a);
+        contrast((float) r, (float) g, (float) b, (float) a);
     }
 
     /**
-     *
-     * Contrast
-     *
-     * @param r Amplitude for R channel
-     * @param g Amplitude for G channel
-     * @param b Amplitude for B channel
-     * @param a Amplitude for alpha channel
-     *
-     * @since 0.0.1
-     */
-    public void contrast(float r, float g, float b, float a) {
-        this.contrast = new Vector4f(r, g, b, a);
-    }
-
-    /**
+     * 
      * Rotate the texture inside the model
      *
      * @param rotation Angle of rotation in degrees
@@ -557,19 +520,7 @@ public class Item {
      * @since 0.0.1
      */
     public void texRotation(double rotation) {
-        texRotation(rotation, new float[] { 0.5f, 0.5f });
-    }
-
-    /**
-     * Rotate the texture inside the model
-     *
-     * @param rotation Angle of rotation in degrees
-     * @param pivot    Pivot UV values
-     *
-     * @since 0.0.1
-     */
-    public void texRotation(double rotation, float[] pivot) {
-        // TODO
+        processing.rotation(rotation, new float[] { 0.5f, 0.5f });
     }
 
     /**
@@ -580,8 +531,8 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public void envelope(PostType type, double sd) {
-        envelope(type, (float) sd, (float) sd, 0);
+    public void envelope(EnvelopeType type, double sd) {
+        processing.envelope(type, (float) sd, (float) sd, 0);
     }
 
     /**
@@ -593,8 +544,8 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public void envelope(PostType type, double sdx, double sdy) {
-        envelope(type, (float) sdx, (float) sdy, 0);
+    public void envelope(EnvelopeType type, double sdx, double sdy) {
+        processing.envelope(type, (float) sdx, (float) sdy, 0);
     }
 
     /**
@@ -607,8 +558,8 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public void envelope(PostType type, double sdx, double sdy, double angle) {
-        post.envelope(type, (float) sdx, (float) sdy, (float) angle);
+    public void envelope(EnvelopeType type, double sdx, double sdy, double angle) {
+        processing.envelope(type, (float) sdx, (float) sdy, (float) angle);
     }
 
     /**
@@ -621,8 +572,8 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public void envelope(PostType type, float sdx, float sdy, float angle) {
-        post.envelope(type, sdx, sdy, angle);
+    public void envelope(EnvelopeType type, float sdx, float sdy, float angle) {
+        processing.envelope(type, sdx, sdy, angle);
     }
 
     /**
@@ -631,7 +582,7 @@ public class Item {
      * @since 0.0.1
      */
     public void removeEnvelope() {
-        post.removeEnvelope();
+        processing.removeEnvelope();
     }
 
     /**
@@ -642,7 +593,7 @@ public class Item {
      * @since 0.0.1
      */
     public void defocus(double dx) {
-        defocus((float) dx, (float) dx, 0);
+        processing.defocus((float) dx, (float) dx, 0);
     }
 
     /**
@@ -655,7 +606,7 @@ public class Item {
      * @since 0.0.1
      */
     public void defocus(double dx, double dy, double angle) {
-        post.defocus((float) dx, (float) dy, (float) angle);
+        processing.defocus((float) dx, (float) dy, (float) angle);
     }
 
     /**
@@ -668,7 +619,7 @@ public class Item {
      * @since 0.0.1
      */
     public void defocus(float dx, float dy, float angle) {
-        post.defocus(dx, dy, angle);
+        processing.defocus(dx, dy, angle);
     }
 
     /**
@@ -677,20 +628,7 @@ public class Item {
      * @since 0.0.1
      */
     public void removeDefocus() {
-        post.removeDefocus();
-    }
-
-    /** defaults */
-    private void defaults() {
-        settings = new Vector4i(0, 0, 0, 0); // TODO
-        position = new Vector3f();
-        scale = new Vector3f();
-        theta = 0;
-        mRotation = new Vector3f(0.0f, 0.0f, 1.0f);
-        frequency = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
-        tRotation = new Vector3f(0.0f, 0.0f, 1.0f);
-        contrast = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-        post = new Post(); // TODO
+        processing.removeDefocus();
     }
 
     /**
@@ -700,8 +638,7 @@ public class Item {
      */
     void createBuffers() {
         // only if psychoEngine has started and have not yet been created
-        if (VulkanSetup.physicalDevice == null | commandPool != 0)
-            return;
+        if (VulkanSetup.physicalDevice == null | commandPool != 0) return;
         commandPool = VulkanSetup.createCommandPool();
         createModelObjects();
         createTextureObjects();
@@ -1062,46 +999,43 @@ public class Item {
 
     /**
      *
-     * Item transformations for Vulkan rendering
-     *
-     * @since 0.0.1
-     */
-    Matrix4f transform() {
-        Matrix4f transform = new Matrix4f();
-        // first apply local transformations, scale, then rotate
-        transform.translate(position.x, position.y, position.z).scale(scale.x, scale.y, scale.z)
-                .rotate((float) Math.toRadians(theta), mRotation.x, mRotation.y, mRotation.z);
-        return transform;
-    }
-
-    /**
-     *
      * Update uniforms for the image to be rendered
      *
      * @param imageIndex Image to be rendered
      *
      * @since 0.0.1
      */
-    void updateUniforms(int imageIndex) {
+    void updateUniforms(int imageIndex, int passNumber) {
+        int n = 0;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
             vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
                     VulkanSetup.UNIFORM_SIZEOF, 0, data);
             {
                 ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
-                settings.get(0, buffer);
-                transform().get(4 * Float.BYTES, buffer);
-                VulkanSetup.observer.view.get(20 * Float.BYTES, buffer);
-                VulkanSetup.observer.projection.get(36 * Float.BYTES, buffer);
-                VulkanSetup.observer.optics.lens.get(52 * Float.BYTES, buffer);
-                rgba0().get(68 * Float.BYTES, buffer);
-                rgba1().get(72 * Float.BYTES, buffer);
-                frequency.get(76 * Float.BYTES, buffer);
-                tRotation.get(80 * Float.BYTES, buffer);
-                contrast.get(83 * Float.BYTES, buffer);
+                processing.settings.get(n * Float.BYTES, buffer); n += 4;
+                modelMatrix.get(n * Float.BYTES, buffer); n += 16;
+                VulkanSetup.observer.projectionViews.get(passNumber).get(n * Float.BYTES, buffer); n += 16;
+                VulkanSetup.observer.optics.getCenters().get(n * Float.BYTES, buffer); n += 4;
+                VulkanSetup.observer.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
+                texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
+                texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
+                processing.frequency.get(n * Float.BYTES, buffer); n += 4;
+                processing.rotation.get(n * Float.BYTES, buffer); n += 4;
+                processing.contrast.get(n * Float.BYTES, buffer); n += 4;
+                processing.envelope.get(n * Float.BYTES, buffer); n += 4;
+                processing.defocus.get(n * Float.BYTES, buffer);
             }
             vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
         }
+    }
+
+    /** compute model matrix from MVP */
+    void computeModelMatrix() {
+        float z = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(position.x, 2) - Math.pow(position.y, 2));
+        modelMatrix = new Matrix4f()
+            .translate(new Vector3f(position.x, position.y, z))
+            .scale(scale).rotateXYZ(rotation);
     }
 
     /** copy buffer */

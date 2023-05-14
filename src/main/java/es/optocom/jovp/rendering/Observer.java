@@ -1,13 +1,15 @@
 package es.optocom.jovp.rendering;
 
 import es.optocom.jovp.Window;
-import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.ViewMode;
+
+import java.util.ArrayList;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
+ * 
  * Observer to apply the required transformations during rendering,
  * including view mode, distance, FOV, near and far planes, culling, etc
  *
@@ -15,14 +17,16 @@ import org.joml.Vector3f;
  */
 public class Observer {
 
-    public static final float NEAR = 0.1f; // Near and far planes in in meters
+    public static final float NEAR = 1f; // Near and far planes in in meters
     public static final float FAR = 1000.0f;
     private static final float IPD = 62.4f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
+    private static final Matrix4f VULKAN_AXIS = new Matrix4f(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
     Matrix4f projection = new Matrix4f(); // perspective projection
     Matrix4f view = new Matrix4f(); // view matrix
+    ArrayList<Matrix4f> projectionViews; // projection view matrices
     Optics optics = new Optics(); // the system's optics
 
     private float distance; // viewing distance in mm
@@ -75,21 +79,19 @@ public class Observer {
         this.window = window;
         this.distance = distance;
         this.viewMode = viewMode;
-        setView(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
-        computeProjection();
-        setPupilDistance(ipd);
+        resetSpaceMatrices();
     }
 
     /**
      * 
-     * Get observed window
+     * Get field of view
      *
-     * @return the observed window
+     * @return The x and y fields of view in degrees.
      *
      * @since 0.0.1
      */
-    public Window window() {
-        return window;
+    public float[] getFieldOfView() {
+        return new float[] { (float) Math.toDegrees(fovx), (float) Math.toDegrees(fovy) };
     }
 
     /**
@@ -100,14 +102,14 @@ public class Observer {
      *
      * @since 0.0.1
      */
-    public void setViewMode(ViewMode viewMode) {
-        if (this.viewMode == viewMode)
-            return;
+    void setViewMode(ViewMode viewMode) {
         this.viewMode = viewMode;
+        this.ipd = IPD;
         switch (viewMode) {
             case MONO -> fovx = 2 * fovx;
             case STEREO -> fovx = fovx / 2;
         }
+        resetSpaceMatrices();
     }
 
     /**
@@ -120,6 +122,43 @@ public class Observer {
      */
     public ViewMode getViewMode() {
         return viewMode;
+    }
+
+    /**
+     * 
+     * Set viewing distance
+     *
+     * @param distance The distance of the observer from the display in mm
+     *
+     * @since 0.0.1
+     */
+    public void setDistance(double distance) {
+        setDistance((float) distance);
+    }
+
+    /**
+     * 
+     * Set viewing distance
+     *
+     * @param distance The distance of the observer from the display in mm
+     *
+     * @since 0.0.1
+     */
+    public void setDistance(float distance) {
+        this.distance = distance;
+        resetSpaceMatrices();
+    }
+
+    /**
+     * 
+     * Get viewing distance
+     *
+     * @return The distance of the observer from the display
+     * 
+     * @since 0.0.1
+     */
+    public float getDistance() {
+        return distance;
     }
 
     /**
@@ -162,81 +201,18 @@ public class Observer {
     }
 
     /**
-     * 
-     * Set viewing distance
      *
-     * @param distance The distance of the observer from the display in mm
+     * Set Brown-Conrady model distortion coefficients
+     * 
+     * @param k1 coefficient k1
+     * @param k2 coefficient k2
+     * @param k3 coefficient k3
+     * @param k4 coefficient k4
      *
      * @since 0.0.1
      */
-    public void setDistance(double distance) {
-        setDistance((float) distance);
-    }
-
-    /**
-     * 
-     * Set viewing distance
-     *
-     * @param distance The distance of the observer from the display in mm
-     *
-     * @since 0.0.1
-     */
-    public void setDistance(float distance) {
-        this.distance = distance;
-        computeFieldOfView();
-    }
-
-    /**
-     * 
-     * Get viewing distance
-     *
-     * @return The distance of the observer from the display
-     * 
-     * @since 0.0.1
-     */
-    public float getDistance() {
-        return distance;
-    }
-
-    /**
-     * 
-     * Updates the field of view depending on distance, window size, etc
-     *
-     * @since 0.0.1
-     */
-    void computeFieldOfView() {
-        float width = window.getPixelWidth() * window.getWidth();
-        float height = window.getPixelHeight() * window.getHeight();
-        fovx = (float) (2.0 * Math.atan((width / 2.0) / distance));
-        fovy = (float) (2.0 * Math.atan((height / 2.0) / distance));
-        if (viewMode == ViewMode.STEREO)
-            fovx = fovx / 2; // only half of the screen is used per eye
-    }
-
-    /**
-     * 
-     * Get field of view
-     *
-     * @return The x and y fields of view in degrees.
-     *
-     * @since 0.0.1
-     */
-    public float[] getFieldOfView() {
-        return new float[] { (float) Math.toDegrees(fovx), (float) Math.toDegrees(fovy) };
-    }
-
-    /**
-     * 
-     * Compute aspect ratio, update FOVX and FOVY, and set the projection matrix
-     *
-     * @since 0.0.1
-     */
-    public void computeProjection() {
-        computeFieldOfView();
-        float aspect = window.getAspect();
-        if (viewMode == ViewMode.STEREO)
-            aspect = aspect / 2;
-        projection.setPerspective(fovy, aspect, NEAR, FAR);
+    public void setCoefficients(double k1, double k2, double k3, double k4) {
+        optics.setCoefficients(k1, k2, k3, k4);
     }
 
     /**
@@ -251,6 +227,7 @@ public class Observer {
      */
     public void setView(Vector3f eye, Vector3f center, Vector3f up) {
         view.setLookAt(eye, center, up);
+        setProjectionViews();
     }
 
     /**
@@ -267,19 +244,59 @@ public class Observer {
 
     /**
      * 
-     * Left-eye view
-     * 
-     * @param eye The position of the eye in the virtual world
+     * Updates the field of view depending on distance, window size, etc
      *
      * @since 0.0.1
      */
-    Matrix4f eyeView(Eye eye) {
-        Matrix4f renderView = switch (eye) {
-            case LEFT -> view.translate(-ipd / 2, 0, 0);
-            case RIGHT -> view.translate(ipd / 2, 0, 0);
-            default -> view;
-        };
-        return renderView;
+    public void computeFieldOfView() {
+        float width = window.getPixelWidth() * window.getWidth();
+        float height = window.getPixelHeight() * window.getHeight();
+        fovx = (float) (2.0 * Math.atan((width / 2.0) / distance));
+        fovy = (float) (2.0 * Math.atan((height / 2.0) / distance));
+        if (viewMode == ViewMode.STEREO) fovx = fovx / 2; // only half of the screen is used per eye
+        setProjection();
+    }
+
+    /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
+    private void resetSpaceMatrices() {
+        switch (viewMode) {
+            case MONO -> {
+                projectionViews = new ArrayList<Matrix4f>(1);
+                projectionViews.add(new Matrix4f());
+            }
+            case STEREO -> {
+                projectionViews = new ArrayList<Matrix4f>(2);
+                projectionViews.add(new Matrix4f());
+                projectionViews.add(new Matrix4f());
+            }
+        }
+        setPupilDistance(ipd);
+        setView(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
+        computeFieldOfView();
+    }
+
+    /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
+    private void setProjection() {
+        float aspect = (float) fovx / fovy;
+        projection.setPerspective(fovy, aspect, NEAR, FAR);
+        setProjectionViews();
+    }
+
+    /** Set projection view */
+    private void setProjectionViews() {
+        switch (viewMode) {
+            case MONO -> {
+                projectionViews.get(0).set(projection).mul(VULKAN_AXIS).mul(view);
+            }
+            case STEREO -> {
+                Matrix4f eyeView = new Matrix4f(view);
+                eyeView.translate(-ipd / 2000.0f, 0, 0); // left-eye offset
+                projectionViews.get(0).set(projection).mul(VULKAN_AXIS).mul(eyeView);
+                eyeView = new Matrix4f(view);
+                eyeView.translate(ipd / 2000.0f, 0, 0); // right-eye offset
+                projectionViews.get(1).set(projection).mul(VULKAN_AXIS).mul(eyeView);
+            }
+        }
     }
 
 }

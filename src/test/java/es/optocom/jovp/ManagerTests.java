@@ -7,7 +7,6 @@ import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
-import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
 import es.optocom.jovp.rendering.VulkanManager;
@@ -121,7 +120,6 @@ public class ManagerTests {
                     monitor.getVideoModes().position(i).height() + " - " +
                     monitor.getVideoModes().position(i).refreshRate() + "Hz");
         }
-        System.out.println();
         psychoEngine.cleanup();
     }
 
@@ -192,6 +190,7 @@ public class ManagerTests {
     }
 
     /**
+     *
      * Tests for creating, showing, hiding, resizing, and hiding windows
      *
      * @since 0.0.1
@@ -206,6 +205,7 @@ public class ManagerTests {
     }
 
     /**
+     *
      * Tests for updating distance and the fixation point, and for retrieving the
      * field of view of the window
      *
@@ -229,7 +229,6 @@ public class ManagerTests {
     @Test
     public void showTriangle() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle());
-        System.out.println(psychoEngine.getFieldOfView());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -269,20 +268,17 @@ public class ManagerTests {
 
         @Override
         public void init(PsychoEngine psychoEngine) {
-            Item item = new Item(new Model(ModelType.TRIANGLE),
-                    new Texture(new double[] { 0, 0, 1, 1 }, new double[] { 1, 0, 0, 1 }));
+            Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));            
             view.add(item);
-            item.distance(Observer.FAR);
+            item.distance(100);
             item.position(0, 0);
-            item.size(30, 30);
+            item.size(5, 5);
             item.rotation(0);
-            System.out.println(Arrays.toString(psychoEngine.getFieldOfView()));
         }
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command != Command.NONE) System.out.println(command);
         }
 
         @Override
