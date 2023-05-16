@@ -272,7 +272,7 @@ public class PsychoEngineTest {
         private boolean distortion = false;
         private boolean rotate = false;
 
-        Item background = new Item(new Model(ModelType.SQUARE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }));
+        Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }));
         ArrayList<Item> items = new ArrayList<Item>();
 
         Vector3f camera = new Vector3f(0, 0, 0);

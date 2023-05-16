@@ -44,17 +44,17 @@ vec2 rotate(vec2 uv, vec3 rotation) {
 void main() {
     // apply distortion as necessary
     vec2 pos = position.xy;
-    //vec2 theta = (pos - ubo.centers.xy);
-    //float rSq = dot(theta, theta);
-    //// Brown-Conrady model
-    //float distortion = 1.0 +
-    //                   ubo.coefficients.x * rSq +
-    //                   ubo.coefficients.y * rSq * rSq +
-    //                   ubo.coefficients.z * rSq * rSq * rSq +
-    //                   ubo.coefficients.w * rSq * rSq * rSq * rSq;
-    //vec2 distortedTheta = theta * distortion;
+    vec2 theta = (pos - ubo.centers.xy);
+    float rSq = dot(theta, theta);
+    // Brown-Conrady model
+    float distortion = 1.0 +
+                       ubo.coefficients.x * rSq +
+                       ubo.coefficients.y * rSq * rSq +
+                       ubo.coefficients.z * rSq * rSq * rSq +
+                       ubo.coefficients.w * rSq * rSq * rSq * rSq;
+    vec2 distortedTheta = theta * distortion;
     // Apply the distortion effect to the vertex position
-    //pos = ubo.centers.xy + distortedTheta;
+    pos = ubo.centers.xy + distortedTheta;
     gl_Position = ubo.projectionView * ubo.model * vec4(pos, position.z, 1.0);
     // Calculate the texture coordinates for the distorted vertex
     vec2 tc = (pos - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;

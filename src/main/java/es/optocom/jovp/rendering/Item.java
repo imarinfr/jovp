@@ -508,7 +508,7 @@ public class Item {
      * @since 0.0.1
      */
     public void contrast(double r, double g, double b, double a) {
-        contrast((float) r, (float) g, (float) b, (float) a);
+        processing.contrast((float) r, (float) g, (float) b, (float) a);
     }
 
     /**

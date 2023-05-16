@@ -85,7 +85,7 @@ public class VulkanManager {
     public void setViewMode(ViewMode viewMode) {
         if (VulkanSetup.observer.getViewMode() == viewMode) return;
         VulkanSetup.observer.setViewMode(viewMode);
-        recreateSwapChain();
+        if (VulkanSetup.swapChain != null) recreateSwapChain();
     }
 
     /**
