@@ -133,6 +133,7 @@ public class PsychoEngineTest {
     @Test
     public void viewVirtualWorld() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicWorld());
+        System.out.println(psychoEngine.getMonitor().getHeightMM() + " " + psychoEngine.getMonitor().getWidthMM());
         psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
         psychoEngine.cleanup();
     }
@@ -283,7 +284,7 @@ public class PsychoEngineTest {
         @Override
         public void init(PsychoEngine psychoEngine) {
             view.add(background);
-            background.distance(20);
+            background.distance(50);
             addItems();
         }
 
@@ -291,14 +292,14 @@ public class PsychoEngineTest {
             for (int i = 0; i < 181; i++) {
                 int k = 2 * i;
                 items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
-                items.get(k).distance(10);
+                items.get(k).distance(40);
                 items.get(k).position(0, i - 90);
                 items.get(k).size(1);
                 items.get(k).rotation(0);
                 view.add(items.get(k));
 
                 items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
-                items.get(k + 1).distance(10);
+                items.get(k + 1).distance(40);
                 items.get(k + 1).position(i - 90, 0);
                 items.get(k + 1).size(1);
                 items.get(k + 1).rotation(0);

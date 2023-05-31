@@ -17,7 +17,7 @@ import org.joml.Vector3f;
  */
 public class Observer {
 
-    public static final float NEAR = 1f; // Near and far planes in in meters
+    public static final float NEAR = 1.0f; // Near and far planes in in meters
     public static final float FAR = 1000.0f;
     private static final float IPD = 62.4f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
     private static final Matrix4f VULKAN_AXIS = new Matrix4f(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -31,8 +31,8 @@ public class Observer {
 
     private float distance; // viewing distance in mm
     private float ipd; // intra pupil distance in mm
-    private float fovx; // in degrees;
-    private float fovy; // in degrees;
+    private float fovx; // in radians;
+    private float fovy; // in radians;
 
     /**
      * 
@@ -251,8 +251,8 @@ public class Observer {
     public void computeFieldOfView() {
         float width = window.getPixelWidth() * window.getWidth();
         float height = window.getPixelHeight() * window.getHeight();
-        fovx = (float) (2.0 * Math.atan((width / 2.0) / distance));
-        fovy = (float) (2.0 * Math.atan((height / 2.0) / distance));
+        fovx = (float) (2 * Math.atan(width / distance / 2));
+        fovy = (float) (2 * Math.atan(height / distance / 2));
         if (viewMode == ViewMode.STEREO) fovx = fovx / 2; // only half of the screen is used per eye
         setProjection();
     }
@@ -277,7 +277,7 @@ public class Observer {
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
     private void setProjection() {
-        float aspect = (float) fovx / fovy;
+        float aspect = (float) window.getWidth() * window.getPixelWidth() / (window.getHeight()  * window.getPixelWidth());
         projection.setPerspective(fovy, aspect, NEAR, FAR);
         setProjectionViews();
     }

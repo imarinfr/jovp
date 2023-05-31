@@ -47,7 +47,7 @@ public class Item {
     Texture texture;
     private float distance; // distance of the item in meters
     private Vector2f position; // x and y position in meters
-    private Vector3f scale; // scale for x and y, and z in meters
+    private Vector3f scale; // scale for x and y, and z in meters (size = 2 * scale)
     private Vector3f rotation; // angles of rotation in each axis
     private Matrix4f modelMatrix; // modelMatrix matrix
     private Processing processing;
@@ -317,6 +317,21 @@ public class Item {
 
     /**
      * 
+     * Get size in degrees
+     *
+     * @return return size x and size y in degrees
+     *
+     * @since 0.0.1
+     */
+    public float[] size() {
+        return new float[] {
+            (float) (2 * Math.toDegrees(Math.atan(scale.x / distance))),
+            (float) (2 * Math.toDegrees(Math.atan(scale.y / distance)))
+        };
+    }
+
+    /**
+     * 
      * Set item size
      *
      * @param x Size along the x and y axes in degrees fo visual angle
@@ -359,14 +374,14 @@ public class Item {
      * Set item size
      *
      * @param x Size along the x-axis in degrees fo visual angle
-     * @param y Size along the y-axis in degrees fo visual angle
+     * @param y Size along the y-axis in degrees fo visual angle597
      * @param z Size along the z-axis in meters
      *
      * @since 0.0.1
      */
     public void size(float x, float y, float z) {
-        scale.x = distance * (float) Math.tan(Math.toRadians(x) / 2.0f);
-        scale.y = distance * (float) Math.tan(Math.toRadians(y) / 2.0f);
+        scale.x = distance * (float) Math.tan(Math.toRadians(x) / 2);
+        scale.y = distance * (float) Math.tan(Math.toRadians(y) / 2);
         scale.z = z;
         computeModelMatrix();
     }
