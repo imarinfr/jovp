@@ -3,7 +3,6 @@ package es.optocom.jovp;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
-import org.lwjgl.vulkan.VkPhysicalDevice;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Eye;
@@ -18,10 +17,7 @@ import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -70,40 +66,6 @@ public class PsychoEngineTest {
 
     /**
      * 
-     * Get physical device
-     *
-     * @since 0.0.1
-     */
-    @Test
-    public void getPhysicalDevices() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()));
-        List<VkPhysicalDevice> physicalDevices = psychoEngine.getPhysicalDevices();
-        for (VkPhysicalDevice vkPhysicalDevice : physicalDevices)
-            System.out.println(vkPhysicalDevice.toString());
-        psychoEngine.cleanup();
-    }
-
-    /**
-     * 
-     * Get window, check window position, and set window monitor
-     *
-     * @since 0.0.1
-     */
-    @Test
-    public void getWindow() {
-        PsychoEngine psychoEngine = new PsychoEngine(new Logic(new Timer()));
-        Window window = psychoEngine.getWindow();
-        // window position
-        int[] position = psychoEngine.getPosition();
-        assertArrayEquals(position, window.getPosition());
-        System.out.println("Window position is: " + Arrays.toString(position));
-        // window monitor
-        psychoEngine.setMonitor(0);
-        psychoEngine.cleanup();
-    }
-
-    /**
-     * 
      * Sets background for single-screen mode, and for split-screen mode
      *
      * @since 0.0.1
@@ -126,6 +88,19 @@ public class PsychoEngineTest {
 
     /**
      * 
+     * Render a triangle
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void showTriangle() {
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle());
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+    /**
+     * 
      * Stereo View
      *
      * @since 0.0.1
@@ -138,7 +113,6 @@ public class PsychoEngineTest {
         psychoEngine.cleanup();
     }
 
-
     /**
      * 
      * View virtual world
@@ -148,7 +122,6 @@ public class PsychoEngineTest {
     @Test
     public void viewVirtualWorld() {
         PsychoEngine psychoEngine = new PsychoEngine(new WorldLogic());
-        System.out.println(psychoEngine.getMonitor().getHeightMM() + " " + psychoEngine.getMonitor().getWidthMM());
         psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
         psychoEngine.cleanup();
     }
@@ -178,7 +151,30 @@ public class PsychoEngineTest {
         }
     }
 
-        // Psychophysics logic class
+        // Psychophysics logic to show a simple triangle
+    static class LogicTriangle implements PsychoLogic {
+
+        @Override
+        public void init(PsychoEngine psychoEngine) {
+            Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));            
+            view.add(item);
+            item.distance(100);
+            item.position(0, 0);
+            item.size(5, 5);
+            item.rotation(0);
+        }
+
+        @Override
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE) System.out.println(command);
+        }
+
+        @Override
+        public void update(PsychoEngine psychoEngine) {
+        }
+
+    }
+    // Psychophysics logic class
     static class StereoLogic implements PsychoLogic {
 
         double[] fixationColor = new double[] { 0, 1, 0, 1 };
@@ -190,7 +186,7 @@ public class PsychoEngineTest {
         int swapEyeTime = 1500;
         Timer timerFps = new Timer();
         int fps = 0;
-        Text text;
+        Text title, text;
         int refreshTime = 1000;
 
         @Override
@@ -229,19 +225,20 @@ public class PsychoEngineTest {
             stimulus3.contrast(0.5);
             view.add(stimulus3);
             // Add title
-            Text title = new Text();
+            title = new Text();
             title.setText("Stereoscopic view");
             title.show(Eye.LEFT);
-            title.size(0.75);
-            title.position(-5, 5);
-            stimulus2.distance(20);
+            title.size(1.5);
+            title.position(-5, 8);
+            title.distance(5);
             view.add(title);
             // Add text to show FPS
             text = new Text();
             text.setText("Refresh rate:");
             text.show(Eye.LEFT);
-            text.size(0.6);
-            text.position(-5, 4);
+            text.size(1);
+            text.position(-7.5, 6.5);
+            text.distance(5);
             view.add(text);
             // Start timers
             timer.start();
@@ -253,10 +250,13 @@ public class PsychoEngineTest {
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
             if (command == Command.YES){
-                if(psychoEngine.getViewMode() == ViewMode.MONO)
+                if(psychoEngine.getViewMode() == ViewMode.MONO) {
                     psychoEngine.setViewMode(ViewMode.STEREO);
-                else
+                    title.setText("Stereoscopic view");
+                } else {
                     psychoEngine.setViewMode(ViewMode.MONO);
+                    title.setText("Monoscopic view");
+                }
             }
         }
 

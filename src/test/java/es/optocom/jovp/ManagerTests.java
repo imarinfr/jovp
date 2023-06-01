@@ -1,16 +1,13 @@
 package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.definitions.ModelType;
-import es.optocom.jovp.definitions.Paradigm;
-import es.optocom.jovp.rendering.Item;
-import es.optocom.jovp.rendering.Model;
-import es.optocom.jovp.rendering.Texture;
 import es.optocom.jovp.rendering.VulkanManager;
 
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.vulkan.VkPhysicalDevice;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.util.Arrays;
 import java.util.List;
@@ -137,6 +134,21 @@ public class ManagerTests {
 
     /**
      * 
+     * Get physical device
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void getPhysicalDevices() {
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic());
+        List<VkPhysicalDevice> physicalDevices = psychoEngine.getPhysicalDevices();
+        for (VkPhysicalDevice vkPhysicalDevice : physicalDevices)
+            System.out.println(vkPhysicalDevice.toString());
+        psychoEngine.cleanup();
+    }
+
+    /**
+     * 
      * Gets information about physical devices (GPUs)
      *
      * @since 0.0.1
@@ -161,6 +173,25 @@ public class ManagerTests {
     public void getSerialControllerNames() {
         String[] available = Controller.getSuitableControllers();
         System.out.println(Arrays.toString(available));
+    }
+
+        /**
+     * 
+     * Get window, check window position, and set window monitor
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void getWindow() {
+        PsychoEngine psychoEngine = new PsychoEngine(new Logic());
+        Window window = psychoEngine.getWindow();
+        // window position
+        int[] position = psychoEngine.getPosition();
+        assertArrayEquals(position, window.getPosition());
+        System.out.println("Window position is: " + Arrays.toString(position));
+        // window monitor
+        psychoEngine.setMonitor(0);
+        psychoEngine.cleanup();
     }
 
     /**
@@ -216,19 +247,6 @@ public class ManagerTests {
         psychoEngine.cleanup();
     }
 
-    /**
-     * 
-     * Render a triangle
-     *
-     * @since 0.0.1
-     */
-    @Test
-    public void showTriangle() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle());
-        psychoEngine.start("mouse", Paradigm.CLICKER);
-        psychoEngine.cleanup();
-    }
-
     // Psychophysics logic that does nothing
     static class Logic implements PsychoLogic {
 
@@ -238,30 +256,6 @@ public class ManagerTests {
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-        }
-
-        @Override
-        public void update(PsychoEngine psychoEngine) {
-        }
-
-    }
-
-    // Psychophysics logic to show a simple triangle
-    static class LogicTriangle implements PsychoLogic {
-
-        @Override
-        public void init(PsychoEngine psychoEngine) {
-            Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));            
-            view.add(item);
-            item.distance(100);
-            item.position(0, 0);
-            item.size(5, 5);
-            item.rotation(0);
-        }
-
-        @Override
-        public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE) System.out.println(command);
         }
 
         @Override

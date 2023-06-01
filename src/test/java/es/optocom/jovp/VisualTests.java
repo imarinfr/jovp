@@ -55,7 +55,7 @@ public class VisualTests {
     @Test
     public void visualAcuityTest() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicVA());
-        psychoEngine.start("mouse", Paradigm.M2AFC);
+        psychoEngine.start("keypad", Paradigm.M4AFC);
         psychoEngine.cleanup();
     }
 
@@ -82,7 +82,7 @@ public class VisualTests {
      */
     @Test
     public void stressTest() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicStress());
+        PsychoEngine psychoEngine = new PsychoEngine(new StressLogic());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -121,32 +121,38 @@ public class VisualTests {
         public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1, 1);
+            item.distance(20);
             view.add(item);
             item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
             item.position(14, 4);
+            item.distance(90);
             item.frequency(0, 3);
             item.rotation(45);
             item.contrast(0.5);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, black, white));
             item.position(6, -3);
+            item.distance(100);
             item.frequency(0.25, 2);
             item.size(6, 3);
             item.contrast(0.1);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
             item.position(5, 3);
+            item.distance(90);
             item.frequency(0.5, 3, 0.25, 2);
             item.size(4, 2);
-            item.rotation(75);
+            item.rotation(0);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
             item.position(9, 0);
+            item.distance(100);
             item.frequency(0.25, 0.5);
             item.size(15, 12);
             view.add(item);
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
             stimulus1.position(-8, -4);
+            stimulus1.distance(90);
             stimulus1.size(6, 6);
             stimulus1.frequency(0, 0.5);
             stimulus1.rotation(45);
@@ -154,11 +160,13 @@ public class VisualTests {
             stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus2.frequency(0, 2);
             stimulus2.position(-12, 2);
+            stimulus2.distance(90);
             stimulus2.size(6, 3);
             view.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE, red, green));
             stimulus3.frequency(0, 2);
             stimulus3.position(-3, 0);
+            stimulus3.distance(90);
             stimulus3.size(2, 2);
             view.add(stimulus3);
             // Add title
@@ -166,12 +174,14 @@ public class VisualTests {
             title.setText("Fun with contrasts");
             title.size(1.5);
             title.position(-5, 8);
+            title.distance(5);
             view.add(title);
             // Add text to show FPS
             text = new Text();
             text.setText("Refresh rate:");
             text.size(0.75);
             text.position(-15, 7);
+            text.distance(5);
             view.add(text);
             // Start timers
             timer.start();
@@ -180,8 +190,7 @@ public class VisualTests {
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command != Command.NONE) System.out.println(command);
         }
 
         @Override
@@ -228,12 +237,12 @@ public class VisualTests {
             Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
             bg.size(8, 8);
             bg.position(0, 0);
-            bg.distance(99);
+            bg.distance(100);
             view.add(bg);
             // Optotype
             optotype = new Item(new Model(Optotype.E), new Texture(black));
             optotype.position(0, 0);
-            optotype.distance(10);
+            optotype.distance(90);
             optotype.size(size, size);
             theta = 180 * random.nextInt(2);
             optotype.rotation(theta);
@@ -243,6 +252,7 @@ public class VisualTests {
             title.setText("Visual Acuity test");
             title.size(1.5);
             title.position(-5, 8);
+            title.distance(5);
             view.add(title);
             // Info text
             info = new Text();
@@ -251,18 +261,20 @@ public class VisualTests {
                     "Reversals: " + reversals);
             info.size(1);
             info.position(-15, 6.5);
+            info.distance(5);
             view.add(info);
         }
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE) {
-                if (command == Command.ITEM1)
-                    nextDeltaSize(180);
-                if (command == Command.ITEM2)
-                    nextDeltaSize(0);
-                theta = 180 * random.nextInt(2);
-            }
+            if (command == Command.NONE) return;
+            switch (command) {
+                case ITEM1 -> nextDeltaSize(90);
+                case ITEM2 -> nextDeltaSize(180);
+                case ITEM3 -> nextDeltaSize(0);
+                case ITEM4 -> nextDeltaSize(270);
+                default -> {}
+            };
         }
 
         @Override
@@ -270,6 +282,9 @@ public class VisualTests {
             optotype.size(size);
             optotype.rotation(theta);
             info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
+                    "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
+                    "Reversals: " + reversals);
+            System.out.println("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
                     "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
                     "Reversals: " + reversals);
         }
@@ -296,6 +311,7 @@ public class VisualTests {
                 size = maxSize;
             if (deltaSize < minDeltaSize)
                 size = minDeltaSize;
+            theta = 90 * random.nextInt(4);
         }
 
     }
@@ -352,6 +368,7 @@ public class VisualTests {
             for (Item item : view.items()) {
                 item.position(xpos, 0.0f);
                 item.size(size, size);
+                item.distance(100);
                 xpos += spacing;
             }
             // Add title
@@ -359,15 +376,15 @@ public class VisualTests {
             title.setText("Optotype test");
             title.size(1.5);
             title.position(-3, 8);
+            title.distance(5);
             view.add(title);
             // Add text to show FPS
             text = new Text(textColor1);
             text.setText("Refresh rate:");
             text.size(0.75);
             text.position(-15, 7.5);
+            text.distance(5);
             view.add(text);
-            timer.start();
-            // Start timer
             timer.start();
         }
 
@@ -419,7 +436,7 @@ public class VisualTests {
     }
 
     // Psychophysics logic class
-    static class LogicStress implements PsychoLogic {
+    static class StressLogic implements PsychoLogic {
 
         double theta;
         double amplitude = 5;
@@ -726,6 +743,7 @@ public class VisualTests {
                 blinkTimer.start();
                 modelTimer.start();
                 textureTimer.start();
+                timerFps.start();
             }
     
             @Override
@@ -742,12 +760,10 @@ public class VisualTests {
                 double cpd = 0.5 * (Math.cos(timer.getElapsedTime() / 1500) + 1) / 2;
                 item1.frequency(0, cpd);
                 if (modelTimer.getElapsedTime() > updateModelTime) {
-                    System.out.println("model");
                     item1.update(new Model(models[ThreadLocalRandom.current().nextInt(0, 5)]));
                     modelTimer.start();
                 }
                 if (textureTimer.getElapsedTime() > updateTextureTime) {
-                    System.out.println("texture");
                     item1.update(new Texture(textures[ThreadLocalRandom.current().nextInt(0, 5)], color0, color1));
                     textureTimer.start();
                 }

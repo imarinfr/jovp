@@ -65,6 +65,9 @@ public class Item {
     private long descriptorPool;
     private List<Long> descriptorSets;
 
+    private boolean updateModel = false;
+    private boolean updateTexture = false;
+
     /**
      * 
      * Create an item for psychophysics experience
@@ -99,23 +102,6 @@ public class Item {
         rotation = new Vector3f();
         modelMatrix = new Matrix4f();
         processing = new Processing(TextureType.TEXT);
-    }
-
-    /**
-     * 
-     * Recreate buffers
-     * 
-     * @param model   The new model
-     * @param texture The new texture
-     *
-     * @since 0.0.1
-     */
-    public void update(Model model, Texture texture) {
-        this.model = model;
-        this.texture = texture;
-        if (commandPool == 0) return;
-        recreateModel();
-        recreateTexture();
     }
 
     /**
@@ -160,6 +146,8 @@ public class Item {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
         updateUniforms(image, passNumber);
+        if (updateModel) recreateModel();
+        if (updateTexture) recreateTexture();
         LongBuffer vertexBuffers = stack.longs(vertexBuffer);
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
@@ -175,14 +163,31 @@ public class Item {
      * 
      * Recreate buffers
      * 
+     * @param model   The new model
+     * @param texture The new texture
+     *
+     * @since 0.0.1
+     */
+    public void update(Model model, Texture texture) {
+        this.model = model;
+        this.texture = texture;
+        if (commandPool == 0) return;
+    }
+
+    /**
+     * 
+     * Recreate buffers
+     * 
      * @param model The new model
      *
      * @since 0.0.1
      */
     public void update(Model model) {
         this.model = model;
-        if (commandPool == 0) return;
-        recreateModel();
+        if (commandPool != 0) {
+            updateModel = true;
+            updateTexture = true;
+        }
     }
 
     /**
@@ -195,8 +200,7 @@ public class Item {
      */
     public void update(Texture texture) {
         this.texture = texture;
-        if (commandPool == 0) return;
-        recreateTexture();
+        if (commandPool != 0) updateTexture = true;
     }
 
     /**
@@ -668,6 +672,7 @@ public class Item {
     private void recreateModel() {
         destroyModelObjects();
         createModelObjects();
+        updateModel = false;
     }
 
     /**
@@ -680,6 +685,7 @@ public class Item {
         destroyTextureObjects();
         createTextureObjects();
         createDescriptorObjects();
+        updateTexture = false;
     }
 
     /** create vertex and index buffers */
