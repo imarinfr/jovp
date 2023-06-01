@@ -92,7 +92,7 @@ class SwapChain {
         VkExtent2D halfExtent = VkExtent2D.malloc().set(extent.width() / 2, extent.height());
         viewPasses = new ArrayList<>(2);
         viewPasses.add(new ViewPass(renderPass, 0, halfExtent));
-        viewPasses.add(new ViewPass(renderPass, extent.width() / 2 + 1, halfExtent));
+        viewPasses.add(new ViewPass(renderPass, halfExtent.width(), halfExtent));
     }
 
     /** create swap chain */

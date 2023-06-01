@@ -126,29 +126,30 @@ public class PsychoEngineTest {
 
     /**
      * 
+     * Stereo View
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void stereoMode() {
+        PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic());
+        psychoEngine.setViewMode(ViewMode.STEREO);
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+
+    /**
+     * 
      * View virtual world
      *
      * @since 0.0.1
      */
     @Test
     public void viewVirtualWorld() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicWorld());
+        PsychoEngine psychoEngine = new PsychoEngine(new WorldLogic());
         System.out.println(psychoEngine.getMonitor().getHeightMM() + " " + psychoEngine.getMonitor().getWidthMM());
         psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
-        psychoEngine.cleanup();
-    }
-
-    /**
-     * 
-     * Stereo View
-     *
-     * @since 0.0.1
-     */
-    @Test
-    public void stereoTest() {
-        PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic());
-        psychoEngine.setViewMode(ViewMode.STEREO);
-        psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
 
@@ -177,7 +178,7 @@ public class PsychoEngineTest {
         }
     }
 
-    // Psychophysics logic class
+        // Psychophysics logic class
     static class StereoLogic implements PsychoLogic {
 
         double[] fixationColor = new double[] { 0, 1, 0, 1 };
@@ -185,6 +186,8 @@ public class PsychoEngineTest {
 
         Item background, fixation, stimulus1, stimulus2, stimulus3;
         Timer timer = new Timer();
+        Timer swapEyeTimer = new Timer();
+        int swapEyeTime = 1500;
         Timer timerFps = new Timer();
         int fps = 0;
         Text text;
@@ -198,10 +201,12 @@ public class PsychoEngineTest {
             view.add(background);
             fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
             fixation.size(2);
+            fixation.distance(50);
             view.add(fixation);
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus1.position(-3, -3);
             stimulus1.size(4.5, 4.5);
+            stimulus1.distance(75);
             stimulus1.frequency(0, 0.5);
             stimulus1.rotation(45);
             stimulus1.contrast(0.75);
@@ -209,40 +214,50 @@ public class PsychoEngineTest {
             stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus2.frequency(0, 2);
             stimulus2.position(3, 2);
-            stimulus2.size(3, 1.5);
-            stimulus2.eye(Eye.LEFT);
+            stimulus2.size(6, 3);
+            stimulus2.distance(75);
+            stimulus2.show(Eye.LEFT);
             stimulus2.contrast(0.25);
             view.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE));
-            stimulus3.eye(Eye.RIGHT);
             stimulus3.frequency(0, 2);
             stimulus3.position(3, -2);
             stimulus3.size(2, 2);
+            stimulus3.distance(75);
+            stimulus3.show(Eye.RIGHT);
+            stimulus3.distance(75);
             stimulus3.contrast(0.5);
             view.add(stimulus3);
             // Add title
             Text title = new Text();
             title.setText("Stereoscopic view");
-            title.eye(Eye.LEFT);
+            title.show(Eye.LEFT);
             title.size(0.75);
             title.position(-5, 5);
+            stimulus2.distance(20);
             view.add(title);
             // Add text to show FPS
             text = new Text();
             text.setText("Refresh rate:");
-            text.eye(Eye.LEFT);
+            text.show(Eye.LEFT);
             text.size(0.6);
             text.position(-5, 4);
             view.add(text);
-            // Start timer
+            // Start timers
             timer.start();
+            swapEyeTimer.start();
             timerFps.start();
         }
 
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command != Command.NONE) System.out.println(command);
+            if (command == Command.YES){
+                if(psychoEngine.getViewMode() == ViewMode.MONO)
+                    psychoEngine.setViewMode(ViewMode.STEREO);
+                else
+                    psychoEngine.setViewMode(ViewMode.MONO);
+            }
         }
 
         @Override
@@ -250,6 +265,17 @@ public class PsychoEngineTest {
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
             double time = timer.getElapsedTime();
+            if (swapEyeTimer.getElapsedTime() > swapEyeTime) {
+                if (stimulus2.show() == Eye.LEFT)
+                    stimulus2.show(Eye.RIGHT);
+                else
+                    stimulus2.show(Eye.LEFT);
+                if (stimulus3.show() == Eye.RIGHT)
+                    stimulus3.show(Eye.LEFT);
+                else
+                    stimulus3.show(Eye.RIGHT);
+                swapEyeTimer.start();
+            }
             stimulus1.contrast(Math.sin(time / 1000.0) / 2 + 0.5);
             stimulus3.contrast(Math.sin(time / 200.0) / 2 + 0.5);
             stimulus1.frequency(Math.sin(time / 250.0), 0.5);
@@ -267,7 +293,7 @@ public class PsychoEngineTest {
     }
 
     // Psychophysics logic to show a simple triangle
-    static class LogicWorld implements PsychoLogic {
+    static class WorldLogic implements PsychoLogic {
 
         private static final float STEP = 0.5f;
         private boolean distortion = false;
@@ -394,5 +420,4 @@ public class PsychoEngineTest {
             distortion = !distortion;
         };
     }
-
 }

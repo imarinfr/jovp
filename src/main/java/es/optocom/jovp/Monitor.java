@@ -342,8 +342,8 @@ public class Monitor {
      * physical dimensions
      */
     private void computePixelSize() {
-        pixelWidth = widthMM / (float) width;
-        pixelHeight = heightMM / (float) height;
+        pixelWidth = (float) widthMM / (float) width;
+        pixelHeight = (float) heightMM / (float) height;
         pixelAspect = pixelWidth / pixelHeight;
     }
 

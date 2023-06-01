@@ -46,10 +46,10 @@ public class Item {
     Model model;
     Texture texture;
     private float distance; // distance of the item in meters
-    private Vector2f position; // x and y position in meters
-    private Vector3f scale; // scale for x and y, and z in meters (size = 2 * scale)
+    private Vector2f position; // x and y position in radians
+    private Vector3f scale; // scale for x and y in radians, and z in meters (size = 2 * scale)
     private Vector3f rotation; // angles of rotation in each axis
-    private Matrix4f modelMatrix; // modelMatrix matrix
+    private Matrix4f modelMatrix; // model matrix
     private Processing processing;
     private long commandPool;
     private long vertexBuffer;
@@ -129,7 +129,7 @@ public class Item {
      * @since 0.0.1
      */
     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
-        if (VulkanSetup.observer.viewMode == ViewMode.MONO) { // monoscopic view
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != Eye.NONE) { // monoscopic view
             renderEye(stack, commandBuffer, image, 0);
             return;
         }
@@ -222,7 +222,7 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public void eye(Eye eye) {
+    public void show(Eye eye) {
         this.eye = eye;
     }
 
@@ -234,7 +234,7 @@ public class Item {
      *
      * @since 0.0.1
      */
-    public Eye eye() {
+    public Eye show() {
         return eye;
     }
 
@@ -285,8 +285,8 @@ public class Item {
      * @since 0.0.1
      */
     public void position(float x, float y) {
-        position.x = distance * (float) Math.tan(Math.toRadians(x));
-        position.y = distance * (float) Math.tan(Math.toRadians(y));
+        position.x = (float) Math.toRadians(x);
+        position.y = (float) Math.toRadians(y);
         computeModelMatrix();
     }
 
@@ -325,8 +325,8 @@ public class Item {
      */
     public float[] size() {
         return new float[] {
-            (float) (2 * Math.toDegrees(Math.atan(scale.x / distance))),
-            (float) (2 * Math.toDegrees(Math.atan(scale.y / distance)))
+            (float) Math.toDegrees(scale.x),
+            (float) Math.toDegrees(scale.y)
         };
     }
 
@@ -380,8 +380,8 @@ public class Item {
      * @since 0.0.1
      */
     public void size(float x, float y, float z) {
-        scale.x = distance * (float) Math.tan(Math.toRadians(x) / 2);
-        scale.y = distance * (float) Math.tan(Math.toRadians(y) / 2);
+        scale.x = (float) Math.toRadians(x);
+        scale.y = (float) Math.toRadians(y);
         scale.z = z;
         computeModelMatrix();
     }
@@ -1047,10 +1047,14 @@ public class Item {
 
     /** compute model matrix from MVP */
     void computeModelMatrix() {
-        float z = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(position.x, 2) - Math.pow(position.y, 2));
-        modelMatrix = new Matrix4f()
-            .translate(new Vector3f(position.x, position.y, z))
-            .scale(scale).rotateXYZ(rotation);
+        float cx = distance * (float) Math.tan(position.x);
+        float cy = distance * (float) Math.tan(position.y);
+        float cz = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(cx, 2) - Math.pow(cy, 2));
+        float sx = distance * (float) Math.tan(scale.x / 2);
+        float sy = distance * (float) Math.tan(scale.y / 2);
+        float sz = scale.z / 2;
+        modelMatrix = new Matrix4f().translate(new Vector3f(cx, cy, cz))
+            .scale(new Vector3f(sx, sy, sz)).rotateXYZ(rotation);
     }
 
     /** copy buffer */
