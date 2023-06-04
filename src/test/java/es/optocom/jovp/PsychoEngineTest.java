@@ -309,24 +309,26 @@ public class PsychoEngineTest {
 
         @Override
         public void init(PsychoEngine psychoEngine) {
+            psychoEngine.setDistance(100);
             view.add(background);
             background.distance(50);
             addItems();
         }
 
         private void addItems() {
-            for (int i = 0; i < 181; i++) {
+            float angle = 90.0f;
+            for (int i = 0; i < 2 * angle + 1; i++) {
                 int k = 2 * i;
                 items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
                 items.get(k).distance(40);
-                items.get(k).position(0, i - 90);
+                items.get(k).position(0, i - angle);
                 items.get(k).size(1);
                 items.get(k).rotation(0);
                 view.add(items.get(k));
 
                 items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
                 items.get(k + 1).distance(40);
-                items.get(k + 1).position(i - 90, 0);
+                items.get(k + 1).position(i - angle, 0);
                 items.get(k + 1).size(1);
                 items.get(k + 1).rotation(0);
                 view.add(items.get(k + 1));
@@ -336,15 +338,14 @@ public class PsychoEngineTest {
         @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command == Command.NONE) return;
-            pov = psychoEngine.getView();
             switch (command) {
-                case ITEM1 -> up(STEP);
+                case ITEM1 -> down(STEP);
                 case ITEM2 -> forward(STEP);
                 case ITEM3 -> toggleDistortion(psychoEngine);
                 case ITEM4 -> right(STEP);
                 case ITEM5 -> toggleRotation();
                 case ITEM6 -> left(STEP);
-                case ITEM7 -> down(STEP);
+                case ITEM7 -> up(STEP);
                 case ITEM8 -> back(STEP);
                 case ITEM9 -> toggleViewMode(psychoEngine);
                 default -> {}
@@ -372,37 +373,37 @@ public class PsychoEngineTest {
 
         private void left(float d) {
             if (rotate) {
-                camera.x -= d;
-            } else {
-                camera.x -= d;
-                center.x -= d;
-            }
-        }
-
-        private void right(float d) {
-            if (rotate) {
-                camera.x += d;
+                camera.x += d / 10.0f;
             } else {
                 camera.x += d;
                 center.x += d;
             }
         }
 
+        private void right(float d) {
+            if (rotate) {
+                camera.x -= d / 10.0f;
+            } else {
+                camera.x -= d;
+                center.x -= d;
+            }
+        }
+
         private void up(float d) {
             if (rotate) {
-                camera.y += d;
+                camera.y -= d / 10.0f;
             } else {
-                camera.y += d;
-                center.y += d;
+                camera.y -= d;
+                center.y -= d;
             }
         }
 
         private void down(float d) {
             if (rotate) {
-                camera.y -= d;
+                camera.y += d / 10.0f;
             } else {
-                camera.y -= d;
-                center.y -= d;
+                camera.y += d;
+                center.y += d;
             }
         }
 
@@ -416,7 +417,7 @@ public class PsychoEngineTest {
 
         private void toggleDistortion(PsychoEngine psychoEngine) {
             if (distortion) psychoEngine.setNoDistortion();
-            else psychoEngine.setDistortion(-0.035, 0.05);
+            else psychoEngine.setDistortion(0.003, -0.003);
             distortion = !distortion;
         };
     }

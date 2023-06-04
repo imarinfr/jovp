@@ -3,7 +3,8 @@
 layout(binding = 0) uniform UniformBufferObject {
     ivec3 settings;
     mat4 model;
-    mat4 projectionView;
+    mat4 view;
+    mat4 projection;
     vec4 centers; // lens center and screen center
     vec4 coefficients; // distortion coefficients
     vec4 rgba0;
@@ -41,8 +42,8 @@ vec2 rotate(vec2 uv, vec3 rotation) {
     return(matrix * (uv - rotation.x) + rotation.y);
 }
 
-vec2 distortion(vec2 pos) {
-    vec2 theta = (pos - ubo.centers.xy);
+vec4 distortion(vec4 position) {
+    vec2 theta = (position.xy - ubo.centers.xy);
     float rSq = dot(theta, theta);
     // Brown-Conrady model
     float distortion = 1.0 +
@@ -52,16 +53,17 @@ vec2 distortion(vec2 pos) {
                        ubo.coefficients.w * rSq * rSq * rSq * rSq;
     vec2 distortedTheta = theta * distortion;
     // Apply the distortion effect to the vertex position
-    return ubo.centers.xy + distortedTheta;
+    position.xy = ubo.centers.xy + distortedTheta;
+    return position;
 }
 
 void main() {
     // apply distortion as necessary
-    //vec2 pos = distortion(position.xy);
-    vec2 pos = position.xy;
-    gl_Position = ubo.projectionView * ubo.model * vec4(pos, position.z, 1.0);
+    vec4 position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
+    gl_Position = distortion(position);
+    //gl_Position = position;
     // Calculate the texture coordinates for the distorted vertex
-    vec2 tc = (pos - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
+    vec2 tc = (gl_Position.xy - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
     uv_out = vec2(tc.x, tc.y);
     uv_out = rotate(spatial(uv, ubo.frequency), ubo.rotation);
     settings = ubo.settings;

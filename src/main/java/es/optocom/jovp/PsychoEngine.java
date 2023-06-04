@@ -8,7 +8,6 @@ import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.VulkanManager;
 import jssc.SerialPortException;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.vulkan.VkPhysicalDevice;
@@ -359,26 +358,16 @@ public class PsychoEngine {
 
     /**
      * 
-     * Set the viewing mode
-     *
-     * @param viewMode The viewing mode
+     * Set view
+     * 
+     * @param eye    The position of the eye in the virtual world
+     * @param center what we are looking at, I reckon, and up
+     * @param up     the up vector
      *
      * @since 0.0.1
      */
     public void setView(Vector3f eye, Vector3f center, Vector3f up) {
         observer.setView(eye, center, up);
-    }
-
-    /**
-     * 
-     * Get the viewing mode
-     *
-     * @param viewMode The viewing mode
-     *
-     * @since 0.0.1
-     */
-    public Matrix4f getView() {
-        return observer.getView();
     }
 
     /**

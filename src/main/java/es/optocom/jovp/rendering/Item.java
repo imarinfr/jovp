@@ -1036,7 +1036,8 @@ public class Item {
                 ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
                 modelMatrix.get(n * Float.BYTES, buffer); n += 16;
-                VulkanSetup.observer.projectionViews.get(passNumber).get(n * Float.BYTES, buffer); n += 16;
+                VulkanSetup.observer.views.get(passNumber).get(n * Float.BYTES, buffer); n += 16;
+                VulkanSetup.observer.projection.get(n * Float.BYTES, buffer); n += 16;
                 VulkanSetup.observer.optics.getCenters().get(n * Float.BYTES, buffer); n += 4;
                 VulkanSetup.observer.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
@@ -1055,12 +1056,13 @@ public class Item {
     void computeModelMatrix() {
         float cx = distance * (float) Math.tan(position.x);
         float cy = distance * (float) Math.tan(position.y);
-        float cz = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(cx, 2) - Math.pow(cy, 2));
+        float cz = distance;
         float sx = distance * (float) Math.tan(scale.x / 2);
         float sy = distance * (float) Math.tan(scale.y / 2);
         float sz = scale.z / 2;
-        modelMatrix = new Matrix4f().translate(new Vector3f(cx, cy, cz))
-            .scale(new Vector3f(sx, sy, sz)).rotateXYZ(rotation);
+        if (sz == 0.0f) sz = 1.0f;
+        modelMatrix.scaling(new Vector3f(sx, sy, sz))
+                   .setTranslation(cx, cy, cz);
     }
 
     /** copy buffer */

@@ -17,16 +17,15 @@ import org.joml.Vector3f;
  */
 public class Observer {
 
-    public static final float NEAR = 1.0f; // Near and far planes in in meters
-    public static final float FAR = 1000.0f;
+    public static final float ZNEAR = 0.1f; // Near and far planes in in meters
+    public static final float ZFAR = 1000.0f;
     private static final float IPD = 62.4f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
     private static final Matrix4f VULKAN_AXIS = new Matrix4f(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
     Matrix4f projection = new Matrix4f(); // perspective projection
-    Matrix4f view = new Matrix4f(); // view matrix
-    ArrayList<Matrix4f> projectionViews; // projection view matrices
+    ArrayList<Matrix4f> views; // projection view matrices
     Optics optics = new Optics(); // the system's optics
 
     private float distance; // viewing distance in mm
@@ -213,6 +212,16 @@ public class Observer {
 
     /**
      * 
+     * Set default view
+     * 
+     * @since 0.0.1
+     */
+    public void setView() {
+        setView(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
+    }
+
+    /**
+     * 
      * Set view
      * 
      * @param eye    The position of the eye in the virtual world
@@ -222,20 +231,20 @@ public class Observer {
      * @since 0.0.1
      */
     public void setView(Vector3f eye, Vector3f center, Vector3f up) {
-        view.setLookAt(eye, center, up);
-        setProjectionViews();
-    }
-
-    /**
-     * 
-     * Get view
-     * 
-     * @return the view matrix
-     *
-     * @since 0.0.1
-     */
-    public Matrix4f getView() {
-        return view;
+        Matrix4f view = new Matrix4f().setLookAt(eye, center, up);
+        switch (viewMode) {
+            case MONO -> {
+                views.get(0).set(VULKAN_AXIS).mul(view);
+            }
+            case STEREO -> {
+                Matrix4f leftView = new Matrix4f(view);
+                Matrix4f rightView = new Matrix4f(view);
+                leftView.translate(-ipd / 2.0f, 0, 0); // left-eye offset
+                rightView.translate(ipd / 2.0f, 0, 0); // right-eye offset
+                views.get(0).set(VULKAN_AXIS).mul(leftView);
+                views.get(1).set(VULKAN_AXIS).mul(rightView);
+            }
+        }
     }
 
     /**
@@ -250,43 +259,31 @@ public class Observer {
         if (viewMode == ViewMode.STEREO) width = width / 2.0f; // only half of the screen is used per eye
         fovx = (float) (2 * Math.atan(width / distance / 2));
         fovy = (float) (2 * Math.atan(height / distance / 2));
-        projection.setPerspective(fovy, width / height, NEAR, FAR);
-        setProjectionViews();
+        //projection.setPerspective(fovy, width / height, ZNEAR, ZFAR, true);
+        projection.set(0, 0, (float) (1.0f / Math.tan(fovx / 2)));
+        projection.set(1, 1, (float) (1.0f / Math.tan(fovy / 2)));
+        projection.set(2, 2, -ZFAR / (ZFAR - ZNEAR));
+        projection.set(3, 2, -(ZFAR * ZNEAR) / (ZFAR - ZNEAR));
+        projection.set(2, 3, -1);
+        projection.set(3, 3, 0);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
     private void resetSpaceMatrices() {
         switch (viewMode) {
             case MONO -> {
-                projectionViews = new ArrayList<Matrix4f>(1);
-                projectionViews.add(new Matrix4f());
+                views = new ArrayList<Matrix4f>(1);
+                views.add(new Matrix4f());
             }
             case STEREO -> {
-                projectionViews = new ArrayList<Matrix4f>(2);
-                projectionViews.add(new Matrix4f());
-                projectionViews.add(new Matrix4f());
+                views = new ArrayList<Matrix4f>(2);
+                views.add(new Matrix4f());
+                views.add(new Matrix4f());
             }
         }
+        setView();
         setPupilDistance(ipd);
-        setView(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
         computeFieldOfView();
-    }
-
-    /** Set projection view */
-    private void setProjectionViews() {
-        switch (viewMode) {
-            case MONO -> {
-                projectionViews.get(0).set(projection).mul(VULKAN_AXIS).mul(view);
-            }
-            case STEREO -> {
-                Matrix4f eyeView = new Matrix4f(view);
-                eyeView.translate(-ipd / 2000.0f, 0, 0); // left-eye offset
-                projectionViews.get(0).set(projection).mul(VULKAN_AXIS).mul(eyeView);
-                eyeView = new Matrix4f(view);
-                eyeView.translate(ipd / 2000.0f, 0, 0); // right-eye offset
-                projectionViews.get(1).set(projection).mul(VULKAN_AXIS).mul(eyeView);
-            }
-        }
     }
 
 }
