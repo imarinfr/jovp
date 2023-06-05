@@ -378,7 +378,7 @@ public class Item {
      * Set item size
      *
      * @param x Size along the x-axis in degrees fo visual angle
-     * @param y Size along the y-axis in degrees fo visual angle597
+     * @param y Size along the y-axis in degrees fo visual angle
      * @param z Size along the z-axis in meters
      *
      * @since 0.0.1
@@ -1054,15 +1054,15 @@ public class Item {
 
     /** compute model matrix from MVP */
     void computeModelMatrix() {
-        float cx = distance * (float) Math.tan(position.x);
+        float cx = distance * (float) Math.tan(position.x); // NEEDS REVISION
         float cy = distance * (float) Math.tan(position.y);
-        float cz = distance;
+        float cz = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(position.x, 2) - Math.pow(position.y, 2));
         float sx = distance * (float) Math.tan(scale.x / 2);
         float sy = distance * (float) Math.tan(scale.y / 2);
         float sz = scale.z / 2;
         if (sz == 0.0f) sz = 1.0f;
-        modelMatrix.scaling(new Vector3f(sx, sy, sz))
-                   .setTranslation(cx, cy, cz);
+        modelMatrix.identity().translate(cx, cy, cz)
+                              .scale(sx, sy, sz);
     }
 
     /** copy buffer */

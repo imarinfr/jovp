@@ -309,14 +309,14 @@ public class PsychoEngineTest {
 
         @Override
         public void init(PsychoEngine psychoEngine) {
-            psychoEngine.setDistance(100);
+            psychoEngine.setDistance(82.015);
             view.add(background);
             background.distance(50);
             addItems();
         }
 
         private void addItems() {
-            float angle = 90.0f;
+            float angle = 45.0f;
             for (int i = 0; i < 2 * angle + 1; i++) {
                 int k = 2 * i;
                 items.add(new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 })));
@@ -360,6 +360,7 @@ public class PsychoEngineTest {
         public void update(PsychoEngine psychoEngine) {
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
+            System.out.println(fov[0] + " " + fov[1]);
             psychoEngine.setView(camera, center, up);
         }
 
