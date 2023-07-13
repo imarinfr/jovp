@@ -232,14 +232,25 @@ public class Item {
 
     /**
      * 
-     * Get eye where to render the item
      *
-     * @return the eye to render
+     * @return True if eye to render is not Eye.NONE, false otherwise.
      *
      * @since 0.0.1
      */
-    public Eye show() {
-        return eye;
+    public boolean showing() {
+        return this.eye != Eye.NONE;
+    }
+
+    /**
+     * 
+     * Get eye that is currently showing. (NONE if no eye showing.)
+     *
+     * @return The eye that is currently showing (Eye.NONE).
+     *
+     * @since 0.0.1
+     */
+    public Eye getEye() {
+        return this.eye;
     }
 
     /**
