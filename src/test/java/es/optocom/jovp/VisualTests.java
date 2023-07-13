@@ -768,7 +768,7 @@ public class VisualTests {
                     textureTimer.start();
                 }
                 if (blinkTimer.getElapsedTime() > blinkItemTime) {
-                    if (item2.show() == Eye.BOTH)
+                    if (item2.getEye() == Eye.BOTH)
                         item2.show(Eye.NONE);
                     else
                         item2.show(Eye.BOTH);

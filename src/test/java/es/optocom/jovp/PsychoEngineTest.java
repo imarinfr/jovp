@@ -266,11 +266,11 @@ public class PsychoEngineTest {
             background.size(fov[0], fov[1]);
             double time = timer.getElapsedTime();
             if (swapEyeTimer.getElapsedTime() > swapEyeTime) {
-                if (stimulus2.show() == Eye.LEFT)
+                if (stimulus2.getEye() == Eye.LEFT)
                     stimulus2.show(Eye.RIGHT);
                 else
                     stimulus2.show(Eye.LEFT);
-                if (stimulus3.show() == Eye.RIGHT)
+                if (stimulus3.getEye() == Eye.RIGHT)
                     stimulus3.show(Eye.LEFT);
                 else
                     stimulus3.show(Eye.RIGHT);
