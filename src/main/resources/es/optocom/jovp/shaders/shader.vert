@@ -61,7 +61,6 @@ void main() {
     // apply distortion as necessary
     vec4 position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
     gl_Position = distortion(position);
-    //gl_Position = position;
     // Calculate the texture coordinates for the distorted vertex
     vec2 tc = (gl_Position.xy - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
     uv_out = vec2(tc.x, tc.y);

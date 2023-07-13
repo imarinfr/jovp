@@ -259,13 +259,7 @@ public class Observer {
         if (viewMode == ViewMode.STEREO) width = width / 2.0f; // only half of the screen is used per eye
         fovx = (float) (2 * Math.atan(width / distance / 2));
         fovy = (float) (2 * Math.atan(height / distance / 2));
-        //projection.setPerspective(fovy, width / height, ZNEAR, ZFAR, true);
-        projection.set(0, 0, (float) (1.0f / Math.tan(fovx / 2)));
-        projection.set(1, 1, (float) (1.0f / Math.tan(fovy / 2)));
-        projection.set(2, 2, -ZFAR / (ZFAR - ZNEAR));
-        projection.set(3, 2, -(ZFAR * ZNEAR) / (ZFAR - ZNEAR));
-        projection.set(2, 3, -1);
-        projection.set(3, 3, 0);
+        projection.setPerspective(fovy, width / height, ZNEAR, ZFAR, true);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
