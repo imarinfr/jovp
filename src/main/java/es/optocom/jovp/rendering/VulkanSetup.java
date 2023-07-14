@@ -47,13 +47,16 @@ import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -391,11 +394,14 @@ class VulkanSetup {
     }
 
     /** physical and logical device extensions parameters and utility functions */
-    static final Set<String> DEVICE_EXTENSIONS = Stream.of(
+    static final Set<String> ESSENTIAL_DEVICE_EXTENSIONS = Stream.of(
             new String[] {
                     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                    VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME,
                     VK_KHR_MULTIVIEW_EXTENSION_NAME
+            }).collect(toSet());
+    static final Set<String> DESIRED_DEVICE_EXTENSIONS = Stream.of(
+            new String[] {
+                    VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
             }).collect(toSet());
 
     /** validation layers, debugging setup and utility functions */
@@ -494,7 +500,7 @@ class VulkanSetup {
     /** check if device is suitable */
     static boolean isDeviceSuitable(long surface, VkPhysicalDevice physicalDevice) {
         QueueFamilyIndices indices = findQueueFamilies(surface, physicalDevice);
-        boolean extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
+        boolean extensionsSupported = getDeviceExtensions(physicalDevice) != null;
         boolean swapChainAdequate = false;
         boolean anisotropySupported = false;
         if (extensionsSupported) {
@@ -543,9 +549,24 @@ class VulkanSetup {
         }
     }
 
-    /** check extension support for a physical device */
-    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
-        return listDeviceExtensionSupport(physicalDevice).containsAll(DEVICE_EXTENSIONS);
+    /** check extension support for a physical device and set DEVICE_EXTENSIONS */
+    public static Set<String> getDeviceExtensions(VkPhysicalDevice physicalDevice) {
+        Set<String> ss = listDeviceExtensionSupport(physicalDevice);
+        ArrayList<String> deviceExtensions = new ArrayList<String>();
+        for (String de : ESSENTIAL_DEVICE_EXTENSIONS) {
+            if (!ss.contains(de)) { 
+                System.out.println("Device does not support: " + de);
+                return null;
+            } else 
+                deviceExtensions.add(de);
+        }
+        for (String dde : DESIRED_DEVICE_EXTENSIONS) {
+            if (!ss.contains(dde)) 
+                System.out.println("Device does not support desired extension (ignoring): " + dde);
+            else 
+                deviceExtensions.add(dde);
+        }
+        return deviceExtensions.stream().collect(Collectors.toSet());
     }
 
     /** find memory type */

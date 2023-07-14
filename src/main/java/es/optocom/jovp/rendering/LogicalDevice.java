@@ -65,7 +65,7 @@ public class LogicalDevice {
                     .sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
                     .pQueueCreateInfos(queueCreateInfos)
                     .pEnabledFeatures(deviceFeatures)
-                    .ppEnabledExtensionNames(VulkanSetup.asPointerBuffer(VulkanSetup.DEVICE_EXTENSIONS));
+                    .ppEnabledExtensionNames(VulkanSetup.asPointerBuffer(VulkanSetup.getDeviceExtensions(physicalDevice)));
             if (VulkanSetup.validationLayers)
                 createInfo.ppEnabledLayerNames(VulkanSetup.asPointerBuffer(VulkanSetup.VALIDATION_LAYERS));
             PointerBuffer pDevice = stack.pointers(VK_NULL_HANDLE);
