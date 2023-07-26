@@ -117,7 +117,6 @@ public class VisualTests {
         Text text;
         int refreshTime = 500;
 
-        @Override
         public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1, 1);
@@ -188,12 +187,10 @@ public class VisualTests {
             timerFps.start();
         }
 
-        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
-        @Override
         public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             stimulus1.contrast(0.5 * Math.sin(time / 1000.0) + 0.5);
@@ -231,7 +228,6 @@ public class VisualTests {
         int reversals = 0;
         Text info;
 
-        @Override
         public void init(PsychoEngine psychoEngine) {
             // Background
             Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
@@ -265,7 +261,6 @@ public class VisualTests {
             view.add(info);
         }
 
-        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command == Command.NONE) return;
             switch (command) {
@@ -277,7 +272,6 @@ public class VisualTests {
             };
         }
 
-        @Override
         public void update(PsychoEngine psychoEngine) {
             optotype.size(size);
             optotype.rotation(theta);
@@ -336,7 +330,6 @@ public class VisualTests {
         double[] colorYellow = new double[] { 1, 1, 0, 1 };
         double[] colorBlue = new double[] { 0, 0, 1, 1 };
 
-        @Override
         public void init(PsychoEngine psychoEngine) {
             view.add(new Item(new Model(Optotype.A), new Texture(TextureType.SINE, colorBlue, colorYellow)));
             view.add(new Item(new Model(Optotype.B), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
@@ -388,13 +381,11 @@ public class VisualTests {
             timer.start();
         }
 
-        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE)
                 System.out.println(command);
         }
 
-        @Override
         public void update(PsychoEngine psychoEngine) {
             theta -= 5;
             float xpos = initialPos;
@@ -457,7 +448,6 @@ public class VisualTests {
         double ypos = 3;
         double zpos = 25;
 
-        @Override
         public void init(PsychoEngine psychoEngine) {
             addOptotypes();
             for (int i = 0; i < 15; i++)
@@ -482,13 +472,11 @@ public class VisualTests {
             timerFps.start();
         }
 
-        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE)
                 System.out.println(command);
         }
 
-        @Override
         public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             if (time > 13425) {
@@ -705,7 +693,6 @@ public class VisualTests {
             double[] color0 = new double[] { 1, 1, 1, 1 };
             double[] color1 = new double[] { 0, 0, 0.5, 1 };
     
-            @Override
             public void init(PsychoEngine psychoEngine) {
                 // Background
                 background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
@@ -746,13 +733,11 @@ public class VisualTests {
                 timerFps.start();
             }
     
-            @Override
             public void input(PsychoEngine psychoEngine, Command command) {
                 if (command != Command.NONE)
                     System.out.println(command);
             }
     
-            @Override
             public void update(PsychoEngine psychoEngine) {
                 float[] fov = psychoEngine.getFieldOfView();
                 background.size(fov[0], fov[1]);

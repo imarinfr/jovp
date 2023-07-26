@@ -72,7 +72,7 @@ public class Text extends Item {
      * @since 0.0.1
      */
     public Text(FontType fontType, double[] rgba) {
-        super();
+        super(new Model(), new Texture());
         map = new HashMap<>();
         fontRenderContext = new FontRenderContext(null, true, false);
         String file;
@@ -91,7 +91,6 @@ public class Text extends Item {
             throw new RuntimeException(e);
         }
         createFontTexture(rgba);
-        model = new Model();
     }
 
     /**

@@ -18,7 +18,38 @@ import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.VK13.*;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+import static org.lwjgl.vulkan.VK10.VK_FENCE_CREATE_SIGNALED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MAKE_VERSION;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_CONTENTS_INLINE;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkBeginCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBeginRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdEndRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCreateFence;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkCreateSemaphore;
+import static org.lwjgl.vulkan.VK10.vkDestroyFence;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroySemaphore;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkEndCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkEnumeratePhysicalDevices;
+import static org.lwjgl.vulkan.VK10.vkFreeCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkQueueSubmit;
+import static org.lwjgl.vulkan.VK10.vkResetFences;
+import static org.lwjgl.vulkan.VK10.vkWaitForFences;
 
 /**
  * 
@@ -71,7 +102,7 @@ public class VulkanManager {
         for (Item item : items) item.createBuffers();
         vulkanCommands = new VulkanCommands(items);
         createSyncObjects();
-        VulkanSetup.observer.computeFieldOfView();
+        VulkanSetup.observer.computePerspective();
     }
 
     /**
@@ -331,7 +362,7 @@ public class VulkanManager {
         vkDeviceWaitIdle(VulkanSetup.logicalDevice.device);
         VulkanSetup.swapChain.destroy();
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
-        VulkanSetup.observer.computeFieldOfView();
+        VulkanSetup.observer.computePerspective();
     }
 
     /** create synchronization objects */

@@ -18,7 +18,7 @@ import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.Configuration.DEBUG;
-import static org.lwjgl.vulkan.VK13.vkDeviceWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
 
 /**
  * 
@@ -358,16 +358,40 @@ public class PsychoEngine {
 
     /**
      * 
-     * Set view
+     * Set look at
      * 
-     * @param eye    The position of the eye in the virtual world
-     * @param center what we are looking at, I reckon, and up
-     * @param up     the up vector
+     * @param eye The position of the eye in the virtual world
+     * @param center The center
+     * @param up The up vector
      *
      * @since 0.0.1
      */
-    public void setView(Vector3f eye, Vector3f center, Vector3f up) {
-        observer.setView(eye, center, up);
+    public void lookAt(Vector3f eye, Vector3f center, Vector3f up) {
+        observer.lookAt(eye, center, up);
+    }
+
+    /**
+     * 
+     * Translate observer
+     * 
+     * @param offset The translation in x and y axes in degrees and z in meters
+     *
+     * @since 0.0.1
+     */
+    public void translate(Vector3f offset) {
+        observer.translate(offset);
+    }
+
+    /**
+     * 
+     * Rotate observer
+     * 
+     * @param rotation The rotation in x, y, and z axes
+     *
+     * @since 0.0.1
+     */
+    public void rotate(Vector3f rotation) {
+        observer.rotate(rotation);
     }
 
     /**
@@ -509,7 +533,7 @@ public class PsychoEngine {
     public void setSize(int width, int height) {
         window.setSize(width, height);
         window.update();
-        observer.computeFieldOfView();
+        observer.computePerspective();
     }
 
     /**

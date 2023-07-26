@@ -5,9 +5,10 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Matrix4d;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkBufferCopy;
@@ -26,10 +27,63 @@ import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK13.*;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_SHADER_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_READ_BIT;
+import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_WRITE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_ASPECT_COLOR_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_SAMPLED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_HEAP_DEVICE_LOCAL_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TRANSFER_BIT;
+import static org.lwjgl.vulkan.VK10.VK_QUEUE_FAMILY_IGNORED;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
+import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
+import static org.lwjgl.vulkan.VK10.vkCmdBlitImage;
+import static org.lwjgl.vulkan.VK10.vkCmdCopyBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdCopyBufferToImage;
+import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
+import static org.lwjgl.vulkan.VK10.vkCmdPipelineBarrier;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkCreateSampler;
+import static org.lwjgl.vulkan.VK10.vkDestroyBuffer;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorPool;
+import static org.lwjgl.vulkan.VK10.vkDestroyImage;
+import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
+import static org.lwjgl.vulkan.VK10.vkDestroySampler;
+import static org.lwjgl.vulkan.VK10.vkFreeMemory;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFormatProperties;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
+import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
 
 import es.optocom.jovp.definitions.Eye;
-import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Vertex;
 import es.optocom.jovp.definitions.ViewMode;
@@ -45,11 +99,11 @@ public class Item {
     Eye eye;
     Model model;
     Texture texture;
-    private float distance; // distance of the item in meters
-    private Vector2f position; // x and y position in radians
-    private Vector3f scale; // scale for x and y in radians, and z in meters (size = 2 * scale)
-    private Vector3f rotation; // angles of rotation in each axis
-    private Matrix4f modelMatrix; // model matrix
+    private double distance = (Observer.ZFAR - Observer.ZNEAR) / 2; // distance of the item in meters
+    private Vector3d scale; // size in x, y, and z in meters (size = 2 * scale)
+    private Vector3d rotation; // angles of rotation in each axis in radians
+    private Vector3d direction; // unit vector with (x, y, z) direction in meters
+    private Matrix4d modelMatrix; // model matrix
     private Processing processing;
     private long commandPool;
     private long vertexBuffer;
@@ -65,6 +119,7 @@ public class Item {
     private long descriptorPool;
     private List<Long> descriptorSets;
 
+    private boolean updateModelMatrix = false;
     private boolean updateModel = false;
     private boolean updateTexture = false;
 
@@ -78,32 +133,18 @@ public class Item {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
-        this();
+        this.eye = Eye.BOTH;
         this.model = model;
         this.texture = texture;
-        position = new Vector2f(0, 0);
-        scale = new Vector3f();
-        rotation = new Vector3f();
-        modelMatrix = new Matrix4f();
+        direction = new Vector3d(0, 0, 1);
+        scale = new Vector3d(1, 1, 1);
+        rotation = new Vector3d();
+        modelMatrix = new Matrix4d();
         processing = new Processing(texture.getType());
         createBuffers();
     }
 
-    /**
-     * 
-     * Init an item, for use with Text.
-     *
-     * @since 0.0.1
-     */
-    Item() {
-        eye = Eye.BOTH;
-        position = new Vector2f(0, 0);
-        scale = new Vector3f();
-        rotation = new Vector3f();
-        modelMatrix = new Matrix4f();
-        processing = new Processing(TextureType.TEXT);
-    }
-
+    
     /**
      * 
      * Render item
@@ -279,6 +320,20 @@ public class Item {
 
     /**
      * 
+     * Get size in meters
+     *
+     * @return return position in x, y, and z in meters
+     *
+     * @since 0.0.1
+     */
+    public Vector3d getPosition() {
+        return (new Vector3d(distance * direction.x,
+                             distance * direction.y,
+                             distance * direction.z));
+    }
+
+    /**
+     * 
      * Position the item
      *
      * @param x x-axis position in degrees of visual angle
@@ -287,22 +342,12 @@ public class Item {
      * @since 0.0.1
      */
     public void position(double x, double y) {
-        position((float) x, (float) y);
-    }
-
-    /**
-     *
-     * Position the item
-     *
-     * @param x x-axis position in degrees of visual angle
-     * @param y y-axis position in degrees of visual angle
-     *
-     * @since 0.0.1
-     */
-    public void position(float x, float y) {
-        position.x = (float) Math.toRadians(x);
-        position.y = (float) Math.toRadians(y);
-        computeModelMatrix();
+        double xp = Math.toRadians(x);
+        double yp = Math.toRadians(y);
+        direction.x = Math.sin(xp);
+        direction.y = Math.sin(yp);
+        direction.z = Math.cos(xp) * Math.cos(yp);
+        updateModelMatrix = true;
     }
 
     /**
@@ -314,35 +359,41 @@ public class Item {
      * @since 0.0.1
      */
     public void distance(double distance) {
-        distance((float) distance);
+        if(distance == 0) distance = Observer.ZNEAR;
+        else if(Math.abs(distance) < Observer.ZNEAR)
+            distance = Math.signum(distance) * Observer.ZNEAR;
+        // recalculate scale
+        double sc = Math.abs(distance / this.distance);
+        scale.x = sc * scale.x;
+        scale.y = sc * scale.y;
+        scale.z = sc * scale.z;
+        this.distance = distance;
+        updateModelMatrix = true;
     }
 
+
     /**
+     * 
+     * Get distance in meters
      *
-     * Distance of the item
-     *
-     * @param distance distance in meters
+     * @return distance in meters
      *
      * @since 0.0.1
      */
-    public void distance(float distance) {
-        this.distance = distance;
-        computeModelMatrix();
+    public double getDistance() {
+        return distance;
     }
 
     /**
      * 
-     * Get size in degrees
+     * Get size in meters
      *
-     * @return return size x and size y in degrees
+     * @return size in x, y, and z in meters
      *
      * @since 0.0.1
      */
-    public float[] size() {
-        return new float[] {
-            (float) Math.toDegrees(scale.x),
-            (float) Math.toDegrees(scale.y)
-        };
+    public Vector3d getSize() {
+        return (new Vector3d(2 * scale.x, 2 * scale.y, 2 * scale.z));
     }
 
     /**
@@ -381,47 +432,24 @@ public class Item {
      * @since 0.0.1
      */
     public void size(double x, double y, double z) {
-        size((float) x, (float) y, (float) z);
-    }
-
-    /**
-     * 
-     * Set item size
-     *
-     * @param x Size along the x-axis in degrees fo visual angle
-     * @param y Size along the y-axis in degrees fo visual angle
-     * @param z Size along the z-axis in meters
-     *
-     * @since 0.0.1
-     */
-    public void size(float x, float y, float z) {
-        scale.x = (float) Math.toRadians(x);
-        scale.y = (float) Math.toRadians(y);
-        scale.z = z;
-        computeModelMatrix();
+        if(Math.abs(x) < Observer.ZNEAR) x = Observer.ZNEAR; // size must always be positive
+        if(Math.abs(y) < Observer.ZNEAR) y = Observer.ZNEAR;
+        if(Math.abs(z) < Observer.ZNEAR) z = Observer.ZNEAR;
+        scale.x = distance * Math.tan(Math.toRadians(Math.abs(x)) / 2);
+        scale.y = distance * Math.tan(Math.toRadians(Math.abs(y)) / 2);
+        scale.z = Math.abs(z) / 2;
+        updateModelMatrix = true;
     }
 
     /**
      * Rotate the item
      *
-     * @param theta Angle of rotation in degrees
+     * @param z Angle of rotation in degrees
      *
      * @since 0.0.1
      */
-    public void rotation(double theta) {
-        rotation((float) theta);
-    }
-
-    /**
-     *
-     * Rotate the item
-     *
-     * @param theta Angle of rotation in degrees
-     *
-     * @since 0.0.1
-     */
-    public void rotation(float theta) {
-        rotation(0, 0, theta);
+    public void rotation(double z) {
+        rotation(0, 0, z);
     }
 
     /**
@@ -434,21 +462,8 @@ public class Item {
      * @since 0.0.1
      */
     public void rotation(double x, double y, double z) {
-        rotation((float) x, (float) y, (float) z);
-    }
-
-    /**
-     * Rotate the item
-     *
-     * @param x Angle on the x axis in degrees
-     * @param y Angle on the y axis in degrees
-     * @param z Angle on the z axis in degrees
-     *
-     * @since 0.0.1
-     */
-    public void rotation(float x, float y, float z) {
-        rotation = new Vector3f((float) Math.toRadians(x), (float) Math.toRadians(y), (float) Math.toRadians(z));
-        computeModelMatrix();
+        rotation = new Vector3d(Math.toRadians(x), Math.toRadians(y), Math.toRadians(z));
+        updateModelMatrix = true;
     }
 
     /**
@@ -487,7 +502,7 @@ public class Item {
      * @since 0.0.1
      */
     public void frequency(double xp, double xf, double yp, double yf) {
-        processing.frequency((float) xp, (float) xf, (float) yp, (float) yf);
+        processing.frequency(xp, xf, yp, yf);
     }
 
     /**
@@ -499,7 +514,7 @@ public class Item {
      * @since 0.0.1
      */
     public void frequency(double xp, double xf) {
-        processing.frequency((float) xp, (float) xf, (float) xp, (float) xf);
+        processing.frequency(xp, xf, xp, xf);
     }
 
     /**
@@ -511,18 +526,6 @@ public class Item {
      * @since 0.0.1
      */
     public void contrast(double amplitude) {
-        contrast((float) amplitude);
-    }
-
-    /**
-     *
-     * Contrast
-     *
-     * @param amplitude Contrast
-     *
-     * @since 0.0.1
-     */
-    public void contrast(float amplitude) {
         contrast(amplitude, amplitude, amplitude, amplitude);
     }
 
@@ -538,7 +541,7 @@ public class Item {
      * @since 0.0.1
      */
     public void contrast(double r, double g, double b, double a) {
-        processing.contrast((float) r, (float) g, (float) b, (float) a);
+        processing.contrast(r, g, b, a);
     }
 
     /**
@@ -550,7 +553,7 @@ public class Item {
      * @since 0.0.1
      */
     public void texRotation(double rotation) {
-        processing.rotation(rotation, new float[] { 0.5f, 0.5f });
+        processing.rotation(rotation, new double[] { 0.5, 0.5 });
     }
 
     /**
@@ -562,20 +565,20 @@ public class Item {
      * @since 0.0.1
      */
     public void envelope(EnvelopeType type, double sd) {
-        processing.envelope(type, (float) sd, (float) sd, 0);
+        processing.envelope(type, sd, sd, 0);
     }
 
     /**
      * Add an envelope
      *
      * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
-     * @param sdx  Standard deviation in meters for the x-axis
-     * @param sdy  Standard deviation in meters for the y-axis
+     * @param sdx Standard deviation in meters for the x-axis
+     * @param sdy Standard deviation in meters for the y-axis
      *
      * @since 0.0.1
      */
     public void envelope(EnvelopeType type, double sdx, double sdy) {
-        processing.envelope(type, (float) sdx, (float) sdy, 0);
+        processing.envelope(type, sdx, sdy, 0);
     }
 
     /**
@@ -589,7 +592,7 @@ public class Item {
      * @since 0.0.1
      */
     public void envelope(EnvelopeType type, double sdx, double sdy, double angle) {
-        processing.envelope(type, (float) sdx, (float) sdy, (float) angle);
+        processing.envelope(type, sdx, sdy, angle);
     }
 
     /**
@@ -623,7 +626,7 @@ public class Item {
      * @since 0.0.1
      */
     public void defocus(double dx) {
-        processing.defocus((float) dx, (float) dx, 0);
+        processing.defocus(dx, dx, 0);
     }
 
     /**
@@ -636,7 +639,7 @@ public class Item {
      * @since 0.0.1
      */
     public void defocus(double dx, double dy, double angle) {
-        processing.defocus((float) dx, (float) dy, (float) angle);
+        processing.defocus(dx, dy, angle);
     }
 
     /**
@@ -1038,6 +1041,7 @@ public class Item {
      * @since 0.0.1
      */
     void updateUniforms(int imageIndex, int passNumber) {
+        if (updateModelMatrix) computeModelMatrix();
         int n = 0;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
@@ -1046,7 +1050,7 @@ public class Item {
             {
                 ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
-                modelMatrix.get(n * Float.BYTES, buffer); n += 16;
+                (new Matrix4f(modelMatrix)).get(n * Float.BYTES, buffer); n += 16;
                 VulkanSetup.observer.views.get(passNumber).get(n * Float.BYTES, buffer); n += 16;
                 VulkanSetup.observer.projection.get(n * Float.BYTES, buffer); n += 16;
                 VulkanSetup.observer.optics.getCenters().get(n * Float.BYTES, buffer); n += 4;
@@ -1064,16 +1068,13 @@ public class Item {
     }
 
     /** compute model matrix from MVP */
-    void computeModelMatrix() {
-        float cx = distance * (float) Math.tan(position.x); // NEEDS REVISION
-        float cy = distance * (float) Math.tan(position.y);
-        float cz = (float) Math.sqrt(Math.pow(distance, 2) - Math.pow(position.x, 2) - Math.pow(position.y, 2));
-        float sx = distance * (float) Math.tan(scale.x / 2);
-        float sy = distance * (float) Math.tan(scale.y / 2);
-        float sz = scale.z / 2;
-        if (sz == 0.0f) sz = 1.0f;
-        modelMatrix.identity().translate(cx, cy, cz)
-                              .scale(sx, sy, sz);
+    void computeModelMatrix() { // NEEDS REVISION
+        Vector3d position = new Vector3d(direction.x, direction.y, direction.z).mul(distance);
+        Quaterniond quaternion = new Quaterniond()
+            .rotationTo(new Vector3d(0, 0, 1), direction)
+            .rotateZYX(rotation.z, rotation.y, rotation.x);
+        modelMatrix.translationRotateScale(position, quaternion, scale);
+        updateModelMatrix = false;
     }
 
     /** copy buffer */
