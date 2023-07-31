@@ -34,7 +34,8 @@ class Processing {
         settings.x = switch (type) {
             case FLAT -> 0;
             case CHECKERBOARD, SINE, SQUARESINE, G1, G2, G3 -> 1;
-            case TEXT, IMAGE -> 2;
+            case TEXT -> 2;
+            case IMAGE -> 3;
         };
     }
 

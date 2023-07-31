@@ -446,9 +446,7 @@ public class VulkanManager {
                 renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(image));
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 {
-                    // render items
-                    for (Item item : items)
-                        item.render(stack, commandBuffer, image);
+                    for (Item item : items) item.render(stack, commandBuffer, image);
                 }
                 vkCmdEndRenderPass(commandBuffer);
                 result = vkEndCommandBuffer(commandBuffer);

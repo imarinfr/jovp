@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import es.optocom.jovp.definitions.FontType;
+import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.definitions.Vertex;
 
 import java.awt.*;
@@ -91,6 +92,7 @@ public class Text extends Item {
             throw new RuntimeException(e);
         }
         createFontTexture(rgba);
+        processing = new Processing(TextureType.TEXT);
     }
 
     /**
@@ -151,38 +153,31 @@ public class Text extends Item {
     private void createFontTexture(double[] rgba) {
         StringBuilder text = new StringBuilder();
         // Consider only standard ASCII characters
-        for (int i = 32; i < 127; i++)
-            if (font.canDisplay(i))
-                text.append((char) i);
+        for (int i = 32; i < 127; i++) if (font.canDisplay(i)) text.append((char) i);
         GlyphVector glyphs = font.createGlyphVector(fontRenderContext, text.toString());
-        int height = glyphs.getLogicalBounds().getBounds().height;
-        int width = glyphs.getLogicalBounds().getBounds().width;
-        int ascent = glyphs.getLogicalBounds().getBounds().y;
+        Rectangle bounds = glyphs.getLogicalBounds().getBounds();
         int x = 0;
         // Find the image regions to fill
-        boolean[] fill = new boolean[width * height];
+        boolean[] fill = new boolean[bounds.width * bounds.height];
         for (int glyph = 0; glyph < glyphs.getNumGlyphs(); glyph++) {
             double charWidth = glyphs.getGlyphMetrics(glyph).getAdvanceX();
             int advance = (int) charWidth;
-            boolean[] glyphFill = getFillRegion(glyphs.getGlyphOutline(glyph), advance, height, ascent);
-            for (int i = 0; i < height; i++)
-                for (int j = 0; j < advance; j++)
-                    fill[i * width + x + j] = glyphFill[i * advance + j];
+            boolean[] glyphFill = getFillRegion(glyphs.getGlyphOutline(glyph), advance, bounds.height, bounds.y);
+            for (int i = 0; i < bounds.height; i++) for (int j = 0; j < advance; j++)
+                    fill[i * bounds.width + x + j] = glyphFill[i * advance + j];
             // Add map to the catalog
-            map.put(text.charAt(glyph), new CharInfo(x / (float) width, (float) charWidth / width));
+            map.put(text.charAt(glyph), new CharInfo(x / (float) bounds.width, (float) charWidth / bounds.width));
             x += advance;
         }
         // Colors for the texture
-        float[] pixels = new float[4 * width * height];
+        float[] pixels = new float[4 * bounds.width * bounds.height];
         for (int i = 0; i < fill.length; i++) {
             if (fill[i])
-                for (int pos = 0; pos < 4; pos++) // Fill regions with value -1
-                    pixels[4 * i + pos] = 1.0f;
+                for (int pos = 0; pos < 4; pos++) pixels[4 * i + pos] = 1.0f;
             else
-                for (int pos = 0; pos < 4; pos++)
-                    pixels[4 * i + pos] = 0.0f;
+                for (int pos = 0; pos < 4; pos++) pixels[4 * i + pos] = 0.0f;
         }
-        texture = new Texture(rgba, pixels, width, height);
+        texture = new Texture(rgba, pixels, bounds.width, bounds.height);
     }
 
     /** get fill region for a character for rendering */
@@ -198,7 +193,6 @@ public class Text extends Item {
     }
 
     /** map characters with position and width in Atlas */
-    record CharInfo(float x, float width) {
-    }
+    record CharInfo(float x, float width) {}
 
 }

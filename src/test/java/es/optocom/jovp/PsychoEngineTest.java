@@ -154,6 +154,12 @@ public class PsychoEngineTest {
     static class LogicTriangle implements PsychoLogic {
 
         public void init(PsychoEngine psychoEngine) {
+            Text text = new Text(new double[] {0, 1, 0, 1});
+            text.setText("Herro, prease");
+            view.add(text);
+            text.distance(Observer.ZFAR / 5);
+            text.size(5);
+            text.position(-25, 0);
             Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));
             view.add(item);
             item.distance(Observer.ZFAR / 2);
@@ -223,8 +229,8 @@ public class PsychoEngineTest {
             title.setText("Stereoscopic view");
             title.show(Eye.LEFT);
             title.size(1.5);
-            title.position(-5, 8);
-            title.distance(5);
+            title.position(0, 0);
+            title.distance(10);
             view.add(title);
             // Add text to show FPS
             text = new Text();

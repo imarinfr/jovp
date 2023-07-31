@@ -99,12 +99,12 @@ public class Item {
     Eye eye;
     Model model;
     Texture texture;
+    Processing processing;
     private double distance = (Observer.ZFAR - Observer.ZNEAR) / 2; // distance of the item in meters
     private Vector3d scale; // size in x, y, and z in meters (size = 2 * scale)
     private Vector3d rotation; // angles of rotation in each axis in radians
     private Vector3d direction; // unit vector with (x, y, z) direction in meters
     private Matrix4d modelMatrix; // model matrix
-    private Processing processing;
     private long commandPool;
     private long vertexBuffer;
     private long indexBuffer;
@@ -140,18 +140,17 @@ public class Item {
         scale = new Vector3d(1, 1, 1);
         rotation = new Vector3d();
         modelMatrix = new Matrix4d();
-        processing = new Processing(texture.getType());
         createBuffers();
+        processing = new Processing(texture.getType());
     }
 
-    
     /**
      * 
      * Render item
      *
-     * @param stack         Memory stack
+     * @param stack Memory stack
      * @param commandBuffer Command buffer
-     * @param image         in-flight frame to render
+     * @param image in-flight frame to render
      *
      * @since 0.0.1
      */
@@ -175,11 +174,11 @@ public class Item {
      * 
      * Render item
      * 
-     * @param stack         Memory stack
+     * @param stack  stack
      * @param commandBuffer Command buffer
-     * @param image         in-flight frame to render
-     * @param passNumber    pass number. For MONO vision, it ought to be 0. For
-     *                      STEREO, left is 0 and right is 1
+     * @param image in-flight frame to render
+     * @param passNumber pass number. For MONO vision, it ought to be 0. For
+     *                   STEREO, left is 0 and right is 1
      *
      * @since 0.0.1
      */
@@ -762,10 +761,10 @@ public class Item {
                 ByteBuffer buffer = data.getByteBuffer(0, (int) bufferSize);
                 for (Vertex vertex : model.vertices)
                     buffer.putFloat(vertex.position.x())
-                            .putFloat(vertex.position.y())
-                            .putFloat(vertex.position.z())
-                            .putFloat(vertex.uv.x())
-                            .putFloat(vertex.uv.y());
+                        .putFloat(vertex.position.y())
+                        .putFloat(vertex.position.z())
+                        .putFloat(vertex.uv.x())
+                        .putFloat(vertex.uv.y());
                 buffer.rewind();
             }
             vkUnmapMemory(VulkanSetup.logicalDevice.device, stagingBufferMemory);
