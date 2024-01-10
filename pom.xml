@@ -48,6 +48,13 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>${java.version}</version>
         </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <argLine>-XstartOnFirstThread -Dorg.lwjgl.vulkan.libname=${env.VULKAN_SDK}/lib/libvulkan.dylib</argLine>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
