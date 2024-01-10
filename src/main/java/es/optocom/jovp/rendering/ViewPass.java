@@ -78,9 +78,9 @@ class ViewPass {
      * Creates a single view pass for monocular or stereoscopic view
      *
      * @param renderPass Render pass handle
-     * @param offset     Offset of the view. For the right eye, it should be the
-     *                   half width of the swap chain
-     * @param extent     Port view extent
+     * @param offset Offset of the view. For the right eye, it should be the
+     *               half width of the swap chain
+     * @param extent Port view extent
      *
      * @since 0.0.1
      */

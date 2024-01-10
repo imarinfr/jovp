@@ -148,7 +148,7 @@ public class PsychoEngineTest {
         }
     }
 
-        // Psychophysics logic to show a simple triangle
+    // Psychophysics logic to show a simple triangle
     static class LogicTriangle implements PsychoLogic {
 
         public void init(PsychoEngine psychoEngine) {

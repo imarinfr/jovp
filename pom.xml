@@ -9,13 +9,12 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <java.version>17</java.version>
-    <maven.plugin.version>3.10.1</maven.plugin.version>
-    <lwjgl.version>3.3.1</lwjgl.version>
-    <joml.version>1.10.4</joml.version>
+    <maven.plugin.version>3.11.0</maven.plugin.version>
+    <lwjgl.version>3.3.2</lwjgl.version>
+    <joml.version>1.10.5</joml.version>
     <jssc.version>2.9.4</jssc.version>
-    <slf4j.version>2.0.3</slf4j.version>
-    <commons.version>2.11.0</commons.version>
-    <junit.version>5.9.0</junit.version>
+    <commons.version>2.13.0</commons.version>
+    <junit.version>5.10.0</junit.version>
   </properties>
 
 
@@ -209,22 +208,16 @@
     </dependency>
     <dependency>
       <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-freetype</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl</artifactId>
       <classifier>${lwjgl.natives}</classifier>
     </dependency>
     <dependency>
       <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl-assimp</artifactId>
-      <classifier>${lwjgl.natives}</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-glfw</artifactId>
-      <classifier>${lwjgl.natives}</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl-stb</artifactId>
       <classifier>${lwjgl.natives}</classifier>
     </dependency>
     <dependency>
@@ -246,11 +239,6 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
