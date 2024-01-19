@@ -153,17 +153,16 @@ public class PsychoEngineTest {
 
         public void init(PsychoEngine psychoEngine) {
             Text text = new Text(new double[] {0, 1, 0, 1});
-            text.setText("Herro, prease");
+            //text.set("Herro, prease");
             view.add(text);
-            text.distance(Observer.ZFAR / 5);
-            text.size(5);
-            text.position(-25, 0);
+            //text.size(1);
+            //text.position(0, 0);
             Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));
             view.add(item);
             item.distance(Observer.ZFAR / 2);
             item.size(5, 5);
-            item.position(25, 10);
-            item.rotation(0, 0, 45);
+            item.position(0, 0);
+            item.rotation(0, 0, 0);
         }
 
         public void input(PsychoEngine psychoEngine, Command command) {
@@ -224,19 +223,17 @@ public class PsychoEngineTest {
             view.add(stimulus3);
             // Add title
             title = new Text();
-            title.setText("Stereoscopic view");
+            title.set("Stereoscopic view");
             title.show(Eye.LEFT);
-            title.size(1.5);
+            title.size(10);
             title.position(0, 0);
-            title.distance(10);
             view.add(title);
             // Add text to show FPS
             text = new Text();
-            text.setText("Refresh rate:");
+            text.set("Refresh rate:");
             text.show(Eye.LEFT);
-            text.size(1);
-            text.position(-7.5, 6.5);
-            text.distance(5);
+            text.size(10);
+            text.position(0, 0);
             view.add(text);
             // Start timers
             timer.start();
@@ -250,10 +247,10 @@ public class PsychoEngineTest {
             if (command == Command.YES){
                 if(psychoEngine.getViewMode() == ViewMode.MONO) {
                     psychoEngine.setViewMode(ViewMode.STEREO);
-                    title.setText("Stereoscopic view");
+                    title.set("Stereoscopic view");
                 } else {
                     psychoEngine.setViewMode(ViewMode.MONO);
-                    title.setText("Monoscopic view");
+                    title.set("Monoscopic view");
                 }
             }
         }
@@ -283,7 +280,7 @@ public class PsychoEngineTest {
                 fps++;
             else { // restart the timer every second
                 timerFps.start();
-                text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 fps = 0;
             }
         }
@@ -301,6 +298,9 @@ public class PsychoEngineTest {
         Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }));
 
         public void init(PsychoEngine psychoEngine) {
+            //Text text = new Text();
+            //text.set("herro, prease");
+            //view.add(text);
             view.add(background);
             background.distance(Observer.ZFAR / 2);
             eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 })));
@@ -345,6 +345,7 @@ public class PsychoEngineTest {
         }
 
         public void input(PsychoEngine psychoEngine, Command command) {
+            System.out.println("input");
             if (command == Command.NONE) return;
             switch (command) {
                 case ITEM1 -> back(psychoEngine);
@@ -365,6 +366,7 @@ public class PsychoEngineTest {
 		}
 
         public void update(PsychoEngine psychoEngine) {
+            System.out.println("update");
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
         }

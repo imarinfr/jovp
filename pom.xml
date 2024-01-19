@@ -9,8 +9,8 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <java.version>17</java.version>
-    <maven.plugin.version>3.11.0</maven.plugin.version>
-    <lwjgl.version>3.3.2</lwjgl.version>
+    <maven.plugin.version>3.12.0</maven.plugin.version>
+    <lwjgl.version>3.3.3</lwjgl.version>
     <joml.version>1.10.5</joml.version>
     <jssc.version>2.9.4</jssc.version>
     <commons.version>2.13.0</commons.version>
@@ -40,6 +40,7 @@
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
+            <release>${java.version}</release>
           </configuration>
         </plugin>
         <plugin>
@@ -64,6 +65,7 @@
       <activation>
         <os>
           <family>unix</family>
+          <name>linux</name>
           <arch>amd64</arch>
         </os>
       </activation>
@@ -76,6 +78,7 @@
       <activation>
         <os>
           <family>unix</family>
+          <name>linux</name>
           <arch>aarch64</arch>
         </os>
       </activation>
@@ -88,6 +91,7 @@
       <activation>
         <os>
           <family>unix</family>
+          <name>linux</name>
           <arch>arm</arch>
         </os>
       </activation>
@@ -100,6 +104,7 @@
       <activation>
         <os>
           <family>unix</family>
+          <name>linux</name>
           <arch>arm32</arch>
         </os>
       </activation>
@@ -196,10 +201,6 @@
     </dependency>
     <dependency>
       <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl-stb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-shaderc</artifactId>
     </dependency>
     <dependency>
@@ -209,6 +210,10 @@
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-freetype</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-stb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.lwjgl</groupId>
@@ -223,6 +228,16 @@
     <dependency>
       <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-shaderc</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-freetype</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-stb</artifactId>
       <classifier>${lwjgl.natives}</classifier>
     </dependency>
     <dependency>

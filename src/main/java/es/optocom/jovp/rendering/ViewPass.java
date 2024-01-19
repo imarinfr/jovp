@@ -10,6 +10,9 @@ import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
+import static org.lwjgl.vulkan.VK10.VK_COMPARE_OP_ALWAYS;
+import static org.lwjgl.vulkan.VK10.VK_CULL_MODE_NONE;
+import static org.lwjgl.vulkan.VK10.VK_FRONT_FACE_CLOCKWISE;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
@@ -71,8 +74,10 @@ import es.optocom.jovp.definitions.ShaderKind;
 class ViewPass {
 
     final VkExtent2D extent;
-    long pipelineLayout;
+    long graphicsPipelineLayout;
     long graphicsPipeline;
+    long textPipelineLayout;
+    long textPipeline;
 
     /**
      * Creates a single view pass for monocular or stereoscopic view
@@ -86,120 +91,114 @@ class ViewPass {
      */
     ViewPass(long renderPass, int offset, VkExtent2D extent) {
         this.extent = extent;
-        createGraphicsPipeline(renderPass, offset);
-    }
-
-    /** destroy view pass object */
-    void destroy() {
-        vkDestroyPipeline(VulkanSetup.logicalDevice.device, graphicsPipeline, null);
-        vkDestroyPipelineLayout(VulkanSetup.logicalDevice.device, pipelineLayout, null);
+        createGraphicsPipeline(renderPass, offset, extent);
+        createTextPipeline(renderPass, offset, extent);
     }
 
     /** create graphics pipeline */
-    private void createGraphicsPipeline(long renderPass, int offset) {
+    private void createGraphicsPipeline(long renderPass, int offset, VkExtent2D extent) {
+        // get resources
+        SPIRV vertShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.vert", ShaderKind.VERTEX_SHADER);
+        SPIRV fragShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.frag", ShaderKind.FRAGMENT_SHADER);
+        long vertShaderModule = createShaderModule(vertShaderSPIRV.bytecode());
+        long fragShaderModule = createShaderModule(fragShaderSPIRV.bytecode());
         try (MemoryStack stack = stackPush()) {
-            SPIRV vertShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.vert", ShaderKind.VERTEX_SHADER);
-            SPIRV fragShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/shader.frag",
-                    ShaderKind.FRAGMENT_SHADER);
-            long vertShaderModule = createShaderModule(vertShaderSPIRV.bytecode());
-            long fragShaderModule = createShaderModule(fragShaderSPIRV.bytecode());
-            ByteBuffer entryPoint = stack.UTF8("main");
-            VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
-            VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
-            vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                    .stage(VK_SHADER_STAGE_VERTEX_BIT).module(vertShaderModule).pName(entryPoint);
-            VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(1);
-            fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                    .stage(VK_SHADER_STAGE_FRAGMENT_BIT).module(fragShaderModule).pName(entryPoint);
-            // Vertex stage
-            VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
-                    .pVertexBindingDescriptions(getBindingDescription())
-                    .pVertexAttributeDescriptions(getAttributeDescriptions());
-            // Assembly stage
-            VkPipelineInputAssemblyStateCreateInfo inputAssembly = VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
-                    .topology(VulkanSetup.PRIMITIVE_TOPOLOGY)
-                    .primitiveRestartEnable(VulkanSetup.PRIMITIVE_RESTART_ENABLE);
-            // Viewport and scissor
-            VkViewport.Buffer viewport = VkViewport.calloc(1, stack)
-                    .x(offset).y(0).width(extent.width()).height(extent.height())
-                    .minDepth(VulkanSetup.VIEWPORT_MIN_DEPTH).maxDepth(VulkanSetup.VIEWPORT_MAX_DEPTH);
-            VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
-                    .offset(VkOffset2D.calloc(stack).set(offset, 0)).extent(extent);
-            VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
-                    .pViewports(viewport).pScissors(scissor);
-            // Rasterization stage
-            VkPipelineRasterizationStateCreateInfo rasterizer = VkPipelineRasterizationStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
-                    .depthClampEnable(VulkanSetup.DEPTH_CLAMP_ENABLE)
-                    .rasterizerDiscardEnable(VulkanSetup.RASTERIZER_DISCARD_ENABLE)
-                    .polygonMode(VulkanSetup.POLYGON_MODE).lineWidth(VulkanSetup.LINE_WIDTH)
-                    .cullMode(VulkanSetup.CULL_MODE)
-                    .frontFace(VulkanSetup.FRONT_FACE)
-                    .depthBiasEnable(VulkanSetup.DEPTH_BIAS_ENABLE);
-            // Multisampling
-            VkPipelineMultisampleStateCreateInfo multisampling = VkPipelineMultisampleStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
-                    .sampleShadingEnable(VulkanSetup.SAMPLE_SHADING_ENABLE)
-                    .minSampleShading(VulkanSetup.MIN_SAMPLE_SHADING)
-                    .rasterizationSamples(VulkanSetup.logicalDevice.msaaSamples);
-            VkPipelineDepthStencilStateCreateInfo depthStencil = VkPipelineDepthStencilStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-                    .depthTestEnable(VulkanSetup.DEPTH_TEST_ENABLE).depthWriteEnable(VulkanSetup.DEPTH_WRITE_ENABLE)
-                    .depthCompareOp(VulkanSetup.DEPTH_COMPARE_OPERATION)
-                    .depthBoundsTestEnable(VulkanSetup.DEPTH_BOUNDS_TEST_ENABLE)
-                    .minDepthBounds(VulkanSetup.MIN_DEPTH_BOUNDS).maxDepthBounds(VulkanSetup.MAX_DEPTH_BOUNDS)
-                    .stencilTestEnable(VulkanSetup.STENCIL_TEST_ENABLE);
-            // Color blending
-            VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState
-                    .calloc(1, stack).colorWriteMask(VulkanSetup.COLOR_WRITE_MASK).blendEnable(VulkanSetup.BLEND_ENABLE)
-                    .srcColorBlendFactor(VulkanSetup.BLEND_COLOR_SOURCE_FACTOR)
-                    .dstColorBlendFactor(VulkanSetup.BLEND_COLOR_DESTINATION_FACTOR)
-                    .colorBlendOp(VulkanSetup.BLEND_COLOR_OPERATION)
-                    .srcAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_SOURCE_FACTOR)
-                    .dstAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_DESTINATION_FACTOR)
-                    .alphaBlendOp(VulkanSetup.BLEND_ALPHA_OPERATION);
-            VkPipelineColorBlendStateCreateInfo colorBlending = VkPipelineColorBlendStateCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
-                    .logicOpEnable(VulkanSetup.LOGIC_OPERATION_ENABLE).logicOp(VulkanSetup.LOGIC_OPERATION)
-                    .pAttachments(colorBlendAttachment)
-                    .blendConstants(
-                            stack.floats(VulkanSetup.BLEND_CONSTANTS_X, VulkanSetup.BLEND_CONSTANTS_Y,
-                                    VulkanSetup.BLEND_CONSTANTS_Z,
-                                    VulkanSetup.BLEND_CONSTANTS_W));
-            // Pipeline layout creation
+            VkPipelineShaderStageCreateInfo.Buffer shaderStages = createShaderStages(stack, vertShaderModule, fragShaderModule);
+            VkPipelineVertexInputStateCreateInfo vertexInput = createVertexStage(stack);
+            VkPipelineInputAssemblyStateCreateInfo inputAssembly = createAssemblyStage(stack);
+            VkPipelineViewportStateCreateInfo viewportState = createViewPortState(stack, offset, extent);
+            VkPipelineRasterizationStateCreateInfo rasterizer = createGraphicsRasterizer(stack);
+            VkPipelineMultisampleStateCreateInfo multisampling = createMultisampling(stack);
+            VkPipelineDepthStencilStateCreateInfo depthStencil = createGraphicsDepthStencil(stack);
+            VkPipelineColorBlendStateCreateInfo colorBlending = createColorBlending(stack);
             VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
-                    .pSetLayouts(stack.longs(VulkanSetup.logicalDevice.descriptorSetLayout));
+                .sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
+                .pSetLayouts(stack.longs(VulkanSetup.logicalDevice.descriptorSetLayout));
             LongBuffer pPipelineLayout = stack.longs(VK_NULL_HANDLE);
             int result = vkCreatePipelineLayout(VulkanSetup.logicalDevice.device, pipelineLayoutInfo,
                     null, pPipelineLayout);
             if (result != VK_SUCCESS)
-                throw new AssertionError("Failed to create pipeline layout: " +
-                        VulkanSetup.translateVulkanResult(result));
-            pipelineLayout = pPipelineLayout.get(0);
+                throw new AssertionError("Failed to create pipeline layout: " + VulkanSetup.translateVulkanResult(result));
+            graphicsPipelineLayout = pPipelineLayout.get(0);
             VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack)
+                .sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).pStages(shaderStages)
+                .pVertexInputState(vertexInput).pInputAssemblyState(inputAssembly)
+                .pViewportState(viewportState).pRasterizationState(rasterizer)
+                .pMultisampleState(multisampling).pDepthStencilState(depthStencil)
+                .pColorBlendState(colorBlending).layout(graphicsPipelineLayout)
+                .renderPass(renderPass).subpass(0)
+                .basePipelineHandle(VK_NULL_HANDLE).basePipelineIndex(-1);
+            LongBuffer pPipeline = stack.mallocLong(1);
+            result = vkCreateGraphicsPipelines(VulkanSetup.logicalDevice.device, VK_NULL_HANDLE, pipelineInfo,
+                    null, pPipeline);
+            if (result != VK_SUCCESS)
+                throw new AssertionError("Failed to create graphics pipeline: " + VulkanSetup.translateVulkanResult(result));
+            graphicsPipeline = pPipeline.get(0);
+        }
+        // Release resources
+        vkDestroyShaderModule(VulkanSetup.logicalDevice.device, vertShaderModule, null);
+        vkDestroyShaderModule(VulkanSetup.logicalDevice.device, fragShaderModule, null);
+        vertShaderSPIRV.free();
+        fragShaderSPIRV.free();
+    }
+
+    /** create overlay text pipeline */
+    private void createTextPipeline(long renderPass, int offset, VkExtent2D extent) {
+        // get resources
+        SPIRV vertShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/text.vert", ShaderKind.VERTEX_SHADER);
+        SPIRV fragShaderSPIRV = compileShaderFile("es/optocom/jovp/shaders/text.frag", ShaderKind.FRAGMENT_SHADER);
+        long vertShaderModule = createShaderModule(vertShaderSPIRV.bytecode());
+        long fragShaderModule = createShaderModule(fragShaderSPIRV.bytecode());
+        try (MemoryStack stack = stackPush()) {
+            VkPipelineShaderStageCreateInfo.Buffer shaderStages = createShaderStages(stack, vertShaderModule, fragShaderModule);
+            VkPipelineVertexInputStateCreateInfo vertexInput = createVertexStage(stack);
+            VkPipelineInputAssemblyStateCreateInfo inputAssembly = createAssemblyStage(stack);
+            VkPipelineViewportStateCreateInfo viewportState = createViewPortState(stack, offset, extent);
+            VkPipelineRasterizationStateCreateInfo rasterizer = createTextRasterizer(stack);
+            VkPipelineMultisampleStateCreateInfo multisampling = createMultisampling(stack);
+            VkPipelineDepthStencilStateCreateInfo depthStencil = createTextDepthStencil(stack);
+            VkPipelineColorBlendStateCreateInfo colorBlending = createColorBlending(stack);
+
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.calloc(stack)
+                .sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
+                .pSetLayouts(stack.longs(VulkanSetup.logicalDevice.descriptorSetLayout));
+            LongBuffer pPipelineLayout = stack.longs(VK_NULL_HANDLE);
+            int result = vkCreatePipelineLayout(VulkanSetup.logicalDevice.device, pipelineLayoutInfo,
+                    null, pPipelineLayout);
+            if (result != VK_SUCCESS)
+                throw new AssertionError("Failed to create pipeline layout: " + VulkanSetup.translateVulkanResult(result));
+            textPipelineLayout = pPipelineLayout.get(0);
+            VkGraphicsPipelineCreateInfo.Buffer textPipelineInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack)
                     .sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO).pStages(shaderStages)
-                    .pVertexInputState(vertexInputInfo).pInputAssemblyState(inputAssembly)
+                    .pVertexInputState(vertexInput).pInputAssemblyState(inputAssembly)
                     .pViewportState(viewportState).pRasterizationState(rasterizer)
                     .pMultisampleState(multisampling).pDepthStencilState(depthStencil)
-                    .pColorBlendState(colorBlending).layout(pipelineLayout).renderPass(renderPass).subpass(0)
+                    .pColorBlendState(colorBlending).layout(textPipelineLayout)
+                    .renderPass(renderPass).subpass(0)
                     .basePipelineHandle(VK_NULL_HANDLE).basePipelineIndex(-1);
-            LongBuffer pGraphicsPipeline = stack.mallocLong(1);
-            result = vkCreateGraphicsPipelines(VulkanSetup.logicalDevice.device, VK_NULL_HANDLE, pipelineInfo,
-                    null, pGraphicsPipeline);
+            LongBuffer pPipeline = stack.mallocLong(1);
+            result = vkCreateGraphicsPipelines(VulkanSetup.logicalDevice.device, VK_NULL_HANDLE, textPipelineInfo,
+                    null, pPipeline);
             if (result != VK_SUCCESS)
-                throw new AssertionError("Failed to create graphics pipeline: " +
-                        VulkanSetup.translateVulkanResult(result));
-            graphicsPipeline = pGraphicsPipeline.get(0);
-            // Release resources
-            vkDestroyShaderModule(VulkanSetup.logicalDevice.device, vertShaderModule, null);
-            vkDestroyShaderModule(VulkanSetup.logicalDevice.device, fragShaderModule, null);
-            vertShaderSPIRV.free();
-            fragShaderSPIRV.free();
+                throw new AssertionError("Failed to create graphics pipeline: " + VulkanSetup.translateVulkanResult(result));
+            textPipeline = pPipeline.get(0);
         }
+        // Release resources
+        vkDestroyShaderModule(VulkanSetup.logicalDevice.device, vertShaderModule, null);
+        vkDestroyShaderModule(VulkanSetup.logicalDevice.device, fragShaderModule, null);
+        vertShaderSPIRV.free();
+        fragShaderSPIRV.free();
+    }
+
+    /** Shader stages */
+    private VkPipelineShaderStageCreateInfo.Buffer createShaderStages(MemoryStack stack, long vert, long frag) {
+        ByteBuffer entryPoint = stack.UTF8("main");
+        VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
+        shaderStages.get(0).sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
+                                 .stage(VK_SHADER_STAGE_VERTEX_BIT).module(vert).pName(entryPoint);
+        shaderStages.get(1).sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
+                                 .stage(VK_SHADER_STAGE_FRAGMENT_BIT).module(frag).pName(entryPoint);
+        return shaderStages;
     }
 
     /** create shader module */
@@ -241,6 +240,114 @@ class ViewPass {
                     shaderc_result_get_error_message(result));
         shaderc_compiler_release(compiler);
         return new SPIRV(result, shaderc_result_get_bytes(result));
+    }
+
+    /** Vertex stage */
+    private VkPipelineVertexInputStateCreateInfo createVertexStage(MemoryStack stack) {
+        return VkPipelineVertexInputStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
+            .pVertexBindingDescriptions(getBindingDescription())
+            .pVertexAttributeDescriptions(getAttributeDescriptions());
+    }
+
+    /** Assembly stage */
+    private VkPipelineInputAssemblyStateCreateInfo createAssemblyStage(MemoryStack stack) {
+        return VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
+            .topology(VulkanSetup.PRIMITIVE_TOPOLOGY)
+            .primitiveRestartEnable(VulkanSetup.PRIMITIVE_RESTART_ENABLE);
+    }
+
+    /** create viewport state */
+    private VkPipelineViewportStateCreateInfo createViewPortState(MemoryStack stack, int offset, VkExtent2D extent) {
+        VkViewport.Buffer viewport = VkViewport.calloc(1, stack)
+            .x(offset).y(0).width(extent.width()).height(extent.height())
+            .minDepth(VulkanSetup.VIEWPORT_MIN_DEPTH).maxDepth(VulkanSetup.VIEWPORT_MAX_DEPTH);
+        VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
+            .offset(VkOffset2D.calloc(stack).set(offset, 0)).extent(extent);
+        return VkPipelineViewportStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
+            .pViewports(viewport).pScissors(scissor);
+    }
+
+    /** create graphics rasterizer */
+    private VkPipelineRasterizationStateCreateInfo createGraphicsRasterizer(MemoryStack stack) {
+        return VkPipelineRasterizationStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
+            .depthClampEnable(VulkanSetup.DEPTH_CLAMP_ENABLE)
+            .rasterizerDiscardEnable(VulkanSetup.RASTERIZER_DISCARD_ENABLE)
+            .polygonMode(VulkanSetup.POLYGON_MODE).lineWidth(VulkanSetup.LINE_WIDTH)
+            .cullMode(VulkanSetup.CULL_MODE).frontFace(VulkanSetup.FRONT_FACE)
+            .depthBiasEnable(VulkanSetup.DEPTH_BIAS_ENABLE);
+    }
+
+    /** create overlay text rasterizer */
+    private VkPipelineRasterizationStateCreateInfo createTextRasterizer(MemoryStack stack) {
+        return VkPipelineRasterizationStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
+            .depthClampEnable(VulkanSetup.DEPTH_CLAMP_ENABLE)
+            .rasterizerDiscardEnable(VulkanSetup.RASTERIZER_DISCARD_ENABLE)
+            .polygonMode(VulkanSetup.POLYGON_MODE).lineWidth(VulkanSetup.LINE_WIDTH)
+            .cullMode(VK_CULL_MODE_NONE).frontFace(VK_FRONT_FACE_CLOCKWISE)
+            .depthBiasEnable(VulkanSetup.DEPTH_BIAS_ENABLE);
+    }
+
+
+    /** destroy view pass object */
+    void destroy() {
+        vkDestroyPipeline(VulkanSetup.logicalDevice.device, textPipeline, null);
+        vkDestroyPipelineLayout(VulkanSetup.logicalDevice.device, textPipelineLayout, null);
+        vkDestroyPipeline(VulkanSetup.logicalDevice.device, graphicsPipeline, null);
+        vkDestroyPipelineLayout(VulkanSetup.logicalDevice.device, graphicsPipelineLayout, null);
+    }
+
+    /** create multisampling */
+    private VkPipelineMultisampleStateCreateInfo createMultisampling(MemoryStack stack) {
+        return VkPipelineMultisampleStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
+            .sampleShadingEnable(VulkanSetup.SAMPLE_SHADING_ENABLE)
+            .minSampleShading(VulkanSetup.MIN_SAMPLE_SHADING)
+            .rasterizationSamples(VulkanSetup.logicalDevice.msaaSamples);
+    }
+
+    /** create graphics depth stencil */
+    private VkPipelineDepthStencilStateCreateInfo createGraphicsDepthStencil(MemoryStack stack) {
+        return VkPipelineDepthStencilStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
+            .depthTestEnable(VulkanSetup.DEPTH_TEST_ENABLE).depthWriteEnable(VulkanSetup.DEPTH_WRITE_ENABLE)
+            .depthCompareOp(VulkanSetup.DEPTH_COMPARE_OPERATION)
+            .depthBoundsTestEnable(VulkanSetup.DEPTH_BOUNDS_TEST_ENABLE)
+            .minDepthBounds(VulkanSetup.MIN_DEPTH_BOUNDS).maxDepthBounds(VulkanSetup.MAX_DEPTH_BOUNDS)
+            .stencilTestEnable(VulkanSetup.STENCIL_TEST_ENABLE);
+    }
+
+    /** create overlay text depth stencil */
+    private VkPipelineDepthStencilStateCreateInfo createTextDepthStencil(MemoryStack stack) {
+        return VkPipelineDepthStencilStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
+            .depthTestEnable(false).depthWriteEnable(false)
+            .depthCompareOp(VK_COMPARE_OP_ALWAYS)
+            .depthBoundsTestEnable(false).stencilTestEnable(false);
+    }
+
+    /** color blending */
+    private VkPipelineColorBlendStateCreateInfo createColorBlending(MemoryStack stack) {
+        VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState
+            .calloc(1, stack).colorWriteMask(VulkanSetup.COLOR_WRITE_MASK).blendEnable(VulkanSetup.BLEND_ENABLE)
+            .srcColorBlendFactor(VulkanSetup.BLEND_COLOR_SOURCE_FACTOR)
+            .dstColorBlendFactor(VulkanSetup.BLEND_COLOR_DESTINATION_FACTOR)
+            .colorBlendOp(VulkanSetup.BLEND_COLOR_OPERATION)
+            .srcAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_SOURCE_FACTOR)
+            .dstAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_DESTINATION_FACTOR)
+            .alphaBlendOp(VulkanSetup.BLEND_ALPHA_OPERATION);
+        return VkPipelineColorBlendStateCreateInfo.calloc(stack)
+            .sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
+            .logicOpEnable(VulkanSetup.LOGIC_OPERATION_ENABLE).logicOp(VulkanSetup.LOGIC_OPERATION)
+            .pAttachments(colorBlendAttachment)
+            .blendConstants(
+                    stack.floats(VulkanSetup.BLEND_CONSTANTS_X, VulkanSetup.BLEND_CONSTANTS_Y,
+                            VulkanSetup.BLEND_CONSTANTS_Z,
+                            VulkanSetup.BLEND_CONSTANTS_W));
     }
 
     /** get vertex input binding description */

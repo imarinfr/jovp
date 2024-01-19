@@ -53,7 +53,6 @@ void main() {
     // for images do nothing
     if (settings.x == 0) color = rgba0; // flat
     if (settings.x == 1) color = rgba0 + color * (rgba1 - rgba0); // contrast
-    if (settings.x == 2) color = rgba0 * color; // text
     // Post-processing: envelope
     if (settings.y == 1) color = squareEnvelope(uv, color, envelope);
     if (settings.y == 2) color = circleEnvelope(uv, color, envelope);

@@ -112,6 +112,8 @@ class VulkanSetup {
     static final int MODEL_SIZEOF = (3 + 2) * Float.BYTES;
     // Uniform size: remember that the GPU reads in blocks of 4 bits, even if the variable sent is smaller than that.
     static final int UNIFORM_SIZEOF = 88 * Float.BYTES;
+    // Uniform size for overlay text
+    static final int UNIFORM_TEXTSIZEOF = 36 * Float.BYTES;
     // VulkanManager
     static final int MAX_FRAMES_IN_FLIGHT = 2;
     // LogicalDevice

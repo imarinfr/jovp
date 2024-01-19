@@ -95,12 +95,13 @@ public class VulkanManager {
      *
      * @since 0.0.1
      */
-    public void start(VkPhysicalDevice physicalDevice, ArrayList<Item> items) {
+    public void start(VkPhysicalDevice physicalDevice, ArrayList<Item> items, ArrayList<Text> texts) {
         VulkanSetup.physicalDevice = physicalDevice;
         VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
         for (Item item : items) item.createBuffers();
-        vulkanCommands = new VulkanCommands(items);
+        for (Text text : texts) text.createBuffers();
+        vulkanCommands = new VulkanCommands(items, texts);
         createSyncObjects();
         VulkanSetup.observer.computePerspective();
     }
@@ -402,6 +403,7 @@ public class VulkanManager {
         final long commandPool;
         List<VkCommandBuffer> commandBuffers;
         final ArrayList<Item> items;
+        final ArrayList<Text> texts;
 
         /**
          * 
@@ -411,8 +413,9 @@ public class VulkanManager {
          *
          * @since 0.0.1
          */
-        VulkanCommands(ArrayList<Item> items) {
+        VulkanCommands(ArrayList<Item> items, ArrayList<Text> texts) {
             this.items = items;
+            this.texts = texts;
             commandPool = VulkanSetup.createCommandPool();
             createCommandBuffers();
         }
@@ -447,6 +450,7 @@ public class VulkanManager {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 {
                     for (Item item : items) item.render(stack, commandBuffer, image);
+                    for (Text text : texts) text.render(stack, commandBuffer, image);
                 }
                 vkCmdEndRenderPass(commandBuffer);
                 result = vkEndCommandBuffer(commandBuffer);

@@ -1,81 +1,132 @@
 package es.optocom.jovp.rendering;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
-import es.optocom.jovp.definitions.FontType;
-import es.optocom.jovp.definitions.TextureType;
-import es.optocom.jovp.definitions.Vertex;
-
-import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
+
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.stb.STBImageWrite;
+import org.lwjgl.stb.STBTTBakedChar;
+import org.lwjgl.stb.STBTTFontinfo;
+import org.lwjgl.stb.STBTTPackedchar;
+import org.lwjgl.stb.STBTruetype;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.VkCommandBuffer;
+
+import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.FontType;
+import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Vertex;
+import es.optocom.jovp.definitions.ViewMode;
+
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
+import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
+import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
+import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
+import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 
 /**
  * Text manager for rendering text
  *
  * @since 0.0.1
  */
-public class Text extends Item {
+public class Text extends Renderable {
 
-    private static final float FONT_SIZE = 200.0f;
     private static final FontType DEFAULT_FONT_TYPE = FontType.MONSERRAT;
+    private static final int DEFAULT_FONT_SIZE = 12;
     private static final double[] DEFAULT_RGBA = new double[] { 1, 1, 1, 1 };
+    private static final int ATLAS_WIDTH = 1024;
+    private static final int ATLAS_HEIGHT = 512;
+    private static final int ATLAS_PIXEL_HEIGHT = 115;
+    private static final int CHAR_START = 32;
+    private static final int CHAR_AMT   = 96;
 
-    private final FontRenderContext fontRenderContext;
-    private final Font font;
-    final HashMap<Character, CharInfo> map;
-    String text;
-    double width;
-    double height = 1;
+    private Vector2f position = new Vector2f();
+    private int size = DEFAULT_FONT_SIZE;
+    private String text;
 
+    private int ascent; // TODO: necessary?
+    private int descent; // TODO: necessary?
+    private int lineGap; // TODO: necessary?
+ 
+    Matrix4f modelMatrix = new Matrix4f();
+    Matrix4f projection = new Matrix4f(); // orthographic projection
+ 
     /**
-     * Generate a white text item with default font type MONSERRAT
+     * Generate a text object with defaults
      *
      * @since 0.0.1
      */
     public Text() {
-        this(DEFAULT_FONT_TYPE, DEFAULT_RGBA);
+        this(DEFAULT_FONT_TYPE, DEFAULT_FONT_SIZE, DEFAULT_RGBA);
     }
 
     /**
-     * Generate a white text item
+     * Generate a text object with default font and size
      *
-     * @param fontType The font time
-     *
-     * @since 0.0.1
-     */
-    public Text(FontType fontType) {
-        this(fontType, DEFAULT_RGBA);
-    }
-
-    /**
-     * Generate a text item with default font type MONSERRAT
-     *
-     * @param rgba The R, G, B, and alpha color values from 0 to 1
+     * @param rgba color
      *
      * @since 0.0.1
      */
     public Text(double[] rgba) {
-        this(DEFAULT_FONT_TYPE, rgba);
+        this(DEFAULT_FONT_TYPE, DEFAULT_FONT_SIZE, rgba);
     }
 
     /**
-     * Generate a text item
+     * Generate a text object with default size and color
      *
-     * @param fontType FontType type
-     * @param rgba     The R, G, B, and alpha color values from 0 to 1
+     * @param fontType Font type
      *
      * @since 0.0.1
      */
-    public Text(FontType fontType, double[] rgba) {
-        super(new Model(), new Texture());
-        map = new HashMap<>();
-        fontRenderContext = new FontRenderContext(null, true, false);
+    public Text(FontType fontType) {
+        this(fontType, DEFAULT_FONT_SIZE, DEFAULT_RGBA);
+    }
+
+    /**
+     * Generate a text object with default color
+     *
+     * @param fontType Font type
+     * @param size Font size
+     *
+     * @since 0.0.1
+     */
+    public Text(FontType fontType, int size) {
+        this(fontType, size, DEFAULT_RGBA);
+    }
+
+    /**
+     * Generate a text object
+     *
+     * @param fontType Font type
+     * @param size Font size
+     * @param rgba The R, G, B, and alpha color values from 0 to 1
+     *
+     * @since 0.0.1
+     */
+    public Text(FontType fontType, int size, double[] rgba) {
+        super();
+        this.size = size;
         String file;
         switch (fontType) { // font types
             case MONSERRAT -> file = "es/optocom/jovp/fonts/montserrat/Montserrat-Regular.otf";
@@ -84,17 +135,45 @@ public class Text extends Item {
             case SANS_BOLD -> file = "es/optocom/jovp/fonts/openSans/OpenSans-Bold.ttf";
             default -> file = null;
         }
-        try (InputStream reader = Thread.currentThread().getContextClassLoader().getResourceAsStream(file)) {
-            if (reader == null)
-                throw new RuntimeException("Could not read font");
-            font = Font.createFont(Font.TRUETYPE_FONT, reader).deriveFont(FONT_SIZE);
-        } catch (Exception e) {
+        ByteBuffer ttf = BufferUtils.createByteBuffer(4 * ATLAS_WIDTH * ATLAS_HEIGHT);
+        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(CHAR_AMT);
+        try {
+            int result = STBTruetype.stbtt_BakeFontBitmap(loadResourceToByteBuffer(file), ATLAS_PIXEL_HEIGHT, ttf, ATLAS_WIDTH, ATLAS_HEIGHT, CHAR_START, cdata);
+            if (result < 1)
+                throw new RuntimeException("stbtt_BakeFontBitmap failed with return value: " + result);
+            MemoryUtil.memFree(ttf);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        createFontTexture(rgba);
-        processing = new Processing(TextureType.TEXT);
+        // Transfer bytes from ByteBuffer to BufferedImage
+        float[] pixels = new float[4 * ATLAS_HEIGHT * ATLAS_WIDTH];
+        int k = 0;
+        for (int y = 0; y < ATLAS_HEIGHT; y++) {
+            for (int x = 0; x < ATLAS_WIDTH; x++) {
+                float alpha = (float) (ttf.get() & 0xFF) / 255.0f; // to int then to float
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+            }
+        }
+        //char character = 'A'; // Character to get info for
+        //int charIndex = character - CHAR_START;
+        //STBTTBakedChar cchar = cdata.get(charIndex);
+        // Glyph information
+        //int x0 = cchar.x0();
+        //int y0 = cchar.y0();
+        //int x1 = cchar.x1();
+        //int y1 = cchar.y1();
+        //int width = x1 - x0;
+        //int height = y1 - y0;
+        //float xOffset = cchar.xoff();
+        //float yOffset = cchar.yoff();
+        //float xAdvance = cchar.xadvance();
+        model = new Model(ModelType.SQUARE);
+        texture = new Texture(rgba, pixels, ATLAS_WIDTH, ATLAS_HEIGHT);
     }
-
+ 
     /**
      * Set text to render
      *
@@ -102,97 +181,250 @@ public class Text extends Item {
      *
      * @since 0.0.1
      */
-    public void setText(String text) {
-        width = 0;
+    public void set(String text) {
         this.text = text;
-        final Vertex[] vertices = new Vertex[4 * text.length()];
-        final Integer[] indices = new Integer[6 * text.length()];
-        GlyphVector glyphVector = font.createGlyphVector(fontRenderContext, text);
-        double charWidth = glyphVector.getLogicalBounds().getWidth();
-        char[] chars = text.toCharArray();
-        for (int i = 0; i < glyphVector.getNumGlyphs(); i++) {
-            glyphVector.getGlyphCode(i);
-            Point2D pos = glyphVector.getGlyphPosition(i);
-            Rectangle2D bounds = glyphVector.getGlyphMetrics(i).getBounds2D();
-            CharInfo charInfo = map.get(chars[i]);
-            float xmin = (float) ((pos.getX() + bounds.getMinX()) / charWidth);
-            float xmax = (float) ((pos.getX() + bounds.getMaxX()) / charWidth);
-            float x0 = charInfo.x;
-            float x1 = x0 + charInfo.width;
-            vertices[4 * i] = new Vertex(new Vector3f(xmin, -1.0f, 0.0f), new Vector2f(x0, 1.0f));
-            vertices[4 * i + 1] = new Vertex(new Vector3f(xmax, -1.0f, 0.0f), new Vector2f(x1, 1.0f));
-            vertices[4 * i + 2] = new Vertex(new Vector3f(xmax, 1.0f, 0.0f), new Vector2f(x1, 0.0f));
-            vertices[4 * i + 3] = new Vertex(new Vector3f(xmin, 1.0f, 0.0f), new Vector2f(x0, 0.0f));
-            indices[6 * i] = 4 * i;
-            indices[6 * i + 1] = 4 * i + 1;
-            indices[6 * i + 2] = 4 * i + 2;
-            indices[6 * i + 3] = 4 * i + 2;
-            indices[6 * i + 4] = 4 * i + 3;
-            indices[6 * i + 5] = 4 * i;
-            this.width += map.get(chars[i]).width();
-        }
-        model.setVertices(vertices);
-        model.setIndices(indices);
-        size(FONT_SIZE * width / 2 * height, height);
-        update(model);
     }
 
     /**
-     * Compute size from heighht alone
      * 
-     * @param height in degrees of visual angle
+     * Get current text
+     *
+     * @param text the text
      *
      * @since 0.0.1
      */
-    public void size(double height) {
-        this.height = height;
-        size(FONT_SIZE * width / 2 * height, height);
+    public String get() {
+        return text;
     }
 
-    /** creates a font texture */
-    private void createFontTexture(double[] rgba) {
-        StringBuilder text = new StringBuilder();
-        // Consider only standard ASCII characters
-        for (int i = 32; i < 127; i++) if (font.canDisplay(i)) text.append((char) i);
-        GlyphVector glyphs = font.createGlyphVector(fontRenderContext, text.toString());
-        Rectangle bounds = glyphs.getLogicalBounds().getBounds();
-        int x = 0;
-        // Find the image regions to fill
-        boolean[] fill = new boolean[bounds.width * bounds.height];
-        for (int glyph = 0; glyph < glyphs.getNumGlyphs(); glyph++) {
-            double charWidth = glyphs.getGlyphMetrics(glyph).getAdvanceX();
-            int advance = (int) charWidth;
-            boolean[] glyphFill = getFillRegion(glyphs.getGlyphOutline(glyph), advance, bounds.height, bounds.y);
-            for (int i = 0; i < bounds.height; i++) for (int j = 0; j < advance; j++)
-                    fill[i * bounds.width + x + j] = glyphFill[i * advance + j];
-            // Add map to the catalog
-            map.put(text.charAt(glyph), new CharInfo(x / (float) bounds.width, (float) charWidth / bounds.width));
-            x += advance;
+    /**
+     * 
+     * Position of the text object
+     *
+     * @param x relative x-axis position between 0 and 1
+     * @param y relative y-axis position between 0 and 1
+     *
+     * @since 0.0.1
+     */
+    public void position(double x, double y) {
+        position((float) x, (float) y);
+    }
+
+    /**
+     * 
+     * Position of the text object
+     *
+     * @param x relative x-axis position between 0 and 1
+     * @param y relative y-axis position between 0 and 1
+     *
+     * @since 0.0.1
+     */
+    public void position(float x, float y) {
+        this.position.x = x;
+        this.position.y = y;
+    }
+
+    /**
+     * 
+     * Set text color
+     *
+     * @param rgba The RGBA channels to use
+     *
+     * @since 0.0.1
+     */
+    public void setColor(double[] rgba) {
+        texture.setColor(rgba);
+    }
+
+    /**
+     * Set font size
+     * 
+     * @param size font size
+     *
+     * @since 0.0.1
+     */
+    public void size(int size) {
+        this.size = size;
+    }
+
+    /**
+     * Get current font size
+     * 
+     * @return font size
+     *
+     * @since 0.0.1
+     */
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * Return the defined size for this font
+     * 
+     * @return font height
+     * 
+     * @since 0.0.1
+     */
+    public int getFontHeight() {
+        return size;
+    }
+  
+    /**
+     * Return the width of this bitmaps texture sheet
+     * 
+     * @return atlas width
+     * 
+     * @since 0.0.1
+     */
+    public int getBitmapWidth() {
+        return ATLAS_WIDTH;
+    }
+ 
+    /**
+     * Return the height of this bitmaps texture sheet
+     * 
+     * @return atlas height
+     * 
+     * @since 0.0.1
+     */
+    public int getBitmapHeight() {
+        return ATLAS_HEIGHT;
+    }
+ 
+    /**
+     * Return the ascent of this font
+     * 
+     * @return font ascent
+     * 
+     * @since 0.0.1
+     */
+    public int getAscent() {
+        return this.ascent;
+    }
+ 
+    /**
+     * Return the descent of this font
+     * 
+     * @return font descent
+     * 
+     * @since 0.0.1
+     */
+    public int getDescent() {
+        return this.descent;
+    }
+ 
+    /**
+     * Return the line-gap of this font
+     * 
+     * @return line gap
+     * 
+     * @since 0.0.1
+     */
+    public int getLineGap() {
+        return this.lineGap;
+    }
+
+    /**
+     * 
+     * Render item
+     *
+     * @param stack Memory stack
+     * @param commandBuffer Command buffer
+     * @param image in-flight frame to render
+     *
+     * @since 0.0.1
+     */
+    @Override
+    void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != Eye.NONE) { // monoscopic view
+            renderEye(stack, commandBuffer, image, 0);
+            return;
         }
-        // Colors for the texture
-        float[] pixels = new float[4 * bounds.width * bounds.height];
-        for (int i = 0; i < fill.length; i++) {
-            if (fill[i])
-                for (int pos = 0; pos < 4; pos++) pixels[4 * i + pos] = 1.0f;
-            else
-                for (int pos = 0; pos < 4; pos++) pixels[4 * i + pos] = 0.0f;
+        switch (eye) { // stereoscopic view
+            case LEFT -> renderEye(stack, commandBuffer, image, 0);
+            case RIGHT -> renderEye(stack, commandBuffer, image, 1);
+            case BOTH -> {
+                renderEye(stack, commandBuffer, image, 0);
+                renderEye(stack, commandBuffer, image, 1);
+            }
+            case NONE -> {}
         }
-        texture = new Texture(rgba, pixels, bounds.width, bounds.height);
     }
 
-    /** get fill region for a character for rendering */
-    private boolean[] getFillRegion(Shape glyphShape, int width, int height, int ascent) {
-        boolean[] fill = new boolean[width * height];
-        int xmin = glyphShape.getBounds().x;
-        int ymin = glyphShape.getBounds().y - ascent;
-        int ymax = ymin + glyphShape.getBounds().height;
-        for (int y = ymin; y < ymax; y++)
-            for (int x = 0; x < width; x++)
-                fill[y * width + x] = glyphShape.contains(x + xmin, y + ascent);
-        return fill;
+    /**
+     * 
+     * Render item for a specific eye
+     * 
+     * @param stack  stack
+     * @param commandBuffer Command buffer
+     * @param image in-flight frame to render
+     * @param passNumber pass number. For MONO vision, it ought to be 0. For
+     *                   STEREO, left is 0 and right is 1
+     *
+     * @since 0.0.1
+     */
+    @Override
+    void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
+        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.textPipeline);
+        updateUniforms(image, passNumber);
+        if (updateModel) recreateModel();
+        if (updateTexture) recreateTexture();
+        LongBuffer vertexBuffers = stack.longs(vertexBuffer);
+        LongBuffer offsets = stack.longs(0);
+        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                viewPass.textPipelineLayout, 0,
+                stack.longs(descriptorSets.get(image)), null);
+        vkCmdDrawIndexed(commandBuffer, model.length, 1,
+                0, 0, 0);
     }
 
-    /** map characters with position and width in Atlas */
-    record CharInfo(float x, float width) {}
+    /**
+     *
+     * Update uniforms for the image to be rendered
+     *
+     * @param imageIndex Image to be rendered
+     *
+     * @since 0.0.1
+     */
+    @Override
+    void updateUniforms(int imageIndex, int passNumber) {
+        //if (updateModelMatrix) {
+        //    Vector3d position = new Vector3d(direction.x, direction.y, direction.z).mul(distance);
+        //    Quaterniond quaternion = new Quaterniond()
+        //        .rotationTo(new Vector3d(0, 0, 1), direction)
+        //        .rotateZYX(rotation.z, rotation.y, rotation.x);
+        //    modelMatrix.translationRotateScale(position, quaternion, scale);
+        //    updateModelMatrix = false;
+        //}
+        modelMatrix.scaling(0.25f, 0.25f, 1.0f).translateLocal(-0.75f, 0.75f, 0.0f);
+        projection.setOrtho2D(-1, 1, 1, -1);
+        int n = 0;
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer data = stack.mallocPointer(1);
+            vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
+                    VulkanSetup.UNIFORM_SIZEOF, 0, data);
+            {
+                ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_TEXTSIZEOF);
+                modelMatrix.get(n * Float.BYTES, buffer); n += 16;
+                projection.get(n * Float.BYTES, buffer); n += 16;
+                texture.rgba0.get(n * Float.BYTES, buffer);
+            }
+            vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
+        }
+    }
+
+    /** read resource to bytebuffer */
+    private ByteBuffer loadResourceToByteBuffer(String file) throws IOException{
+        ByteBuffer buffer = null;
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(file)) {
+            if (is == null) throw new IOException("Resource not found: " + file);
+            byte[] byteArray = is.readAllBytes();
+            buffer = BufferUtils.createByteBuffer(byteArray.length).put(byteArray);
+        }
+        return buffer.flip();
+    }
 
 }

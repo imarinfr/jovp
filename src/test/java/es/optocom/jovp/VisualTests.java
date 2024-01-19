@@ -170,17 +170,15 @@ public class VisualTests {
             view.add(stimulus3);
             // Add title
             Text title = new Text();
-            title.setText("Fun with contrasts");
-            title.size(1.5);
-            title.position(-5, 8);
-            title.distance(5);
+            title.set("Fun with contrasts");
+            title.size(10);
+            title.position(0, 0);
             view.add(title);
             // Add text to show FPS
             text = new Text();
-            text.setText("Refresh rate:");
-            text.size(0.75);
-            text.position(-15, 7);
-            text.distance(5);
+            text.set("Refresh rate:");
+            text.size(10);
+            text.position(0, 0);
             view.add(text);
             // Start timers
             timer.start();
@@ -203,7 +201,7 @@ public class VisualTests {
                 fps++;
             else { // restart the timer every second
                 timerFps.start();
-                text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 fps = 0;
             }
         }
@@ -245,19 +243,17 @@ public class VisualTests {
             view.add(optotype);
             // Title
             Text title = new Text();
-            title.setText("Visual Acuity test");
-            title.size(1.5);
-            title.position(-5, 8);
-            title.distance(5);
+            title.set("Visual Acuity test");
+            title.size(10);
+            title.position(0, 0);
             view.add(title);
             // Info text
             info = new Text();
-            info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
+            info.set("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
                     "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
                     "Reversals: " + reversals);
-            info.size(1);
-            info.position(-15, 6.5);
-            info.distance(5);
+            info.size(10);
+            info.position(0, 0);
             view.add(info);
         }
 
@@ -275,7 +271,7 @@ public class VisualTests {
         public void update(PsychoEngine psychoEngine) {
             optotype.size(size);
             optotype.rotation(theta);
-            info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
+            info.set("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
                     "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
                     "Reversals: " + reversals);
             System.out.println("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
@@ -366,17 +362,15 @@ public class VisualTests {
             }
             // Add title
             Text title = new Text();
-            title.setText("Optotype test");
-            title.size(1.5);
-            title.position(-3, 8);
-            title.distance(5);
+            title.set("Optotype test");
+            title.size(10);
+            title.position(0, 0);
             view.add(title);
             // Add text to show FPS
             text = new Text(textColor1);
-            text.setText("Refresh rate:");
-            text.size(0.75);
-            text.position(-15, 7.5);
-            text.distance(5);
+            text.set("Refresh rate:");
+            text.size(10);
+            text.position(0, 0);
             view.add(text);
             timer.start();
         }
@@ -419,7 +413,7 @@ public class VisualTests {
                 }
                 inverted = !inverted;
                 timer.start();
-                text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 fps = 0;
             }
         }
@@ -566,7 +560,7 @@ public class VisualTests {
             if (timerFps.getElapsedTime() <= refreshTime) // restart the timer every second
                 fps++;
             else {
-                text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 timerFps.start();
                 fps = 0;
             }
@@ -657,14 +651,14 @@ public class VisualTests {
         private void addText() {
             double[] textColor = new double[] { 1, 0, 1, 1 };
             text = new Text(textColor);
-            text.setText("Optotypes and basic shapes moving");
-            text.size(0.75);
-            text.position(-5, 5);
+            text.set("Optotypes and basic shapes moving");
+            text.size(100);
+            text.position(0, 0);
             view.add(text);
             text = new Text();
-            text.setText("Refresh rate: ");
-            text.size(0.6);
-            text.position(-5, 4);
+            text.set("Refresh rate: ");
+            text.size(100);
+            text.position(0, 0);
             view.add(text);
         }
 
@@ -672,7 +666,6 @@ public class VisualTests {
 
         // Psychophysics logic to show stimuli blinking and changing shape
         static class LogicBlinkingAndChangingShape implements PsychoLogic {
-
             Timer timer = new Timer();
             Timer timerFps = new Timer();
             int refreshTime = 1000;
@@ -703,17 +696,15 @@ public class VisualTests {
                 view.add(background);
                 // Title
                 Text title = new Text();
-                title.setText("Blinking items");
-                title.size(1.5);
-                title.position(-5, 8);
-                title.distance(5);
+                title.set("Blinking items");
+                title.size(10);
+                title.position(0, 0);
                 view.add(title);
                 // Add text to show FPS
                 text = new Text();
-                text.setText("Refresh rate:");
-                text.size(1);
-                text.position(-15, 6.5);
-                text.distance(5);
+                text.set("Refresh rate:");
+                text.size(10);
+                text.position(0, 0);
                 view.add(text);
                 // Items
                 item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
@@ -763,7 +754,7 @@ public class VisualTests {
                     fps++;
                 else { // restart the timer every second
                     timerFps.start();
-                    text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                    text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                     fps = 0;
                 }
             }

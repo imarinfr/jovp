@@ -34,8 +34,8 @@ class Processing {
         settings.x = switch (type) {
             case FLAT -> 0;
             case CHECKERBOARD, SINE, SQUARESINE, G1, G2, G3 -> 1;
-            case TEXT -> 2;
-            case IMAGE -> 3;
+            case IMAGE -> 2;
+            case TEXT -> -1; // overlay text is processed differently
         };
     }
 

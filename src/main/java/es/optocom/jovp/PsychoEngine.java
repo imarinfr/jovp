@@ -179,7 +179,7 @@ public class PsychoEngine {
      */
     private void init(VkPhysicalDevice physicalDevice) {
         psychoLogic.init(this);
-        vulkanManager.start(physicalDevice, PsychoLogic.view.items);
+        vulkanManager.start(physicalDevice, PsychoLogic.view.items, PsychoLogic.view.texts);
         loop = true;
         window.show();
         psychoLoop();
