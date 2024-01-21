@@ -1,24 +1,19 @@
 package es.optocom.jovp.rendering;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.imageio.ImageIO;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.stb.STBImageWrite;
+import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTTPackedchar;
 import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -26,12 +21,10 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 
 import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.FontType;
-import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Vertex;
 import es.optocom.jovp.definitions.ViewMode;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memUTF8;
 import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
 import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
@@ -41,9 +34,6 @@ import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
 import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
-
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 
 /**
  * Text manager for rendering text
@@ -55,20 +45,24 @@ public class Text extends Renderable {
     private static final FontType DEFAULT_FONT_TYPE = FontType.MONSERRAT;
     private static final int DEFAULT_FONT_SIZE = 12;
     private static final double[] DEFAULT_RGBA = new double[] { 1, 1, 1, 1 };
-    private static final int ATLAS_WIDTH = 1024;
+    private static final int ATLAS_WIDTH = 512;
     private static final int ATLAS_HEIGHT = 512;
-    private static final int ATLAS_PIXEL_HEIGHT = 115;
+    private static final int ATLAS_PIXEL_HEIGHT = 80;
     private static final int CHAR_START = 32;
     private static final int CHAR_AMT   = 96;
 
+    public enum Alignment {LEFT, RIGHT, CENTER};
+
     private Vector2f position = new Vector2f();
     private int size = DEFAULT_FONT_SIZE;
-    private String text;
-
-    private int ascent; // TODO: necessary?
-    private int descent; // TODO: necessary?
-    private int lineGap; // TODO: necessary?
- 
+    private String text = null;
+    private Alignment alignment = Alignment.LEFT;
+    private int ascent;
+    private int descent;
+    private int lineGap;
+    private ByteBuffer ttf;
+    private STBTTFontinfo fontInfo = STBTTFontinfo.create();
+    private STBTTBakedChar.Buffer cdata = STBTTBakedChar.create(CHAR_AMT);
     Matrix4f modelMatrix = new Matrix4f();
     Matrix4f projection = new Matrix4f(); // orthographic projection
  
@@ -135,45 +129,35 @@ public class Text extends Renderable {
             case SANS_BOLD -> file = "es/optocom/jovp/fonts/openSans/OpenSans-Bold.ttf";
             default -> file = null;
         }
-        ByteBuffer ttf = BufferUtils.createByteBuffer(4 * ATLAS_WIDTH * ATLAS_HEIGHT);
-        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(CHAR_AMT);
+        ByteBuffer bitmap = BufferUtils.createByteBuffer(4 * ATLAS_WIDTH * ATLAS_HEIGHT);
         try {
-            int result = STBTruetype.stbtt_BakeFontBitmap(loadResourceToByteBuffer(file), ATLAS_PIXEL_HEIGHT, ttf, ATLAS_WIDTH, ATLAS_HEIGHT, CHAR_START, cdata);
+            ttf = loadResourceToByteBuffer(file);
+            getFontMetrics(ttf);
+            int result = STBTruetype.stbtt_BakeFontBitmap(ttf, ATLAS_PIXEL_HEIGHT, bitmap, ATLAS_WIDTH, ATLAS_HEIGHT, CHAR_START, cdata);
             if (result < 1)
                 throw new RuntimeException("stbtt_BakeFontBitmap failed with return value: " + result);
-            MemoryUtil.memFree(ttf);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        // Transfer bytes from ByteBuffer to BufferedImage
-        float[] pixels = new float[4 * ATLAS_HEIGHT * ATLAS_WIDTH];
-        int k = 0;
-        for (int y = 0; y < ATLAS_HEIGHT; y++) {
-            for (int x = 0; x < ATLAS_WIDTH; x++) {
-                float alpha = (float) (ttf.get() & 0xFF) / 255.0f; // to int then to float
-                pixels[k++] = alpha;
-                pixels[k++] = alpha;
-                pixels[k++] = alpha;
-                pixels[k++] = alpha;
-            }
-        }
-        //char character = 'A'; // Character to get info for
-        //int charIndex = character - CHAR_START;
-        //STBTTBakedChar cchar = cdata.get(charIndex);
-        // Glyph information
-        //int x0 = cchar.x0();
-        //int y0 = cchar.y0();
-        //int x1 = cchar.x1();
-        //int y1 = cchar.y1();
-        //int width = x1 - x0;
-        //int height = y1 - y0;
-        //float xOffset = cchar.xoff();
-        //float yOffset = cchar.yoff();
-        //float xAdvance = cchar.xadvance();
-        model = new Model(ModelType.SQUARE);
-        texture = new Texture(rgba, pixels, ATLAS_WIDTH, ATLAS_HEIGHT);
+        createAtlasTexture(bitmap, rgba);
+        model = new Model();
+        MemoryUtil.memFree(bitmap);
     }
- 
+
+    /**
+     * 
+     * Clean up after use
+     *
+     * @since 0.0.1
+     */
+    @Override
+    public void destroy() {
+        super.destroy();
+        fontInfo.free();
+        cdata.free();
+        MemoryUtil.memFree(ttf);
+    }
+
     /**
      * Set text to render
      *
@@ -183,11 +167,72 @@ public class Text extends Renderable {
      */
     public void set(String text) {
         this.text = text;
+        float[] xpos = new float[] {0.0f}; // Current x position
+        float[] ypos = new float[] {0.0f}; // Current y position
+        Vertex[] vertices = new Vertex[4 * text.length()];
+        Integer[] indices = new Integer[6 * text.length()];
+        System.out.println("getting scale");
+        float scale = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, 2);
+        System.out.println("after");
+        float width = 0.0f;
+        int lastCodepoint = -1;
+        IntBuffer advance = BufferUtils.createIntBuffer(1);
+        for (int i = 0; i < text.length(); i++) {
+            int codepoint = text.charAt(i) - CHAR_START;
+            STBTruetype.stbtt_GetCodepointHMetrics(fontInfo, codepoint, advance, null);
+            width += advance.get(0) * scale;
+            if (lastCodepoint != -1)
+                width += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint) * scale;
+            lastCodepoint = codepoint;
+        }
+        xpos[0] = switch (alignment) {
+            case LEFT -> -1.0f;
+            case CENTER -> -width * scale / 2.0f;
+            case RIGHT -> -width * scale;
+        };
+        STBTTAlignedQuad quad = STBTTAlignedQuad.malloc();
+        lastCodepoint = -1;
+        for (int i = 0; i < text.length(); i++) {
+            int codepoint = text.charAt(i) - CHAR_START;
+            // Apply kerning adjustment
+            if (i > 0)
+                xpos[0] += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint) * scale;
+            STBTruetype.stbtt_GetBakedQuad(cdata, ATLAS_WIDTH, ATLAS_HEIGHT, codepoint, xpos, ypos, quad, true);
+            float x0 = quad.x0() * scale;
+            float x1 = quad.x1() * scale;
+            float y0 = -quad.y0() * scale;
+            float y1 = -quad.y1() * scale;
+            vertices[4 * i] = new Vertex(new Vector3f(x0, y0, 0.0f), new Vector2f(quad.s0(), quad.t0())); // top left
+            vertices[4 * i + 1] = new Vertex(new Vector3f(x0, y1, 0.0f), new Vector2f(quad.s0(), quad.t1())); // bottom left
+            vertices[4 * i + 2] = new Vertex(new Vector3f(x1, y1, 0.0f), new Vector2f(quad.s1(), quad.t1())); // bottom right
+            vertices[4 * i + 3] = new Vertex(new Vector3f(x1, y0, 0.0f), new Vector2f(quad.s1(), quad.t0())); // top right
+            indices[6 * i] = 4 * i;
+            indices[6 * i + 1] = 4 * i + 1;
+            indices[6 * i + 2] = 4 * i + 2;
+            indices[6 * i + 3] = 4 * i + 2;
+            indices[6 * i + 4] = 4 * i + 3;
+            indices[6 * i + 5] = 4 * i;
+            lastCodepoint = codepoint;
+        }
+        quad.free();
+        model.setVertices(vertices);
+        model.setIndices(indices);
+        update(model);
     }
 
     /**
      * 
-     * Get current text
+     * Clear text
+     *
+     * @since 0.0.1
+     */
+    public void clear() {
+        set(null);
+    }
+
+    /**
+     * 
+     * Get text
      *
      * @param text the text
      *
@@ -195,6 +240,31 @@ public class Text extends Renderable {
      */
     public String get() {
         return text;
+    }
+
+    /**
+     * 
+     * Set alignment text
+     *
+     * @param alignment alignment
+     *
+     * @since 0.0.1
+     */
+    public void setAlignment(Alignment alignment) {
+        this.alignment = alignment;
+        set(text);
+    }
+
+    /**
+     * 
+     * Get alignment text
+     *
+     * @return alignment
+     *
+     * @since 0.0.1
+     */
+    public Alignment getAlignment() {
+        return alignment;
     }
 
     /**
@@ -399,7 +469,7 @@ public class Text extends Renderable {
         //    modelMatrix.translationRotateScale(position, quaternion, scale);
         //    updateModelMatrix = false;
         //}
-        modelMatrix.scaling(0.25f, 0.25f, 1.0f).translateLocal(-0.75f, 0.75f, 0.0f);
+        modelMatrix.scaling(1.0f, 1.0f, 1.0f).translateLocal(-1.0f, 0.0f, 0.0f);
         projection.setOrtho2D(-1, 1, 1, -1);
         int n = 0;
         try (MemoryStack stack = stackPush()) {
@@ -425,6 +495,36 @@ public class Text extends Renderable {
             buffer = BufferUtils.createByteBuffer(byteArray.length).put(byteArray);
         }
         return buffer.flip();
+    }
+
+    /** get font vertical metrics */
+    private void getFontMetrics(ByteBuffer ttf) {
+        // vertical metrics
+        if (!STBTruetype.stbtt_InitFont(fontInfo, ttf))
+            throw new IllegalStateException("Failed to initialize font information.");
+        IntBuffer pAscent = BufferUtils.createIntBuffer(1);
+        IntBuffer pDescent = BufferUtils.createIntBuffer(1);
+        IntBuffer pLineGap = BufferUtils.createIntBuffer(1);
+        STBTruetype.stbtt_GetFontVMetrics(fontInfo, pAscent, pDescent, pLineGap);
+        ascent = pAscent.get(0);
+        descent = pDescent.get(0);
+        lineGap = pLineGap.get(0);
+    }
+
+    /** create Atlas texture */
+    private void createAtlasTexture(ByteBuffer bitmap, double[] rgba) {
+        float[] pixels = new float[4 * ATLAS_HEIGHT * ATLAS_WIDTH];
+        int k = 0;
+        for (int y = 0; y < ATLAS_HEIGHT; y++) {
+            for (int x = 0; x < ATLAS_WIDTH; x++) {
+                float alpha = (float) (bitmap.get() & 0xFF) / 255.0f; // to int then to float
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+                pixels[k++] = alpha;
+            }
+        }
+        texture = new Texture(rgba, pixels, ATLAS_WIDTH, ATLAS_HEIGHT);
     }
 
 }

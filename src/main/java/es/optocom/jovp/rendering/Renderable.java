@@ -174,6 +174,7 @@ abstract class Renderable {
         model.destroy();
         texture.destroy();
     }
+
     /**
      * 
      * Recreate buffers

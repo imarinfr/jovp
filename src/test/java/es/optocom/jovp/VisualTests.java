@@ -664,101 +664,100 @@ public class VisualTests {
 
     }
 
-        // Psychophysics logic to show stimuli blinking and changing shape
-        static class LogicBlinkingAndChangingShape implements PsychoLogic {
-            Timer timer = new Timer();
-            Timer timerFps = new Timer();
-            int refreshTime = 1000;
-            int fps = 0;
-            Timer blinkTimer = new Timer();
-            int blinkItemTime = 500;
-            Timer modelTimer = new Timer();
-            int updateModelTime = 2000;
-            Timer textureTimer = new Timer();
-            int updateTextureTime = 5000;
-            Text text;
-            Item background, item1, item2;
-            ModelType[] models = { ModelType.CIRCLE, ModelType.SQUARE, ModelType.TRIANGLE, ModelType.ANNULUS,
-                    ModelType.OPTOTYPE };
-            TextureType[] textures = { TextureType.CHECKERBOARD, TextureType.SINE, TextureType.G1, TextureType.G2,
-                    TextureType.G3 };
-            double[] backgroundColor = new double[] { 0.5, 0.5, 0.5, 1 };
-            double[] color0 = new double[] { 1, 1, 1, 1 };
-            double[] color1 = new double[] { 0, 0, 0.5, 1 };
-    
-            public void init(PsychoEngine psychoEngine) {
-                // Background
-                background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
-                background.position(0, 0);
-                background.distance(100);
-                float[] fov = psychoEngine.getFieldOfView();
-                background.size(fov[0], fov[1]);
-                view.add(background);
-                // Title
-                Text title = new Text();
-                title.set("Blinking items");
-                title.size(10);
-                title.position(0, 0);
-                view.add(title);
-                // Add text to show FPS
-                text = new Text();
-                text.set("Refresh rate:");
-                text.size(10);
-                text.position(0, 0);
-                view.add(text);
-                // Items
-                item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
-                item1.size(10, 10);
-                item1.distance(90);
-                item1.position(0, 0);
-                view.add(item1);
-                item2 = new Item(new Model(ModelType.MALTESE), new Texture(new double[] { 0, 1, 0, 1 }));
-                item2.distance(80);
-                item2.position(0, 0);
-                item2.size(2, 2);
-                view.add(item2);
-                timer.start();
-                blinkTimer.start();
-                modelTimer.start();
-                textureTimer.start();
-                timerFps.start();
-            }
-    
-            public void input(PsychoEngine psychoEngine, Command command) {
-                if (command != Command.NONE)
-                    System.out.println(command);
-            }
-    
-            public void update(PsychoEngine psychoEngine) {
-                float[] fov = psychoEngine.getFieldOfView();
-                background.size(fov[0], fov[1]);
-                item1.rotation(timer.getElapsedTime() / 20);
-                double cpd = 0.5 * (Math.cos(timer.getElapsedTime() / 1500) + 1) / 2;
-                item1.frequency(0, cpd);
-                if (modelTimer.getElapsedTime() > updateModelTime) {
-                    item1.update(new Model(models[ThreadLocalRandom.current().nextInt(0, 5)]));
-                    modelTimer.start();
-                }
-                if (textureTimer.getElapsedTime() > updateTextureTime) {
-                    item1.update(new Texture(textures[ThreadLocalRandom.current().nextInt(0, 5)], color0, color1));
-                    textureTimer.start();
-                }
-                if (blinkTimer.getElapsedTime() > blinkItemTime) {
-                    if (item2.getEye() == Eye.BOTH)
-                        item2.show(Eye.NONE);
-                    else
-                        item2.show(Eye.BOTH);
-                    blinkTimer.start();
-                }
-                if (timerFps.getElapsedTime() <= refreshTime)
-                    fps++;
-                else { // restart the timer every second
-                    timerFps.start();
-                    text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
-                    fps = 0;
-                }
-            }
-    
+    // Psychophysics logic to show stimuli blinking and changing shape
+    static class LogicBlinkingAndChangingShape implements PsychoLogic {
+        Timer timer = new Timer();
+        Timer timerFps = new Timer();
+        int refreshTime = 1000;
+        int fps = 0;
+        Timer blinkTimer = new Timer();
+        int blinkItemTime = 500;
+        Timer modelTimer = new Timer();
+        int updateModelTime = 2000;
+        Timer textureTimer = new Timer();
+        int updateTextureTime = 5000;
+        Text text;
+        Item background, item1, item2;
+        ModelType[] models = { ModelType.CIRCLE, ModelType.SQUARE, ModelType.TRIANGLE, ModelType.ANNULUS,
+                ModelType.OPTOTYPE };
+        TextureType[] textures = { TextureType.CHECKERBOARD, TextureType.SINE, TextureType.G1, TextureType.G2,
+                TextureType.G3 };
+        double[] backgroundColor = new double[] { 0.5, 0.5, 0.5, 1 };
+        double[] color0 = new double[] { 1, 1, 1, 1 };
+        double[] color1 = new double[] { 0, 0, 0.5, 1 };
+
+        public void init(PsychoEngine psychoEngine) {
+            // Background
+            background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
+            background.position(0, 0);
+            background.distance(100);
+            float[] fov = psychoEngine.getFieldOfView();
+            background.size(fov[0], fov[1]);
+            view.add(background);
+            // Title
+            Text title = new Text();
+            title.set("Blinking items");
+            title.size(10);
+            title.position(0, 0);
+            view.add(title);
+            // Add text to show FPS
+            text = new Text();
+            text.set("Refresh rate:");
+            text.size(10);
+            text.position(0, 0);
+            view.add(text);
+            // Items
+            item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
+            item1.size(10, 10);
+            item1.distance(90);
+            item1.position(0, 0);
+            view.add(item1);
+            item2 = new Item(new Model(ModelType.MALTESE), new Texture(new double[] { 0, 1, 0, 1 }));
+            item2.distance(80);
+            item2.position(0, 0);
+            item2.size(2, 2);
+            view.add(item2);
+            timer.start();
+            blinkTimer.start();
+            modelTimer.start();
+            textureTimer.start();
+            timerFps.start();
         }
+
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE)
+                System.out.println(command);
+        }
+
+        public void update(PsychoEngine psychoEngine) {
+            float[] fov = psychoEngine.getFieldOfView();
+            background.size(fov[0], fov[1]);
+            item1.rotation(timer.getElapsedTime() / 20);
+            double cpd = 0.5 * (Math.cos(timer.getElapsedTime() / 1500) + 1) / 2;
+            item1.frequency(0, cpd);
+            if (modelTimer.getElapsedTime() > updateModelTime) {
+                item1.update(new Model(models[ThreadLocalRandom.current().nextInt(0, 5)]));
+                modelTimer.start();
+            }
+            if (textureTimer.getElapsedTime() > updateTextureTime) {
+                item1.update(new Texture(textures[ThreadLocalRandom.current().nextInt(0, 5)], color0, color1));
+                textureTimer.start();
+            }
+            if (blinkTimer.getElapsedTime() > blinkItemTime) {
+                if (item2.getEye() == Eye.BOTH)
+                    item2.show(Eye.NONE);
+                else
+                    item2.show(Eye.BOTH);
+                blinkTimer.start();
+            }
+            if (timerFps.getElapsedTime() <= refreshTime)
+                fps++;
+            else { // restart the timer every second
+                timerFps.start();
+                text.set("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
+                fps = 0;
+            }
+        }
+    }
 
 }

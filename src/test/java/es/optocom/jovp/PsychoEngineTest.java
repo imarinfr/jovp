@@ -15,6 +15,7 @@ import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
+import es.optocom.jovp.rendering.Text.Alignment;
 
 import java.util.ArrayList;
 
@@ -152,8 +153,9 @@ public class PsychoEngineTest {
     static class LogicTriangle implements PsychoLogic {
 
         public void init(PsychoEngine psychoEngine) {
-            Text text = new Text(new double[] {0, 1, 0, 1});
-            //text.set("Herro, prease");
+            Text text = new Text();
+            text.set("Herro, prease!");
+            text.setAlignment(Alignment.CENTER);
             view.add(text);
             //text.size(1);
             //text.position(0, 0);
