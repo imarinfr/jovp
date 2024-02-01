@@ -165,7 +165,7 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public void set(String text) {
+    public void setText(String text) {
         this.text = text;
         float[] xpos = new float[] {0.0f}; // Current x position
         float[] ypos = new float[] {0.0f}; // Current y position
@@ -227,7 +227,7 @@ public class Text extends Renderable {
      * @since 0.0.1
      */
     public void clear() {
-        set(null);
+        setText(null);
     }
 
     /**
@@ -238,7 +238,7 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public String get() {
+    public String getText() {
         return text;
     }
 
@@ -252,7 +252,7 @@ public class Text extends Renderable {
      */
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
-        set(text);
+        setText(text);
     }
 
     /**
@@ -276,8 +276,8 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public void position(double x, double y) {
-        position((float) x, (float) y);
+    public void setPosition(double x, double y) {
+        setPosition((float) x, (float) y);
     }
 
     /**
@@ -289,7 +289,7 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public void position(float x, float y) {
+    public void setPosition(float x, float y) {
         this.position.x = x;
         this.position.y = y;
     }
@@ -313,7 +313,7 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public void size(int size) {
+    public void setSize(int size) {
         this.size = size;
     }
 
