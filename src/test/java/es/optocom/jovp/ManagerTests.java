@@ -250,15 +250,12 @@ public class ManagerTests {
     // Psychophysics logic that does nothing
     static class Logic implements PsychoLogic {
 
-        @Override
         public void init(PsychoEngine psychoEngine) {
         }
 
-        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
         }
 
-        @Override
         public void update(PsychoEngine psychoEngine) {
         }
 

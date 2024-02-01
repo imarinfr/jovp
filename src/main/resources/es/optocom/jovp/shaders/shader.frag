@@ -50,8 +50,8 @@ vec4 blur(vec2 uv, vec4 color, vec3 defocus) {
 
 void main() {
     color = texture(texSampler, uv);
-    // for images or text do nothing
-    if (settings.x == 0) color = rgba0; // flat, image, or text color
+    // for images do nothing
+    if (settings.x == 0) color = rgba0; // flat
     if (settings.x == 1) color = rgba0 + color * (rgba1 - rgba0); // contrast
     // Post-processing: envelope
     if (settings.y == 1) color = squareEnvelope(uv, color, envelope);

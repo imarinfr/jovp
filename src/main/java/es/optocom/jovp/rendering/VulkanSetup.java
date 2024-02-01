@@ -40,8 +40,8 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
-import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK11.VK_ERROR_OUT_OF_POOL_MEMORY;
+import static org.lwjgl.vulkan.VK13.*;
+import static org.lwjgl.vulkan.VK13.VK_ERROR_OUT_OF_POOL_MEMORY;
 import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
 
 import java.nio.IntBuffer;
@@ -50,7 +50,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -113,6 +112,8 @@ class VulkanSetup {
     static final int MODEL_SIZEOF = (3 + 2) * Float.BYTES;
     // Uniform size: remember that the GPU reads in blocks of 4 bits, even if the variable sent is smaller than that.
     static final int UNIFORM_SIZEOF = 88 * Float.BYTES;
+    // Uniform size for overlay text
+    static final int UNIFORM_TEXTSIZEOF = 36 * Float.BYTES;
     // VulkanManager
     static final int MAX_FRAMES_IN_FLIGHT = 2;
     // LogicalDevice

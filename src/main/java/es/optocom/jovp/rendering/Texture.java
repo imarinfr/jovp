@@ -13,8 +13,8 @@ import java.nio.IntBuffer;
 import java.nio.file.Paths;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
-import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.stb.STBImage.*;
 
 /**
  * Texture class and methods
@@ -244,9 +244,9 @@ public class Texture {
      * @since 0.0.1
      */
     public void setColors(double[] rgba0, double[] rgba1) {
-        this.rgba0 = (type == TextureType.TEXT || type == TextureType.IMAGE) ? TRANSPARENT
+        this.rgba0 = type == TextureType.IMAGE ? TRANSPARENT
                 : new Vector4f((float) rgba0[0], (float) rgba0[1], (float) rgba0[2], (float) rgba0[3]);
-        this.rgba1 = (type == TextureType.IMAGE) ? TRANSPARENT
+        this.rgba1 = type == TextureType.IMAGE ? TRANSPARENT
                 : new Vector4f((float) rgba1[0], (float) rgba1[1], (float) rgba1[2], (float) rgba1[3]);
     }
 

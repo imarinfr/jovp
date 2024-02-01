@@ -17,10 +17,9 @@ import org.joml.Vector3f;
  */
 public class Observer {
 
-    public static final float ZNEAR = 0.1f; // Near and far planes in in meters
+    public static final float ZNEAR = 0.01f; // Near and far planes in in meters
     public static final float ZFAR = 1000.0f;
     private static final float IPD = 62.4f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
-    private static final Matrix4f VULKAN_AXIS = new Matrix4f(-1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
@@ -30,8 +29,6 @@ public class Observer {
 
     private float distance; // viewing distance in mm
     private float ipd; // intra pupil distance in mm
-    private float fovx; // in radians;
-    private float fovy; // in radians;
 
     /**
      * 
@@ -90,7 +87,10 @@ public class Observer {
      * @since 0.0.1
      */
     public float[] getFieldOfView() {
-        return new float[] { (float) Math.toDegrees(fovx), (float) Math.toDegrees(fovy) };
+        return new float[] {
+            (float) Math.toDegrees(2.0 * Math.atan(1.0 / projection.get(0, 0))),
+            (float) Math.toDegrees(2.0 * Math.atan(1.0 / projection.get(1, 1)))
+        };
     }
 
     /**
@@ -141,7 +141,7 @@ public class Observer {
      */
     public void setDistance(float distance) {
         this.distance = distance;
-        resetSpaceMatrices();
+        computePerspective();
     }
 
     /**
@@ -216,35 +216,67 @@ public class Observer {
      * 
      * @since 0.0.1
      */
-    public void setView() {
-        setView(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
+    public void lookAt() {
+        lookAt(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
     }
 
     /**
      * 
-     * Set view
+     * Set look at
      * 
-     * @param eye    The position of the eye in the virtual world
-     * @param center what we are looking at, I reckon, and up
-     * @param up     the up vector
+     * @param eye The position of the eye in the virtual world
+     * @param center The center
+     * @param up The up vector
      *
      * @since 0.0.1
      */
-    public void setView(Vector3f eye, Vector3f center, Vector3f up) {
-        Matrix4f view = new Matrix4f().setLookAt(eye, center, up);
+    public void lookAt(Vector3f eye, Vector3f center, Vector3f up) {
+        up.y = -up.y;
         switch (viewMode) {
             case MONO -> {
-                views.get(0).set(VULKAN_AXIS).mul(view);
+                views.get(0).set(new Matrix4f().setLookAt(eye, center, up));
             }
             case STEREO -> {
-                Matrix4f leftView = new Matrix4f(view);
-                Matrix4f rightView = new Matrix4f(view);
-                leftView.translate(-ipd / 2.0f, 0, 0); // left-eye offset
-                rightView.translate(ipd / 2.0f, 0, 0); // right-eye offset
-                views.get(0).set(VULKAN_AXIS).mul(leftView);
-                views.get(1).set(VULKAN_AXIS).mul(rightView);
+                Vector3f leftEye = eye;
+                Vector3f rightEye = eye;
+                leftEye.x = leftEye.x - ipd / 2.0f;
+                rightEye.x = rightEye.x + ipd / 2.0f;
+                views.get(0).set(new Matrix4f().setLookAt(leftEye, center, up));
+                views.get(1).set(new Matrix4f().setLookAt(rightEye, center, up));
             }
         }
+        up.y = -up.y;
+    }
+
+    /**
+     * 
+     * Translate observer
+     * 
+     * @param offset The translation in x and y axes in degrees and z in meters
+     *
+     * @since 0.0.1
+     */
+    public void translate(Vector3f offset) {
+        translateViewMatrix(views.get(0), offset);
+        if (viewMode == ViewMode.STEREO) translateViewMatrix(views.get(1), offset);;
+    }
+
+    /**
+     * 
+     * Rotate observer
+     * 
+     * @param rotation The rotation in x, y, and z axes
+     *
+     * @since 0.0.1
+     */
+    public void rotate(Vector3f rotation) {
+        float rx = -(float) Math.toRadians(rotation.x);
+        float ry = -(float) Math.toRadians(rotation.y);
+        float rz = (float) Math.toRadians(rotation.z);
+        //rotateTowardsXY(float dirX, float dirY)
+        //rotateTowards(Vector3fc dir, Vector3fc up)
+        views.get(0).rotateXYZ(rx, ry, rz);
+        if (viewMode == ViewMode.STEREO) views.get(1).rotateXYZ(rx, ry, rz);
     }
 
     /**
@@ -253,13 +285,12 @@ public class Observer {
      *
      * @since 0.0.1
      */
-    public void computeFieldOfView() {
+    public void computePerspective() {
         float width = window.getPixelWidth() * window.getWidth();
         float height = window.getPixelHeight() * window.getHeight();
         if (viewMode == ViewMode.STEREO) width = width / 2.0f; // only half of the screen is used per eye
-        fovx = (float) (2 * Math.atan(width / distance / 2));
-        fovy = (float) (2 * Math.atan(height / distance / 2));
-        projection.setPerspective(fovy, width / height, ZNEAR, ZFAR, true);
+        projection.setPerspective((float) (2 * Math.atan(height / distance / 2)),
+                                  width / height, ZNEAR, ZFAR);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
@@ -275,9 +306,29 @@ public class Observer {
                 views.add(new Matrix4f());
             }
         }
-        setView();
+        lookAt();
         setPupilDistance(ipd);
-        computeFieldOfView();
+        computePerspective();
+    }
+
+    /**
+     * 
+     * Translate viewMatrix
+     * 
+     * @param offset The translation in x and y axes in degrees and z in meters
+     *
+     * @since 0.0.1
+     */
+    private void translateViewMatrix(Matrix4f viewMatrix, Vector3f offset) {
+        Vector3f eye = new Vector3f(viewMatrix.m30(), viewMatrix.m31(), viewMatrix.m32());
+        Vector3f forwardVector = new Vector3f(-viewMatrix.m02(), -viewMatrix.m12(), -viewMatrix.m22()).normalize();
+        Vector3f rightVector = new Vector3f(viewMatrix.m00(), viewMatrix.m10(), viewMatrix.m20());
+        Vector3f upVector = new Vector3f(viewMatrix.m01(), viewMatrix.m11(), viewMatrix.m21());
+        Vector3f forward = new Vector3f(forwardVector).mul(offset.z);
+        Vector3f right = new Vector3f(rightVector).mul(-offset.x);
+        Vector3f up = new Vector3f(upVector).mul(-offset.y);
+        Vector3f newEyePosition = new Vector3f(eye).add(forward).add(right).add(up);
+        viewMatrix.setTranslation(newEyePosition);
     }
 
 }

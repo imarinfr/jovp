@@ -18,7 +18,38 @@ import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
-import static org.lwjgl.vulkan.VK13.*;
+import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+import static org.lwjgl.vulkan.VK10.VK_FENCE_CREATE_SIGNALED_BIT;
+import static org.lwjgl.vulkan.VK10.VK_MAKE_VERSION;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SUBMIT_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SUBPASS_CONTENTS_INLINE;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.vkAllocateCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkBeginCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBeginRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCmdEndRenderPass;
+import static org.lwjgl.vulkan.VK10.vkCreateFence;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkCreateSemaphore;
+import static org.lwjgl.vulkan.VK10.vkDestroyFence;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroySemaphore;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
+import static org.lwjgl.vulkan.VK10.vkEndCommandBuffer;
+import static org.lwjgl.vulkan.VK10.vkEnumeratePhysicalDevices;
+import static org.lwjgl.vulkan.VK10.vkFreeCommandBuffers;
+import static org.lwjgl.vulkan.VK10.vkQueueSubmit;
+import static org.lwjgl.vulkan.VK10.vkResetFences;
+import static org.lwjgl.vulkan.VK10.vkWaitForFences;
 
 /**
  * 
@@ -64,14 +95,15 @@ public class VulkanManager {
      *
      * @since 0.0.1
      */
-    public void start(VkPhysicalDevice physicalDevice, ArrayList<Item> items) {
+    public void start(VkPhysicalDevice physicalDevice, ArrayList<Item> items, ArrayList<Text> texts) {
         VulkanSetup.physicalDevice = physicalDevice;
         VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
         for (Item item : items) item.createBuffers();
-        vulkanCommands = new VulkanCommands(items);
+        for (Text text : texts) text.createBuffers();
+        vulkanCommands = new VulkanCommands(items, texts);
         createSyncObjects();
-        VulkanSetup.observer.computeFieldOfView();
+        VulkanSetup.observer.computePerspective();
     }
 
     /**
@@ -331,7 +363,7 @@ public class VulkanManager {
         vkDeviceWaitIdle(VulkanSetup.logicalDevice.device);
         VulkanSetup.swapChain.destroy();
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
-        VulkanSetup.observer.computeFieldOfView();
+        VulkanSetup.observer.computePerspective();
     }
 
     /** create synchronization objects */
@@ -371,6 +403,7 @@ public class VulkanManager {
         final long commandPool;
         List<VkCommandBuffer> commandBuffers;
         final ArrayList<Item> items;
+        final ArrayList<Text> texts;
 
         /**
          * 
@@ -380,8 +413,9 @@ public class VulkanManager {
          *
          * @since 0.0.1
          */
-        VulkanCommands(ArrayList<Item> items) {
+        VulkanCommands(ArrayList<Item> items, ArrayList<Text> texts) {
             this.items = items;
+            this.texts = texts;
             commandPool = VulkanSetup.createCommandPool();
             createCommandBuffers();
         }
@@ -415,9 +449,8 @@ public class VulkanManager {
                 renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(image));
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 {
-                    // render items
-                    for (Item item : items)
-                        item.render(stack, commandBuffer, image);
+                    for (Item item : items) item.render(stack, commandBuffer, image);
+                    for (Text text : texts) text.render(stack, commandBuffer, image);
                 }
                 vkCmdEndRenderPass(commandBuffer);
                 result = vkEndCommandBuffer(commandBuffer);
