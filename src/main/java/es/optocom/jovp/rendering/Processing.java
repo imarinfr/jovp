@@ -15,7 +15,7 @@ import es.optocom.jovp.definitions.TextureType;
  */
 class Processing {
 
-    Vector3i settings = new Vector3i();
+    Vector3i settings = new Vector3i(); // x = texture type, y = envelope type, z = defocus
     Vector4f frequency = new Vector4f();
     Vector4f contrast = new Vector4f();
     Vector3f rotation = new Vector3f();

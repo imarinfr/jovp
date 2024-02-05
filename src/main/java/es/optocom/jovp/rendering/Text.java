@@ -171,9 +171,7 @@ public class Text extends Renderable {
         float[] ypos = new float[] {0.0f}; // Current y position
         Vertex[] vertices = new Vertex[4 * text.length()];
         Integer[] indices = new Integer[6 * text.length()];
-        System.out.println("getting scale");
         float scale = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, 2);
-        System.out.println("after");
         float width = 0.0f;
         int lastCodepoint = -1;
         IntBuffer advance = BufferUtils.createIntBuffer(1);

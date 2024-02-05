@@ -10,7 +10,7 @@ import java.util.Iterator;
  * 
  * View for the PsychoEngine. It contains an Observer, a list of Items presented to
  * both eyes (in MONO and STEREO modes) or only the left or right eye (STEREO
- * MODE), the distorsion of the Optics of the system displaying the Items, and the
+ * MODE), the distortion of the Optics of the system displaying the Items, and the
  * point of view, which should be centered at (0,0,0) and looking at the z axis (0,0,1)
  * for running visual experiments, but it can be modified for illustration purposes
  * by showing around the virtual world.

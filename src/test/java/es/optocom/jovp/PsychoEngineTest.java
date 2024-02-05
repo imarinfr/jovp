@@ -158,6 +158,7 @@ public class PsychoEngineTest {
         public void init(PsychoEngine psychoEngine) {
                         Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(new double[] { 1, 1, 1, 1 }));            
             view.add(item);
+            item.setColor(new double [] {0.5, 0.5, 0.5, 0.5});
             item.distance(100);
             item.position(0, 0);
             item.size(5, 5);

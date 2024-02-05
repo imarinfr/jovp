@@ -223,6 +223,17 @@ public class Texture {
     }
 
     /**
+     * Get texture colors
+     *
+     * @return Two colors of the texture
+     *
+     * @since 0.0.1
+     */
+    public Vector4f[] getColors() {
+        return new Vector4f[] { rgba0, rgba1 };
+    }
+
+    /**
      * Set base texture color
      *
      * @param rgba The RGBA values

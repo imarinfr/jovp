@@ -1,5 +1,8 @@
 package es.optocom.jovp;
 
+import es.optocom.jovp.VisualTests.LogicBlinkingAndChangingShape;
+import es.optocom.jovp.VisualTests.LogicOptotypes;
+import es.optocom.jovp.VisualTests.StressLogic;
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.ModelType;
@@ -42,6 +45,19 @@ public class VisualTests {
     @Test
     public void changingContrast() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicContrast());
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+    /**
+     *
+     * Patterns and their spatial properties
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void textureUpdate() {
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicTextureUpdate());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -98,6 +114,73 @@ public class VisualTests {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicBlinkingAndChangingShape());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
+    }
+
+    // Psychophysics logic class
+    static class LogicTextureUpdate implements PsychoLogic {
+        Item stimuli[] = new Item[2];
+        Text title;
+
+        int frames;
+        int texture_type;
+        String prefix;
+
+        public void init(PsychoEngine psychoEngine) {
+            stimuli[0] = new Item(new Model(ModelType.CIRCLE), new Texture());
+            stimuli[1] = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
+
+            prefix = "Circle-FLAT & Circle-SINE";
+
+            stimuli[0].position(-4, -4);
+            stimuli[0].distance(90);
+            stimuli[0].size(6, 6);
+            stimuli[0].frequency(0, 0.5);
+            stimuli[0].rotation(45);
+            view.add(stimuli[0]);
+
+            stimuli[1].position(+4, -4);
+            stimuli[1].distance(90);
+            stimuli[1].size(6, 6);
+            stimuli[1].frequency(0, 0.5);
+            stimuli[1].rotation(45);
+            view.add(stimuli[1]);
+
+            // Add title
+            title = new Text();
+            title.setText(prefix);
+            title.setSize(10);
+            title.setPosition(0, 0);
+            view.add(title);
+
+            frames = 0;
+            texture_type = 0;
+        }
+
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE) System.out.println(command);
+        }
+
+        public void update(PsychoEngine psychoEngine) {
+            frames++;
+            if (frames % 100 == 0) {
+                if (texture_type == 0) {
+                    for (int i = 0 ; i < 2 ; i++)
+                        stimuli[i].update(new Texture(TextureType.FLAT, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
+                    title.setText(prefix + "FLAT white-blue");
+                    texture_type = 1;
+                } else if (texture_type == 1) {
+                    for (int i = 0 ; i < 2 ; i++)
+                        stimuli[i].update(new Texture("ecceIvanito.jpeg"));
+                    title.setText(prefix + "IMAGE wtf!?");
+                    texture_type = 2;
+                } else if (texture_type == 2) {
+                    for (int i = 0 ; i < 2 ; i++)
+                        stimuli[i].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
+                    title.setText(prefix + "SINE red-green");
+                    texture_type = 0;
+                } 
+            }
+        }
     }
 
     // Psychophysics logic class

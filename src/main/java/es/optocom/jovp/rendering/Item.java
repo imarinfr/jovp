@@ -62,6 +62,18 @@ public class Item extends Renderable {
     }
 
     /**
+     * Update the texture of the item
+     * 
+     * @param texture The new texture
+     */
+    public void update(Texture texture) {
+        super.update(texture);
+            // Might not need this if texture is the same class
+            // as the original texture in the constructor...
+        processing = new Processing(texture.getType());
+    }
+
+    /**
      * 
      * Get size in meters
      *
