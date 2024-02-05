@@ -69,7 +69,7 @@ public class Item extends Renderable {
     public void update(Texture texture) {
         super.update(texture);
             // Might not need this if texture is the same class
-            // as the original texture in the constructor...
+            // as the original texture in the constructor, but just being safe.
         processing = new Processing(texture.getType());
     }
 
