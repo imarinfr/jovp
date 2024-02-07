@@ -15,6 +15,7 @@
     <jssc.version>2.9.4</jssc.version>
     <commons.version>2.13.0</commons.version>
     <junit.version>5.10.0</junit.version>
+    <gson.version>2.9.0</gson.version>
   </properties>
 
 
@@ -260,6 +261,11 @@
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>${gson.version}</version>
     </dependency>
   </dependencies>
 

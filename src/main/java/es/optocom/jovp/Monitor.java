@@ -346,5 +346,4 @@ public class Monitor {
         pixelHeight = (float) heightMM / (float) height;
         pixelAspect = pixelWidth / pixelHeight;
     }
-
 }

@@ -4,6 +4,7 @@ import es.optocom.jovp.VisualTests.LogicBlinkingAndChangingShape;
 import es.optocom.jovp.VisualTests.LogicOptotypes;
 import es.optocom.jovp.VisualTests.StressLogic;
 import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
@@ -115,6 +116,19 @@ public class VisualTests {
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
+    /**
+     *
+     * Test gaussian envelope.
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void envelopeTest() {
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelope());
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
 
     // Psychophysics logic class
     static class LogicTextureUpdate implements PsychoLogic {
@@ -840,6 +854,38 @@ public class VisualTests {
                 text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 fps = 0;
             }
+        }
+    }
+
+        // test gaussian envelopes
+    static class LogicEnvelope implements PsychoLogic {
+        public void init(PsychoEngine psychoEngine) {
+            System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
+            int x;
+            int y = 5;
+            for (double contrast = 0.1 ;  contrast <= 0.5 ; contrast += 0.05) {
+                x = -5;
+                for (double sd = 0.01 ;  sd <= 0.2 ; sd += 0.05) {
+                    Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
+                    stimuli.position(x, y);
+                    stimuli.distance(5);
+                    stimuli.size(1.7, 1.7);
+                    stimuli.frequency(0, 1000);
+                    stimuli.contrast(contrast);
+                    //stimuli.envelope(EnvelopeType.GAUSSIAN, sd);
+                    view.add(stimuli);
+
+                    x += 2;
+                }
+                y -= 2;
+            }
+        }
+
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE) System.out.println(command);
+        }
+
+        public void update(PsychoEngine psychoEngine) {
         }
     }
 
