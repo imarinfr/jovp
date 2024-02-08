@@ -159,6 +159,8 @@ public class Controller implements SerialPortEventListener {
      */
     public void open() throws SerialPortException {
         usb.openPort();
+            // TODO this works specifically for IMOVifa clicker. Is it generic??
+        boolean result = usb.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         purge();
         usb.addEventListener(this);
     }
@@ -195,6 +197,9 @@ public class Controller implements SerialPortEventListener {
      * @since 0.0.1
      */
     public void serialEvent(SerialPortEvent event) {
+//System.out.println(event);
+//System.out.println("bytes in buffer (for RXCHAR): " + event.getEventValue());
+//System.out.println("is RXCHAR: " + event.isRXCHAR());
         if (event.isRXCHAR()) {
             try {
                 // TODO Code specifically for the ImoVifa button
@@ -209,7 +214,8 @@ public class Controller implements SerialPortEventListener {
                     System.out.println("Released");
                 if (msg[3] == 78)
                     usbButton(1, inputType);
-            } catch (SerialPortException | SerialPortTimeoutException e) {
+            } catch (SerialPortTimeoutException e) { 
+            } catch (SerialPortException e) {
                 throw new RuntimeException(e);
             }
         }
