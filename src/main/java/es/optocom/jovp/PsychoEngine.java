@@ -556,7 +556,7 @@ public class PsychoEngine {
         window.setWindowed();
     }
 
-    /** convert to strint */
+    /** convert to string */
     public String toString() {
         String freeMemoryTxt = String.format("%.1f", (float) freeMemory / 1048576);
         String maxMemoryTxt = String.format("%.1f", (float) maxMemory / 1048576);
