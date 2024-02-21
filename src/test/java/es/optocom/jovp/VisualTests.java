@@ -1,15 +1,12 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.VisualTests.LogicBlinkingAndChangingShape;
-import es.optocom.jovp.VisualTests.LogicOptotypes;
-import es.optocom.jovp.VisualTests.StressLogic;
 import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
+import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Text;
@@ -125,6 +122,20 @@ public class VisualTests {
     @Test
     public void envelopeTest() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelope());
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+    /**
+     *
+     * Test is refreshing image backgrounds causes 'flicker'
+     * @author Andrew Turpin
+     * @date 21 Feb 2024
+     * @since 0.0.1
+     */
+    @Test
+    public void backgroundImageUpdate() {
+        PsychoEngine psychoEngine = new PsychoEngine(new BackgroundLogic());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -889,4 +900,61 @@ public class VisualTests {
         }
     }
 
+    // Psychophysics logic class - does using an image as background cause flicker?
+    static class BackgroundLogic implements PsychoLogic {
+        double[] fixationColor = new double[] { 0, 1, 0, 1 };
+        double[] backgroundColor = new double[] { 0, 0, 1, 1 };
+
+        Item background, fixation;
+        Text text;
+        Timer timer = new Timer();
+        int refreshTime = 150;
+        int count;
+        String[] filenames = { "ecceIvanito.jpeg", "ecceHomo.jpeg", "ivanito.jpeg" };
+
+        @Override
+        public void init(PsychoEngine psychoEngine) {
+            psychoEngine.setViewMode(ViewMode.STEREO);
+
+            float[] fov = psychoEngine.getFieldOfView();
+            background = new Item(new Model(ModelType.CIRCLE), new Texture(filenames[0]));
+            background.position(0, 0);
+            background.distance(90);
+            background.size(fov[0], fov[1]); 
+            view.add(background);
+
+            fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
+            fixation.size(2);
+            fixation.distance(50);
+            view.add(fixation);
+
+                // TODO: If I uncomment this then the test stops after a few counts, for some reason...
+            /*text = new Text();
+            text.setText("Swap Count: " + count);
+            text.show(Eye.BOTH);
+            text.setSize(10);
+            text.setPosition(-7.5, 6.5);
+            view.add(text);
+            */
+
+            timer.start();
+            count = 0;
+        }
+
+        @Override
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE) System.out.println(command);
+        }
+
+        @Override
+        public void update(PsychoEngine psychoEngine) {
+            double time = timer.getElapsedTime();
+            if (time > refreshTime) {
+                background.update(new Texture(filenames[count % 3]));
+                timer.start();
+                count++;
+                //text.setText("Swap Count: " + count);
+            }
+        }
+    }
 }
