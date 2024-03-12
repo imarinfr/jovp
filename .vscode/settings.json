@@ -4,14 +4,11 @@
   "java.dependency.syncWithFolderExplorer": true,
   "java.dependency.packagePresentation": "hierarchical",
   "java.test.config": {
-    "name" : "windows",
-     "vmArgs": ["-Djava.library.path=lwjgl"]
+    "name" : "config",
+     //"vmArgs": ["-Djava.library.path=lwjgl"] // Windows
+     "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"] // Not Windows
   },
-  "java.test.config": {
-    "name" : "notWWindows",
-    "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"]
-  },
-  "java.test.defaultConfig" : "windows",
+  "java.test.defaultConfig" : "config",
   "glsl-linter.validatorPath": "/usr/local/bin/glslangValidator",
   "glsl-linter.fileExtensions": {
     ".fs.glsl": "frag",

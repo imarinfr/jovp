@@ -99,11 +99,9 @@ public class PsychoEngine {
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode, float ipd, boolean validationLayers,
-            boolean apiDump) {
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode, float ipd, boolean validationLayers, boolean apiDump) {
         glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
-        if (!glfwInit())
-            throw new RuntimeException("Cannot initialize GLFW");
+        if (!glfwInit()) throw new RuntimeException("Cannot initialize GLFW");
         this.psychoLogic = psychoLogic;
         window = new Window();
         observer = new Observer(window, distance, viewMode, ipd);

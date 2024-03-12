@@ -2,8 +2,6 @@ package es.optocom.jovp;
 
 import java.lang.reflect.Type;
 
-import org.lwjgl.glfw.GLFWVidMode;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
