@@ -62,9 +62,12 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
      * Update the texture of the item
      * 
      * @param texture The new texture
+     * 
+     * @since 0.0.1
      */
     public void update(Texture texture) {
         super.update(texture);

@@ -33,7 +33,6 @@ public class View {
         texts = new ArrayList<>();
     }
 
-
     /**
      * 
      * Get list of items

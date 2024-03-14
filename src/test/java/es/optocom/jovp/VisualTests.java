@@ -144,7 +144,7 @@ public class VisualTests {
     // Psychophysics logic class
     static class LogicTextureUpdate implements PsychoLogic {
         Item stimuli[] = new Item[2];
-        Text title;
+        Text text;
 
         int frames;
         int texture_type;
@@ -171,11 +171,11 @@ public class VisualTests {
             view.add(stimuli[1]);
 
             // Add title
-            title = new Text();
-            title.setText(prefix);
-            title.setSize(10);
-            title.setPosition(0, 0);
-            view.add(title);
+            text = new Text();
+            text.setText(prefix);
+            text.setPosition(0, 0.1);
+            text.setSize(0.6);
+            view.add(text);
 
             frames = 0;
             texture_type = 0;
@@ -191,17 +191,17 @@ public class VisualTests {
                 if (texture_type == 0) {
                     for (int i = 0 ; i < 2 ; i++)
                         stimuli[i].update(new Texture(TextureType.FLAT, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
-                    title.setText(prefix + "FLAT white-blue");
+                    text.setText(prefix + "FLAT white-blue");
                     texture_type = 1;
                 } else if (texture_type == 1) {
                     for (int i = 0 ; i < 2 ; i++)
                         stimuli[i].update(new Texture("ecceIvanito.jpeg"));
-                    title.setText(prefix + "IMAGE wtf!?");
+                    text.setText(prefix + "IMAGE wtf!?");
                     texture_type = 2;
                 } else if (texture_type == 2) {
                     for (int i = 0 ; i < 2 ; i++)
                         stimuli[i].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
-                    title.setText(prefix + "SINE red-green");
+                    text.setText(prefix + "SINE red-green");
                     texture_type = 0;
                 } 
             }
@@ -279,14 +279,14 @@ public class VisualTests {
             // Add title
             Text title = new Text();
             title.setText("Fun with contrasts");
-            title.setSize(10);
-            title.setPosition(0, 0);
+            title.setPosition(0.25, 0.05);
+            title.setSize(0.5);
             view.add(title);
             // Add text to show FPS
             text = new Text();
             text.setText("Refresh rate:");
-            text.setSize(10);
-            text.setPosition(0, 0);
+            text.setPosition(0, 0.1);
+            text.setSize(0.35);
             view.add(text);
             // Start timers
             timer.start();
@@ -352,16 +352,16 @@ public class VisualTests {
             // Title
             Text title = new Text();
             title.setText("Visual Acuity test");
-            title.setSize(10);
-            title.setPosition(0, 0);
+            title.setPosition(0.25, 0.05);
+            title.setSize(0.5);
             view.add(title);
             // Info text
             info = new Text();
             info.setText("VA: " + String.format("%.2f", 12 * size) + " arc min; " +
                     "LogMAR: " + String.format("%.2f", Math.log10(12 * size)) + "; " +
                     "Reversals: " + reversals);
-            info.setSize(10);
-            info.setPosition(0, 0);
+            info.setPosition(0, 0.1);
+            info.setSize(0.6);
             view.add(info);
         }
 
@@ -470,15 +470,15 @@ public class VisualTests {
             }
             // Add title
             Text title = new Text();
-            title.setText("Optotype test");
-            title.setSize(10);
-            title.setPosition(0, 0);
+            title.setText("Rotating Optotypes");
+            title.setPosition(0.3, 0.05);
+            title.setSize(0.4);
             view.add(title);
             // Add text to show FPS
             text = new Text(textColor1);
             text.setText("Refresh rate:");
-            text.setSize(10);
-            text.setPosition(0, 0);
+            text.setPosition(0, 0.1);
+            text.setSize(0.35);
             view.add(text);
             timer.start();
         }
@@ -758,15 +758,15 @@ public class VisualTests {
 
         private void addText() {
             double[] textColor = new double[] { 1, 0, 1, 1 };
-            text = new Text(textColor);
-            text.setText("Optotypes and basic shapes moving");
-            text.setSize(100);
-            text.setPosition(0, 0);
-            view.add(text);
+            Text title = new Text(textColor);
+            title.setText("Stress test");
+            title.setPosition(0.35, 0.05);
+            title.setSize(0.3);
+            view.add(title);
             text = new Text();
             text.setText("Refresh rate: ");
-            text.setSize(100);
-            text.setPosition(0, 0);
+            text.setPosition(0, 0.1);
+            text.setSize(0.35);
             view.add(text);
         }
 
@@ -805,14 +805,14 @@ public class VisualTests {
             // Title
             Text title = new Text();
             title.setText("Blinking items");
-            title.setSize(10);
-            title.setPosition(0, 0);
+            title.setPosition(0.3, 0.05);
+            title.setSize(0.4);
             view.add(title);
             // Add text to show FPS
             text = new Text();
             text.setText("Refresh rate:");
-            text.setSize(10);
-            text.setPosition(0, 0);
+            text.setPosition(0, 0.1);
+            text.setSize(0.35);
             view.add(text);
             // Items
             item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
@@ -868,7 +868,7 @@ public class VisualTests {
         }
     }
 
-        // test gaussian envelopes
+    // Test gaussian envelopes
     static class LogicEnvelope implements PsychoLogic {
         public void init(PsychoEngine psychoEngine) {
             System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
@@ -928,14 +928,13 @@ public class VisualTests {
             fixation.distance(50);
             view.add(fixation);
 
-                // TODO: If I uncomment this then the test stops after a few counts, for some reason...
-            /*text = new Text();
+            // TODO: If I uncomment this then the test stops after a few counts, for some reason...
+            text = new Text();
             text.setText("Swap Count: " + count);
             text.show(Eye.BOTH);
-            text.setSize(10);
-            text.setPosition(-7.5, 6.5);
+            text.setPosition(0, 0.1);
+            text.setSize(0.35);
             view.add(text);
-            */
 
             timer.start();
             count = 0;

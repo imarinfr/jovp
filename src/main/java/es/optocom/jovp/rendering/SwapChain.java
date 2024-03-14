@@ -131,9 +131,9 @@ class SwapChain {
             int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
             VkExtent2D extent = chooseSwapExtent(VulkanSetup.observer.window.getHandle(),
                     swapChainSupport.capabilities);
-            IntBuffer imageCount = stack.ints(swapChainSupport.capabilities.minImageCount() + 1);
+            IntBuffer imageCount = stack.ints(swapChainSupport.capabilities.minImageCount());
             if (swapChainSupport.capabilities.maxImageCount() > 0 &&
-                    imageCount.get(0) > swapChainSupport.capabilities.maxImageCount())
+                    swapChainSupport.capabilities.maxImageCount() > swapChainSupport.capabilities.minImageCount())
                 imageCount.put(0, swapChainSupport.capabilities.maxImageCount());
             VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)

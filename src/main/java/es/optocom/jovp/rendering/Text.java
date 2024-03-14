@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -42,30 +43,29 @@ import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
  */
 public class Text extends Renderable {
 
-    private static final FontType DEFAULT_FONT_TYPE = FontType.MONSERRAT;
-    private static final int DEFAULT_FONT_SIZE = 12;
+    private static final FontType DEFAULT_FONT_TYPE = FontType.SANS;
+    private static final float DEFAULT_FONT_SIZE = 0.1f;
     private static final double[] DEFAULT_RGBA = new double[] { 1, 1, 1, 1 };
-    private static final int ATLAS_WIDTH = 512;
-    private static final int ATLAS_HEIGHT = 512;
-    private static final int ATLAS_PIXEL_HEIGHT = 80;
+    private static final int ATLAS_WIDTH = 1024;
+    private static final int ATLAS_HEIGHT = 1024;
+    private static final int ATLAS_PIXEL_HEIGHT = 200;
     private static final int CHAR_START = 32;
     private static final int CHAR_AMT   = 96;
 
-    public enum Alignment {LEFT, RIGHT, CENTER};
-
-    private Vector2f position = new Vector2f();
-    private int size = DEFAULT_FONT_SIZE;
+    private Vector2f position = new Vector2f(0.5f, 0.5f);
+    private float size;
     private String text = null;
-    private Alignment alignment = Alignment.LEFT;
     private int ascent;
     private int descent;
     private int lineGap;
     private ByteBuffer ttf;
     private STBTTFontinfo fontInfo = STBTTFontinfo.create();
     private STBTTBakedChar.Buffer cdata = STBTTBakedChar.create(CHAR_AMT);
-    Matrix4f modelMatrix = new Matrix4f();
-    Matrix4f projection = new Matrix4f(); // orthographic projection
+    private Matrix4f modelMatrix = new Matrix4f();
+    private Matrix4f projection = new Matrix4f().setOrtho2D(0, 1, 0, 1);
  
+    private boolean updateModelMatrix = true;
+
     /**
      * Generate a text object with defaults
      *
@@ -105,7 +105,7 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public Text(FontType fontType, int size) {
+    public Text(FontType fontType, float size) {
         this(fontType, size, DEFAULT_RGBA);
     }
 
@@ -118,9 +118,8 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    public Text(FontType fontType, int size, double[] rgba) {
+    public Text(FontType fontType, float size, double[] rgba) {
         super();
-        this.size = size;
         String file;
         switch (fontType) { // font types
             case MONSERRAT -> file = "es/optocom/jovp/fonts/montserrat/Montserrat-Regular.otf";
@@ -142,6 +141,7 @@ public class Text extends Renderable {
         createAtlasTexture(bitmap, rgba);
         model = new Model();
         MemoryUtil.memFree(bitmap);
+        this.size = size;
     }
 
     /**
@@ -167,39 +167,30 @@ public class Text extends Renderable {
      */
     public void setText(String text) {
         this.text = text;
-        float[] xpos = new float[] {0.0f}; // Current x position
-        float[] ypos = new float[] {0.0f}; // Current y position
+        float[] xpos = new float[] {0.0f};
+        float[] ypos = new float[] {0.0f};
         Vertex[] vertices = new Vertex[4 * text.length()];
         Integer[] indices = new Integer[6 * text.length()];
-        float scale = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, 2);
-        float width = 0.0f;
         int lastCodepoint = -1;
-        IntBuffer advance = BufferUtils.createIntBuffer(1);
+        STBTTAlignedQuad quad = STBTTAlignedQuad.malloc();
         for (int i = 0; i < text.length(); i++) {
             int codepoint = text.charAt(i) - CHAR_START;
-            STBTruetype.stbtt_GetCodepointHMetrics(fontInfo, codepoint, advance, null);
-            width += advance.get(0) * scale;
-            if (lastCodepoint != -1)
-                width += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint) * scale;
+            if (lastCodepoint != -1) xpos[0] += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint);
+            STBTruetype.stbtt_GetBakedQuad(cdata, ATLAS_WIDTH, ATLAS_HEIGHT, codepoint, xpos, ypos, quad, true);
             lastCodepoint = codepoint;
         }
-        xpos[0] = switch (alignment) {
-            case LEFT -> -1.0f;
-            case CENTER -> -width * scale / 2.0f;
-            case RIGHT -> -width * scale;
-        };
-        STBTTAlignedQuad quad = STBTTAlignedQuad.malloc();
+        float width = quad.x1();
         lastCodepoint = -1;
+        xpos[0] = 0;
         for (int i = 0; i < text.length(); i++) {
             int codepoint = text.charAt(i) - CHAR_START;
             // Apply kerning adjustment
-            if (i > 0)
-                xpos[0] += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint) * scale;
+            if (lastCodepoint != -1) xpos[0] += STBTruetype.stbtt_GetCodepointKernAdvance(fontInfo, lastCodepoint, codepoint);
             STBTruetype.stbtt_GetBakedQuad(cdata, ATLAS_WIDTH, ATLAS_HEIGHT, codepoint, xpos, ypos, quad, true);
-            float x0 = quad.x0() * scale;
-            float x1 = quad.x1() * scale;
-            float y0 = -quad.y0() * scale;
-            float y1 = -quad.y1() * scale;
+            float x0 = quad.x0() / width;
+            float x1 = quad.x1() / width;
+            float y0 = quad.y0() / width;
+            float y1 = quad.y1() / width;
             vertices[4 * i] = new Vertex(new Vector3f(x0, y0, 0.0f), new Vector2f(quad.s0(), quad.t0())); // top left
             vertices[4 * i + 1] = new Vertex(new Vector3f(x0, y1, 0.0f), new Vector2f(quad.s0(), quad.t1())); // bottom left
             vertices[4 * i + 2] = new Vertex(new Vector3f(x1, y1, 0.0f), new Vector2f(quad.s1(), quad.t1())); // bottom right
@@ -242,31 +233,6 @@ public class Text extends Renderable {
 
     /**
      * 
-     * Set alignment text
-     *
-     * @param alignment alignment
-     *
-     * @since 0.0.1
-     */
-    public void setAlignment(Alignment alignment) {
-        this.alignment = alignment;
-        setText(text);
-    }
-
-    /**
-     * 
-     * Get alignment text
-     *
-     * @return alignment
-     *
-     * @since 0.0.1
-     */
-    public Alignment getAlignment() {
-        return alignment;
-    }
-
-    /**
-     * 
      * Position of the text object
      *
      * @param x relative x-axis position between 0 and 1
@@ -290,6 +256,30 @@ public class Text extends Renderable {
     public void setPosition(float x, float y) {
         this.position.x = x;
         this.position.y = y;
+        updateModelMatrix = true;
+    }
+
+    /**
+     * Set font size
+     * 
+     * @param size font size
+     *
+     * @since 0.0.1
+     */
+    public void setSize(double size) {
+        setSize((float) size);
+    }
+
+    /**
+     * Set font size
+     * 
+     * @param size font size
+     *
+     * @since 0.0.1
+     */
+    public void setSize(float size) {
+        this.size = size;
+        updateModelMatrix = true;
     }
 
     /**
@@ -305,35 +295,13 @@ public class Text extends Renderable {
     }
 
     /**
-     * Set font size
-     * 
-     * @param size font size
-     *
-     * @since 0.0.1
-     */
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    /**
-     * Get current font size
-     * 
-     * @return font size
-     *
-     * @since 0.0.1
-     */
-    public int getSize() {
-        return size;
-    }
-
-    /**
      * Return the defined size for this font
      * 
-     * @return font height
+     * @return font size
      * 
      * @since 0.0.1
      */
-    public int getFontHeight() {
+    public float getFontSize() {
         return size;
     }
   
@@ -459,16 +427,10 @@ public class Text extends Renderable {
      */
     @Override
     void updateUniforms(int imageIndex, int passNumber) {
-        //if (updateModelMatrix) {
-        //    Vector3d position = new Vector3d(direction.x, direction.y, direction.z).mul(distance);
-        //    Quaterniond quaternion = new Quaterniond()
-        //        .rotationTo(new Vector3d(0, 0, 1), direction)
-        //        .rotateZYX(rotation.z, rotation.y, rotation.x);
-        //    modelMatrix.translationRotateScale(position, quaternion, scale);
-        //    updateModelMatrix = false;
-        //}
-        modelMatrix.scaling(1.0f, 1.0f, 1.0f).translateLocal(-1.0f, 0.0f, 0.0f);
-        projection.setOrtho2D(-1, 1, 1, -1);
+        if (updateModelMatrix) {
+            modelMatrix.translationRotateScale(new Vector3f(position.x, position.y, 0.0f), new Quaternionf(), new Vector3f(size, size, 0.0f));
+            updateModelMatrix = false;
+        }
         int n = 0;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);

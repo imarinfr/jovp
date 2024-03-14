@@ -85,6 +85,7 @@ public class Observer {
      * @return The x and y fields of view in degrees.
      *
      * @since 0.0.1
+     * 
      */
     public float[] getFieldOfView() {
         return new float[] {
@@ -258,7 +259,7 @@ public class Observer {
      */
     public void translate(Vector3f offset) {
         translateViewMatrix(views.get(0), offset);
-        if (viewMode == ViewMode.STEREO) translateViewMatrix(views.get(1), offset);;
+        if (viewMode == ViewMode.STEREO) translateViewMatrix(views.get(1), offset);
     }
 
     /**
