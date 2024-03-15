@@ -59,6 +59,7 @@ public class Text extends Renderable {
     private int descent;
     private int lineGap;
     private ByteBuffer ttf;
+    private ByteBuffer bitmap;
     private STBTTFontinfo fontInfo = STBTTFontinfo.create();
     private STBTTBakedChar.Buffer cdata = STBTTBakedChar.create(CHAR_AMT);
     private Matrix4f modelMatrix = new Matrix4f();
@@ -120,6 +121,7 @@ public class Text extends Renderable {
      */
     public Text(FontType fontType, float size, double[] rgba) {
         super();
+        this.size = size;
         String file;
         switch (fontType) { // font types
             case MONSERRAT -> file = "es/optocom/jovp/fonts/montserrat/Montserrat-Regular.otf";
@@ -128,20 +130,17 @@ public class Text extends Renderable {
             case SANS_BOLD -> file = "es/optocom/jovp/fonts/openSans/OpenSans-Bold.ttf";
             default -> file = null;
         }
-        ByteBuffer bitmap = BufferUtils.createByteBuffer(4 * ATLAS_WIDTH * ATLAS_HEIGHT);
+        bitmap = BufferUtils.createByteBuffer(4 * ATLAS_WIDTH * ATLAS_HEIGHT);
         try {
             ttf = loadResourceToByteBuffer(file);
             getFontMetrics(ttf);
             int result = STBTruetype.stbtt_BakeFontBitmap(ttf, ATLAS_PIXEL_HEIGHT, bitmap, ATLAS_WIDTH, ATLAS_HEIGHT, CHAR_START, cdata);
-            if (result < 1)
-                throw new RuntimeException("stbtt_BakeFontBitmap failed with return value: " + result);
+            if (result < 1) throw new RuntimeException("stbtt_BakeFontBitmap failed with return value: " + result);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         createAtlasTexture(bitmap, rgba);
         model = new Model();
-        MemoryUtil.memFree(bitmap);
-        this.size = size;
     }
 
     /**
@@ -155,7 +154,7 @@ public class Text extends Renderable {
         super.destroy();
         fontInfo.free();
         cdata.free();
-        MemoryUtil.memFree(ttf);
+        MemoryUtil.memFree(bitmap);
     }
 
     /**

@@ -928,12 +928,11 @@ public class VisualTests {
             fixation.distance(50);
             view.add(fixation);
 
-            // TODO: If I uncomment this then the test stops after a few counts, for some reason...
             text = new Text();
             text.setText("Swap Count: " + count);
             text.show(Eye.BOTH);
             text.setPosition(0, 0.1);
-            text.setSize(0.35);
+            text.setSize(0.5);
             view.add(text);
 
             timer.start();
@@ -952,7 +951,7 @@ public class VisualTests {
                 background.update(new Texture(filenames[count % 3]));
                 timer.start();
                 count++;
-                //text.setText("Swap Count: " + count);
+                text.setText("Swap Count: " + count);
             }
         }
     }

@@ -309,11 +309,11 @@ public class PsychoEngineTest {
 
         @Override
         public void init(PsychoEngine psychoEngine) {
-            //Text title = new Text(new double[] {0, 1, 0, 1});
-            //title.setText("Virtual World");
-            //title.setPosition(0.35, 0.05);
-            //title.setSize(0.3);
-            //view.add(title);
+            Text title = new Text(new double[] {0, 1, 0, 1});
+            title.setText("Virtual World");
+            title.setPosition(0.35, 0.05);
+            title.setSize(0.3);
+            view.add(title);
             view.add(background);
             background.distance(Observer.ZFAR / 2);
             eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 })));
