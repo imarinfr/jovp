@@ -29,23 +29,24 @@ layout(location = 6) out flat vec3 defocus;
 
 // Functions on texture: spatial frequency
 vec2 spatial(vec2 uv, vec4 frequency) {
-    if (frequency.x <= 0 || frequency.y <= 0) return(uv);
-    uv = (frequency.xy + frequency.zw) * uv;
-    return(uv);
-}
-// Functions on texture: rotate
-vec2 rotate(vec2 uv, vec3 rotation) {
-    if (rotation.x == 0) return(uv);
-    float s = sin(rotation.z);
-    float c = cos(rotation.z);
-    mat2 matrix = mat2(c, s, -s,  c);
-    return(matrix * (uv - rotation.x) + rotation.y);
+    return(frequency.xy + frequency.zw * uv);
 }
 
+// Functions on texture: rotate
+vec2 rotate(vec2 uv, vec3 rotation) {
+    if (rotation.z == 0) return(uv);
+    float cosAngle = cos(rotation.z);
+    float sinAngle = sin(rotation.z);
+    uv -= rotation.xy;
+    uv = vec2(uv.x * cosAngle - uv.y * sinAngle, uv.x * sinAngle + uv.y * cosAngle);
+    uv += rotation.xy;
+    return uv;
+}
+
+// Brown-Conrady distortion model
 vec4 distortion(vec4 position) {
     vec2 theta = (position.xy - ubo.centers.xy);
     float rSq = dot(theta, theta);
-    // Brown-Conrady model
     float distortion = 1.0 +
                        ubo.coefficients.x * rSq +
                        ubo.coefficients.y * rSq * rSq +
@@ -60,10 +61,11 @@ vec4 distortion(vec4 position) {
 void main() {
     // apply distortion as necessary
     vec4 position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
-    gl_Position = distortion(position);
+    //gl_Position = distortion(position);
+    gl_Position = position;
     // Calculate the texture coordinates for the distorted vertex
-    vec2 tc = (gl_Position.xy - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
-    uv_out = vec2(tc.x, tc.y);
+    //vec2 tc = (gl_Position.xy - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
+    //uv_out = vec2(tc.x, tc.y);
     uv_out = rotate(spatial(uv, ubo.frequency), ubo.rotation);
     settings = ubo.settings;
     rgba0 = ubo.rgba0;

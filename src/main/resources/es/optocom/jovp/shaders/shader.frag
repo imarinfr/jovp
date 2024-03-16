@@ -59,5 +59,5 @@ void main() {
     if (settings.y == 3) color = gaussianEnvelope(uv, color, envelope);
     // Post-processing: defocus
     if (settings.z == 1) color = blur(uv, color, defocus);
-    //color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
+    color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
 }

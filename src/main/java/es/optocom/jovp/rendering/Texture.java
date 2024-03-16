@@ -38,20 +38,24 @@ public class Texture {
     float[] pixels;
 
     /**
-     * Create a black flat texture
+     * 
+     * Create a white flat texture
      *
      * @since 0.0.1
+     * 
      */
     public Texture() {
-        this(new double[] { 0, 0, 0, 1 });
+        this(new double[] { 1, 1, 1, 1 });
     }
 
     /**
+     * 
      * Create a flat texture
      *
      * @param rgba Vector of 4 values with the R, G, B, and alpha channels
      *
      * @since 0.0.1
+     * 
      */
     public Texture(double[] rgba) {
         type = TextureType.FLAT;
@@ -60,29 +64,34 @@ public class Texture {
     }
 
     /**
+     * 
      * Creates a black and white (square) sine wave or checkerboard
      *
      * @param type Whether a CHECKERBOARD or a SINE pattern
      *
      * @since 0.0.1
+     * 
      */
     public Texture(TextureType type) {
         this(type, new double[] { 0, 0, 0, 1 }, new double[] { 1, 1, 1, 1 });
     }
 
     /**
+     * 
      * Creates a default sine spatial pattern
      *
      * @param rgba0 Vector of 4 values with the R, G, B, and alpha channels
      * @param rgba1 Vector of 4 values with the R, G, B, and alpha channels
      *
      * @since 0.0.1
+     * 
      */
     public Texture(double[] rgba0, double[] rgba1) {
         this(TextureType.SINE, rgba0, rgba1);
     }
 
     /**
+     * 
      * Creates spatial patterns: checkerboard, sine, square sine, and 1st, 2nd, and
      * 3rd Gaussian derivatives
      *
@@ -91,6 +100,7 @@ public class Texture {
      * @param rgba1 Vector of 4 values with the R, G, B, and alpha channels
      *
      * @since 0.0.1
+     * 
      */
     public Texture(TextureType type, double[] rgba0, double[] rgba1) {
         this.type = type;
@@ -108,6 +118,7 @@ public class Texture {
     }
 
     /**
+     * 
      * Generate the texture for text
      *
      * @param rgba   texture color
@@ -116,6 +127,7 @@ public class Texture {
      * @param height texture height
      *
      * @since 0.0.1
+     * 
      */
     Texture(double[] rgba, float[] pixels, int width, int height) {
         type = TextureType.TEXT;
@@ -128,11 +140,13 @@ public class Texture {
     }
 
     /**
+     * 
      * Generate the texture from an image file
      *
      * @param fileName The Image's filename
      *
      * @since 0.0.1
+     * 
      */
     public Texture(String fileName) {
         type = TextureType.IMAGE;
@@ -166,20 +180,24 @@ public class Texture {
     }
 
     /**
+     * 
      * Get texture type
      *
      * @return The texture type
      *
      * @since 0.0.1
+     * 
      */
     public TextureType getType() {
         return type;
     }
 
     /**
+     * 
      * Clean up after use
      *
      * @since 0.0.1
+     * 
      */
     public void destroy() {
         size = 0;
@@ -190,61 +208,72 @@ public class Texture {
     }
 
     /**
+     * 
      * Get image size
      *
      * @return size of the image
      *
      * @since 0.0.1
+     * 
      */
     public int getSize() {
         return size;
     }
 
     /**
+     * 
      * Get mipmap levels
      *
      * @return mipmap levels of the image
      *
      * @since 0.0.1
+     * 
      */
     public int getMipLevels() {
         return mipLevels;
     }
 
     /**
+     * 
      * Get image pixels
      *
      * @return pixels the image
      *
      * @since 0.0.1
+     * 
      */
     public float[] getPixels() {
         return pixels;
     }
 
     /**
+     * 
      * Get texture colors
      *
      * @return Two colors of the texture
      *
      * @since 0.0.1
+     * 
      */
     public Vector4f[] getColors() {
         return new Vector4f[] { rgba0, rgba1 };
     }
 
     /**
+     * 
      * Set base texture color
      *
      * @param rgba The RGBA values
      *
      * @since 0.0.1
+     * 
      */
     public void setColor(double[] rgba) {
         setColors(rgba, rgba);
     }
 
     /**
+     * 
      * Set texture minimum color for grids
      *
      * @param rgba0 The RGBA values of color 0 (background or minimum color
@@ -253,6 +282,7 @@ public class Texture {
      *              depending on context)
      *
      * @since 0.0.1
+     * 
      */
     public void setColors(double[] rgba0, double[] rgba1) {
         this.rgba0 = type == TextureType.IMAGE ? TRANSPARENT
@@ -262,22 +292,26 @@ public class Texture {
     }
 
     /**
+     * 
      * Get texture color 0 for grids
      *
      * @return The RGBA values of the minimum color
      *
      * @since 0.0.1
+     * 
      */
     public Vector4f rgba0() {
         return rgba0;
     }
 
     /**
+     * 
      * Get texture color 1 for grids
      *
      * @return The RGBA values of the maximum color
      *
      * @since 0.0.1
+     * 
      */
     public Vector4f rgba1() {
         return rgba1;

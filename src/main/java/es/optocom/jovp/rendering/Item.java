@@ -7,6 +7,7 @@ import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBuffer;
@@ -35,6 +36,7 @@ import es.optocom.jovp.definitions.ViewMode;
 public class Item extends Renderable {
 
     private double distance = (Observer.ZFAR - Observer.ZNEAR) / 2; // distance of the item in meters
+    private Vector3d size; // (x, y) size in degrees and z y meters
     private Vector3d scale; // size in x, y, and z in meters (size = 2 * scale)
     private Vector3d rotation; // angles of rotation in each axis in radians
     private Vector3d direction; // unit vector with (x, y, z) direction in meters
@@ -55,6 +57,7 @@ public class Item extends Renderable {
     public Item(Model model, Texture texture) {
         super(model, texture);
         direction = new Vector3d(0, 0, 1);
+        size = new Vector3d(1, 1, 1);
         scale = new Vector3d(1, 1, 1);
         rotation = new Vector3d();
         modelMatrix = new Matrix4d();
@@ -71,9 +74,7 @@ public class Item extends Renderable {
      */
     public void update(Texture texture) {
         super.update(texture);
-            // Might not need this if texture is the same class
-            // as the original texture in the constructor, but just being safe.
-        processing = new Processing(texture.getType());
+        processing.setType(texture.getType());
     }
 
     /**
@@ -189,9 +190,12 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void size(double x, double y, double z) {
-        if(Math.abs(x) < Observer.ZNEAR) x = Observer.ZNEAR; // size must always be positive
-        if(Math.abs(y) < Observer.ZNEAR) y = Observer.ZNEAR;
-        if(Math.abs(z) < Observer.ZNEAR) z = Observer.ZNEAR;
+        if(Math.abs(x) < 0) x = 0;
+        if(Math.abs(y) < 0) y = 0;
+        if(Math.abs(z) < 0) z = 0;
+        size.x = x;
+        size.y = y;
+        size.z = z;
         scale.x = distance * Math.tan(Math.toRadians(Math.abs(x)) / 2);
         scale.y = distance * Math.tan(Math.toRadians(Math.abs(y)) / 2);
         scale.z = Math.abs(z) / 2;
@@ -283,7 +287,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void contrast(double amplitude) {
-        contrast(amplitude, amplitude, amplitude, amplitude);
+        contrast(amplitude, amplitude, amplitude, 1);
     }
 
     /**
@@ -301,7 +305,7 @@ public class Item extends Renderable {
         processing.contrast(r, g, b, a);
     }
 
-    /**
+        /**
      * 
      * Rotate the texture inside the model
      *
@@ -310,7 +314,22 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void texRotation(double rotation) {
-        processing.rotation(rotation, new double[] { 0.5, 0.5 });
+        processing.rotation(0.5, 0.5, rotation);
+    }
+
+    /**
+     * 
+     * Rotate the texture inside the model
+     *
+     * @param u Pivot on the u axis
+     * @param v pivot on the v axis
+     * @param rotation Angle of rotation in degrees
+     *
+     * @since 0.0.1
+     * 
+     */
+    public void texRotation(double u, double v, double rotation) {
+        processing.rotation(u, v, rotation);
     }
 
     /**
@@ -499,6 +518,13 @@ public class Item extends Renderable {
             updateModelMatrix = false;
         }
         int n = 0;
+        Vector4f freq = new Vector4f();
+        freq.x = processing.frequency.x;
+        freq.y = processing.frequency.y;
+        if (processing.frequency.z == 0) freq.z = 1;
+        else freq.z = processing.frequency.z * (float) size.x;
+        if (processing.frequency.w == 0) freq.w = 1;
+        else freq.w = processing.frequency.w * (float) size.y;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
             vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
@@ -513,7 +539,7 @@ public class Item extends Renderable {
                 VulkanSetup.observer.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
-                processing.frequency.get(n * Float.BYTES, buffer); n += 4;
+                freq.get(n * Float.BYTES, buffer); n += 4;
                 processing.rotation.get(n * Float.BYTES, buffer); n += 4;
                 processing.contrast.get(n * Float.BYTES, buffer); n += 4;
                 processing.envelope.get(n * Float.BYTES, buffer); n += 4;

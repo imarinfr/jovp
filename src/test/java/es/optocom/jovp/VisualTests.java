@@ -151,28 +151,24 @@ public class VisualTests {
         String prefix;
 
         public void init(PsychoEngine psychoEngine) {
-            stimuli[0] = new Item(new Model(ModelType.CIRCLE), new Texture());
-            stimuli[1] = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
-
-            prefix = "Circle-FLAT & Circle-SINE";
-
+            prefix = "FLAT vs ";
+            stimuli[0] = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 0, 1}));
             stimuli[0].position(-4, -4);
             stimuli[0].distance(90);
             stimuli[0].size(6, 6);
-            stimuli[0].frequency(0, 0.5);
-            stimuli[0].rotation(45);
             view.add(stimuli[0]);
 
+            stimuli[1] = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
             stimuli[1].position(+4, -4);
             stimuli[1].distance(90);
             stimuli[1].size(6, 6);
-            stimuli[1].frequency(0, 0.5);
+            stimuli[1].frequency(0, 5);
             stimuli[1].rotation(45);
             view.add(stimuli[1]);
 
             // Add title
             text = new Text();
-            text.setText(prefix);
+            text.setText(prefix + "SINE red-green");
             text.setPosition(0, 0.1);
             text.setSize(0.6);
             view.add(text);
@@ -189,18 +185,18 @@ public class VisualTests {
             frames++;
             if (frames % 100 == 0) {
                 if (texture_type == 0) {
-                    for (int i = 0 ; i < 2 ; i++)
-                        stimuli[i].update(new Texture(TextureType.FLAT, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
-                    text.setText(prefix + "FLAT white-blue");
+                    stimuli[0].setColor(new double[] {0.5, 0.5, 1, 1});
+                    stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
+                    text.setText(prefix + "SINE white-blue");
                     texture_type = 1;
                 } else if (texture_type == 1) {
-                    for (int i = 0 ; i < 2 ; i++)
-                        stimuli[i].update(new Texture("ecceIvanito.jpeg"));
-                    text.setText(prefix + "IMAGE wtf!?");
+                    stimuli[0].setColor(new double[] {0.5, 0.5, 0.5, 1});
+                    stimuli[1].update(new Texture("ecceIvanito.jpeg"));
+                    text.setText(prefix + "IMAGE");
                     texture_type = 2;
                 } else if (texture_type == 2) {
-                    for (int i = 0 ; i < 2 ; i++)
-                        stimuli[i].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
+                    stimuli[0].setColor(new double[] {1, 1, 0, 1});
+                    stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
                     text.setText(prefix + "SINE red-green");
                     texture_type = 0;
                 } 
@@ -216,8 +212,13 @@ public class VisualTests {
         double[] white = new double[] { 1, 1, 1, 1 };
         double[] red = new double[] { 1, 0, 0, 1 };
         double[] green = new double[] { 0, 1, 0, 1 };
+        double[] blue = new double[] { 0, 0, 1, 1 };
+        double[] redSemi = new double[] { 1, 0, 0, 0.5 };
+        double[] blackSemi = new double[] { 0, 0, 0, 0.5 };
+        double[] whiteSemi = new double[] { 1, 1, 1, 0.8 };
+        double[] blueSemi = new double[] { 0, 0, 1, 0.8 };
 
-        Item stimulus1, stimulus2, stimulus3;
+        Item stimulus1, stimulus2, stimulus3, stimulus4;
 
         Timer timer = new Timer();
         Timer timerFps = new Timer();
@@ -227,35 +228,36 @@ public class VisualTests {
 
         public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
-            item.size(1, 1);
-            item.distance(20);
-            view.add(item);
-            item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
-            item.position(14, 4);
-            item.distance(90);
-            item.frequency(0, 3);
-            item.rotation(45);
-            item.contrast(0.5);
-            view.add(item);
-            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, black, white));
-            item.position(6, -3);
-            item.distance(100);
-            item.frequency(0.25, 2);
-            item.size(6, 3);
-            item.contrast(0.1);
-            view.add(item);
-            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
-            item.position(5, 3);
-            item.distance(90);
-            item.frequency(0.5, 3, 0.25, 2);
-            item.size(4, 2);
-            item.rotation(0);
+            item.size(1);
+            item.distance(50);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
             item.position(9, 0);
             item.distance(100);
             item.frequency(0.25, 0.5);
             item.size(15, 12);
+            view.add(item);
+            item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, blackSemi, whiteSemi));
+            item.size(3);
+            item.position(14, 4);
+            item.distance(90);
+            item.frequency(0, 1);
+            item.rotation(45);
+            item.contrast(0.5);
+            view.add(item);
+            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, blueSemi, whiteSemi));
+            item.position(6, -3);
+            item.distance(90);
+            item.frequency(135, 0.5);
+            item.size(6, 3);
+            item.contrast(0.2);
+            view.add(item);
+            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, blackSemi, redSemi));
+            item.position(5, 3);
+            item.distance(90);
+            item.frequency(0.5, 3, 0.25, 2);
+            item.size(4, 2);
+            item.rotation(0);
             view.add(item);
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
             stimulus1.position(-8, -4);
@@ -272,10 +274,15 @@ public class VisualTests {
             view.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE, red, green));
             stimulus3.frequency(0, 2);
-            stimulus3.position(-3, 0);
+            stimulus3.position(-3, -3);
             stimulus3.distance(90);
             stimulus3.size(2, 2);
             view.add(stimulus3);
+            stimulus4 = new Item(new Model(ModelType.SQUARE), new Texture("ecceIvanito.jpeg"));
+            stimulus4.position(-4, 3);
+            stimulus4.distance(90);
+            stimulus4.size(6, 6);
+            view.add(stimulus4);
             // Add title
             Text title = new Text();
             title.setText("Fun with contrasts");
@@ -299,15 +306,16 @@ public class VisualTests {
 
         public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
+            stimulus1.rotation(time / 10);
             stimulus1.contrast(0.5 * Math.sin(time / 1000.0) + 0.5);
+            stimulus2.frequency(time / 2, 2);
+            stimulus3.rotation(-time / 15);
             stimulus3.contrast(0.4 * Math.sin(time / 500.0) + 0.6);
-            stimulus1.frequency(Math.sin(time / 250.0), 0.5);
-            stimulus1.rotation(time / 10.0);
-            stimulus2.rotation(-time / 20.0);
-            stimulus2.texRotation(time / 5.0);
+            stimulus4.rotation(time / 20);
+            stimulus4.texRotation(-time / 10);
             if (timerFps.getElapsedTime() <= refreshTime)
                 fps++;
-            else { // restart the timer every second
+            else {
                 timerFps.start();
                 text.setText("Refresh rate: " + Math.round(10000.0 * fps / refreshTime) / 10.0 + " fps");
                 fps = 0;
