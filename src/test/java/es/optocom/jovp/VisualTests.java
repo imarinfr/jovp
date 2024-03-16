@@ -162,7 +162,7 @@ public class VisualTests {
             stimuli[1].position(+4, -4);
             stimuli[1].distance(90);
             stimuli[1].size(6, 6);
-            stimuli[1].frequency(0, 5);
+            stimuli[1].frequency(0, 0.5);
             stimuli[1].rotation(45);
             view.add(stimuli[1]);
 
@@ -583,8 +583,7 @@ public class VisualTests {
         }
 
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command != Command.NONE) System.out.println(command);
         }
 
         public void update(PsychoEngine psychoEngine) {
@@ -604,9 +603,7 @@ public class VisualTests {
                     circle.distance(zpos);
                     circle.size(size, size);
                 }
-                if (zpos < 2)
-                    for (Item item : view.items())
-                        item.show(Eye.BOTH);
+                if (zpos < 2) for (Item item : view.items()) item.show(Eye.BOTH);
                 return;
             }
             iteration++;
@@ -615,8 +612,7 @@ public class VisualTests {
             int number = 0;
             // process optotypes
             for (Item item : view.items()) {
-                if (item.getModel().getType() != ModelType.OPTOTYPE)
-                    continue;
+                if (item.getModel().getType() != ModelType.OPTOTYPE) continue;
                 double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1)
                         * timer.getElapsedTime()) / 500);
                 item.position(xpos, ypos);
@@ -627,11 +623,9 @@ public class VisualTests {
             // process polygons
             int imageNumber = 0;
             for (Item item : view.items()) {
-                if (item.getModel().getType() != ModelType.POLYGON)
-                    continue;
+                if (item.getModel().getType() != ModelType.POLYGON) continue;
                 int pos = iteration - 38 * imageNumber;
-                if (pos < 0)
-                    pos = 0;
+                if (pos < 0) pos = 0;
                 item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0));
                 item.distance(20);
                 item.rotation(-theta / 5);
@@ -640,10 +634,8 @@ public class VisualTests {
             // process circles
             imageNumber = 0;
             for (Item item : view.items()) {
-                if (item.getModel().getType() != ModelType.CIRCLE)
-                    continue;
-                if (time < 8000)
-                    continue;
+                if (item.getModel().getType() != ModelType.CIRCLE) continue;
+                if (time < 8000) continue;
                 item.show(Eye.BOTH);
                 leadPosition += 1 / 60.0;
                 if (imageNumber < 10)
@@ -656,16 +648,14 @@ public class VisualTests {
             }
             // process triangle
             for (Item item : view.items()) {
-                if (item.getModel().getType() != ModelType.TRIANGLE)
-                    continue;
-                item.size(4 * Math.sin(iteration / 40.0) + 10, 4 * Math.sin(iteration / 30.0) + 10);
+                if (item.getModel().getType() != ModelType.TRIANGLE) continue;
+                item.size(2 * Math.sin(iteration / 20.0) + 6, 2 * Math.sin(iteration / 15.0) + 6);
                 item.contrast(0.4 * Math.sin(iteration / 50.0) + 0.6);
             }
             // process squares
             int square = 0;
             for (Item item : view.items()) {
-                if (item.getModel().getType() != ModelType.SQUARE)
-                    continue;
+                if (item.getModel().getType() != ModelType.SQUARE) continue;
                 if (square == 0)
                     item.position(-10.025 + Math.sin(iteration / 20.0) / 2, -8);
                 if (square == 1)
@@ -743,10 +733,9 @@ public class VisualTests {
         }
 
         private void addTriangle() {
-            Item triangle = new Item(new Model(ModelType.TRIANGLE),
-                    new Texture(TextureType.SINE, triangleColor1, triangleColor2));
-            triangle.position(5, 5);
-            triangle.size(2, 2);
+            Item triangle = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.SINE, triangleColor1, triangleColor2));
+            triangle.position(5, 3);
+            triangle.size(6, 6);
             triangle.frequency(0, 1);
             view.add(triangle);
         }
@@ -827,9 +816,10 @@ public class VisualTests {
             item1.size(10, 10);
             item1.distance(90);
             item1.position(0, 0);
+            item1.frequency(0, 0.2);
             view.add(item1);
             item2 = new Item(new Model(ModelType.MALTESE), new Texture(new double[] { 0, 1, 0, 1 }));
-            item2.distance(80);
+            item2.distance(50);
             item2.position(0, 0);
             item2.size(2, 2);
             view.add(item2);
@@ -841,16 +831,13 @@ public class VisualTests {
         }
 
         public void input(PsychoEngine psychoEngine, Command command) {
-            if (command != Command.NONE)
-                System.out.println(command);
+            if (command != Command.NONE) System.out.println(command);
         }
 
         public void update(PsychoEngine psychoEngine) {
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
             item1.rotation(timer.getElapsedTime() / 20);
-            double cpd = 0.5 * (Math.cos(timer.getElapsedTime() / 1500) + 1) / 2;
-            item1.frequency(0, cpd);
             if (modelTimer.getElapsedTime() > updateModelTime) {
                 item1.update(new Model(models[ThreadLocalRandom.current().nextInt(0, 5)]));
                 modelTimer.start();
