@@ -322,8 +322,8 @@ public class Item extends Renderable {
      * 
      * Rotate the texture inside the model
      *
-     * @param u Pivot on the u axis
-     * @param v pivot on the v axis
+     * @param u Pivot on the u axis in degrees of visual angle from the center
+     * @param v pivot on the v axis in degrees of visual angle from the center
      * @param rotation Angle of rotation in degrees
      *
      * @since 0.0.1
@@ -526,6 +526,10 @@ public class Item extends Renderable {
         else freq.z = processing.frequency.z * (float) size.x;
         if (processing.frequency.w == 0) freq.w = 1;
         else freq.w = processing.frequency.w * (float) size.y;
+        Vector3f rotation = new Vector3f();
+        rotation.x = freq.z * processing.rotation.x;
+        rotation.y = freq.w * processing.rotation.y;
+        rotation.z = processing.rotation.z;
         Vector3f envelope = new Vector3f();
         envelope.x = processing.envelope.x / (float) size.x;
         envelope.y = processing.envelope.y / (float) size.y;
@@ -545,7 +549,7 @@ public class Item extends Renderable {
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
                 freq.get(n * Float.BYTES, buffer); n += 4;
-                processing.rotation.get(n * Float.BYTES, buffer); n += 4;
+                rotation.get(n * Float.BYTES, buffer); n += 4;
                 processing.contrast.get(n * Float.BYTES, buffer); n += 4;
                 envelope.get(n * Float.BYTES, buffer); n += 4;
                 processing.defocus.get(n * Float.BYTES, buffer);

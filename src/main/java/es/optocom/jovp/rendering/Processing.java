@@ -18,7 +18,7 @@ class Processing {
     Vector3i settings = new Vector3i(); // x = texture type, y = envelope type, z = apply defocus (1) or not (0)
     Vector4f frequency = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f); // x = x phase y = y phase, z = x frequency, w = y frequency
     Vector4f contrast = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f); // xyzw = amplitudes for R, G, B, and alpha channels
-    Vector3f rotation = new Vector3f(); // texture rotation, x, and y are anchor locations (from 0 to 1), z is the angle in radians
+    Vector3f rotation = new Vector3f(); // texture rotation around u and v values (x and y) and by an angle of z radians.
     Vector3f envelope = new Vector3f(); // xy = SD of ellipse x and y axes, z = ellipse rotation in radians
     Vector3f defocus = new Vector3f(); // xy = Geometric defocus x and y axes, z = astigmatism axis
 

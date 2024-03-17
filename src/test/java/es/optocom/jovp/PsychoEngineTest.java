@@ -215,9 +215,9 @@ public class PsychoEngineTest {
             stimulus1.rotation(45);
             stimulus1.contrast(0.75);
             view.add(stimulus1);
-            stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
+            stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.CHECKERBOARD));
             stimulus2.frequency(0, 2);
-            stimulus2.position(3, 2);
+            stimulus2.position(6, 2);
             stimulus2.size(4, 2);
             stimulus2.distance(75);
             stimulus2.show(Eye.LEFT);
@@ -281,11 +281,9 @@ public class PsychoEngineTest {
                 swapEyeTimer.start();
             }
             stimulus1.contrast(Math.sin(time / 1000.0) / 2 + 0.5);
-            //stimulus3.contrast(Math.sin(time / 200.0) / 2 + 0.5);
-            stimulus1.frequency(Math.sin(time / 250.0), 0.5);
             stimulus1.rotation(time / 10.0);
             stimulus2.rotation(-time / 20.0);
-            stimulus2.texRotation(time / 5.0);
+            stimulus2.texRotation(time / 20.0);
             if (timerFps.getElapsedTime() <= refreshTime)
                 fps++;
             else { // restart the timer every second

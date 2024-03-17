@@ -132,13 +132,10 @@ public class VisualTests {
         psychoEngine.cleanup();
     }
 
-        /**
+    /**
      *
-     * Test gaussian envelope.
+     * Test different envelope types
      *
-     * @author Andrew Turpin
-     * @date 21 Feb 2024
-     * 
      * @since 0.0.1
      * 
      */

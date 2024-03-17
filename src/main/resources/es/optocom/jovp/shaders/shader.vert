@@ -72,7 +72,7 @@ void main() {
     settings = ubo.settings;
     rgba0 = ubo.rgba0;
     rgba1 = ubo.rgba1;
-    uvmax = ubo.frequency.xy + ubo.frequency.zw;
+    uvmax = ubo.frequency.xy + ubo.frequency.wz;
     contrast = ubo.contrast;
     envelope = ubo.envelope;
     defocus = ubo.defocus;
