@@ -127,7 +127,7 @@ public class VisualTests {
      */
     @Test
     public void gaussianEnvelopes() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelope());
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicGaussianEnvelopes());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -890,7 +890,7 @@ public class VisualTests {
     }
 
     // Test gaussian envelopes
-    static class LogicEnvelope implements PsychoLogic {
+    static class LogicGaussianEnvelopes implements PsychoLogic {
 
         double[] white = new double[] { 1, 1, 1, 1 };
         double[] black = new double[] { 0, 0, 0, 1 };
@@ -901,12 +901,12 @@ public class VisualTests {
             double y = 5;
             for (double contrast = 0.2 ;  contrast <= 1.0 ; contrast += 0.2) {
                 x = -5;
-                for (double sd = 0; sd <= 2 ; sd += 0.5) {
+                for (double sd = 0.1; sd <= 0.5; sd += 0.1) {
                     Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
                     stimuli.position(x, y);
                     stimuli.distance(50);
                     stimuli.size(2, 2);
-                    stimuli.frequency(0, 1);
+                    stimuli.frequency(0, 3);
                     stimuli.contrast(contrast);
                     stimuli.envelope(EnvelopeType.GAUSSIAN, sd);
                     view.add(stimuli);
