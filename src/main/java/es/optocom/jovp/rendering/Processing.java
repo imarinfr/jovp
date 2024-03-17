@@ -19,7 +19,7 @@ class Processing {
     Vector4f frequency = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f); // x = x phase y = y phase, z = x frequency, w = y frequency
     Vector4f contrast = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f); // xyzw = amplitudes for R, G, B, and alpha channels
     Vector3f rotation = new Vector3f(); // texture rotation, x, and y are anchor locations (from 0 to 1), z is the angle in radians
-    Vector3f envelope = new Vector3f(); // xy = SD of ellipse x and y axes, z = ellipse rotation
+    Vector3f envelope = new Vector3f(); // xy = SD of ellipse x and y axes, z = ellipse rotation in radians
     Vector3f defocus = new Vector3f(); // xy = Geometric defocus x and y axes, z = astigmatism axis
 
     TextureType type;
@@ -123,9 +123,9 @@ class Processing {
      * Add a Gaussian envelope
      *
      * @param type Envelope type
-     * @param sdx Envelope Gaussian standard deviation for x-axis in degrees
-     * @param sdy Envelope Gaussian standard deviation for y-axis in degrees
-     * @param angle Angle of rotation
+     * @param sdx Envelope Gaussian standard deviation for x-axis in degrees of visual angle
+     * @param sdy Envelope Gaussian standard deviation for y-axis in degrees of visual angle
+     * @param angle Angle of rotation in degrees
      *
      * @since 0.0.1
      * 
@@ -137,8 +137,8 @@ class Processing {
             case CIRCLE -> 2;
             case GAUSSIAN -> 3;
         };
-        envelope.x = (float) Math.toRadians(sdx) / 2;
-        envelope.y = (float) Math.toRadians(sdy) / 2;
+        envelope.x = (float) sdx;
+        envelope.y = (float) sdy;
         envelope.z = (float) Math.toRadians(angle);
     }
 

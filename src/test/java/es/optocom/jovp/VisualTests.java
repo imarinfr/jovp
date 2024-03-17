@@ -1,6 +1,7 @@
 package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Eye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
@@ -113,15 +114,37 @@ public class VisualTests {
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
+
     /**
      *
      * Test gaussian envelope.
      *
+     * @author Andrew Turpin
+     * @date 21 Feb 2024
+     * 
      * @since 0.0.1
+     * 
      */
     @Test
-    public void envelopeTest() {
+    public void gaussianEnvelopes() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelope());
+        psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+        /**
+     *
+     * Test gaussian envelope.
+     *
+     * @author Andrew Turpin
+     * @date 21 Feb 2024
+     * 
+     * @since 0.0.1
+     * 
+     */
+    @Test
+    public void envelopeTypes() {
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelopeType());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -129,9 +152,12 @@ public class VisualTests {
     /**
      *
      * Test is refreshing image backgrounds causes 'flicker'
+     * 
      * @author Andrew Turpin
      * @date 21 Feb 2024
+     * 
      * @since 0.0.1
+     * 
      */
     @Test
     public void backgroundImageUpdate() {
@@ -865,26 +891,69 @@ public class VisualTests {
 
     // Test gaussian envelopes
     static class LogicEnvelope implements PsychoLogic {
+
+        double[] white = new double[] { 1, 1, 1, 1 };
+        double[] black = new double[] { 0, 0, 0, 1 };
+        
         public void init(PsychoEngine psychoEngine) {
             System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
-            int x;
-            int y = 5;
-            for (double contrast = 0.1 ;  contrast <= 0.5 ; contrast += 0.05) {
+            double x;
+            double y = 5;
+            for (double contrast = 0.2 ;  contrast <= 1.0 ; contrast += 0.2) {
                 x = -5;
-                for (double sd = 0.01 ;  sd <= 0.2 ; sd += 0.05) {
-                    Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
+                for (double sd = 0; sd <= 2 ; sd += 0.5) {
+                    Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
                     stimuli.position(x, y);
-                    stimuli.distance(5);
-                    stimuli.size(1.7, 1.7);
-                    stimuli.frequency(0, 1000);
+                    stimuli.distance(50);
+                    stimuli.size(2, 2);
+                    stimuli.frequency(0, 1);
                     stimuli.contrast(contrast);
-                    //stimuli.envelope(EnvelopeType.GAUSSIAN, sd);
+                    stimuli.envelope(EnvelopeType.GAUSSIAN, sd);
                     view.add(stimuli);
-
-                    x += 2;
+                    x += 2.5;
                 }
-                y -= 2;
+                y -= 2.5;
             }
+        }
+
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command != Command.NONE) System.out.println(command);
+        }
+
+        public void update(PsychoEngine psychoEngine) {
+        }
+    }
+
+    // Test gaussian envelopes
+    static class LogicEnvelopeType implements PsychoLogic {
+
+        double[] white = new double[] { 1, 1, 1, 1 };
+        double[] black = new double[] { 0, 0, 0, 1 };
+        
+        public void init(PsychoEngine psychoEngine) {
+            System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
+
+            Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
+            stimuli.position(-8, 0);
+            stimuli.distance(90);
+            stimuli.size(6);
+            stimuli.frequency(0, 3);
+            stimuli.envelope(EnvelopeType.GAUSSIAN, 2, 1);
+            view.add(stimuli);
+            stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
+            stimuli.position(0, 0);
+            stimuli.distance(90);
+            stimuli.size(6);
+            stimuli.frequency(0, 3);
+            stimuli.envelope(EnvelopeType.CIRCLE, 2, 1, 30);
+            view.add(stimuli);
+            stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
+            stimuli.position(8, 0);
+            stimuli.distance(90);
+            stimuli.size(6);
+            stimuli.frequency(0, 3);
+            stimuli.envelope(EnvelopeType.SQUARE, 2, 1, 60);
+            view.add(stimuli);
         }
 
         public void input(PsychoEngine psychoEngine, Command command) {

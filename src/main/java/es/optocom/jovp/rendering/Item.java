@@ -7,6 +7,7 @@ import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -525,6 +526,10 @@ public class Item extends Renderable {
         else freq.z = processing.frequency.z * (float) size.x;
         if (processing.frequency.w == 0) freq.w = 1;
         else freq.w = processing.frequency.w * (float) size.y;
+        Vector3f envelope = new Vector3f();
+        envelope.x = processing.envelope.x / (float) size.x;
+        envelope.y = processing.envelope.y / (float) size.y;
+        envelope.z = processing.envelope.z;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
             vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
@@ -542,7 +547,7 @@ public class Item extends Renderable {
                 freq.get(n * Float.BYTES, buffer); n += 4;
                 processing.rotation.get(n * Float.BYTES, buffer); n += 4;
                 processing.contrast.get(n * Float.BYTES, buffer); n += 4;
-                processing.envelope.get(n * Float.BYTES, buffer); n += 4;
+                envelope.get(n * Float.BYTES, buffer); n += 4;
                 processing.defocus.get(n * Float.BYTES, buffer);
             }
             vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));

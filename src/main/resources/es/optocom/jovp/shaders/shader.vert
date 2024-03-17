@@ -23,9 +23,11 @@ layout(location = 0) out vec2 uv_out;
 layout(location = 1) out flat ivec3 settings;
 layout(location = 2) out flat vec4 rgba0;
 layout(location = 3) out flat vec4 rgba1;
-layout(location = 4) out flat vec4 contrast;
-layout(location = 5) out flat vec3 envelope;
-layout(location = 6) out flat vec3 defocus;
+layout(location = 4) out flat vec2 uvmax;
+layout(location = 5) out flat vec4 contrast;
+layout(location = 6) out flat vec3 envelope;
+layout(location = 7) out flat vec3 defocus;
+
 
 // Functions on texture: spatial frequency
 vec2 spatial(vec2 uv, vec4 frequency) {
@@ -35,10 +37,10 @@ vec2 spatial(vec2 uv, vec4 frequency) {
 // Functions on texture: rotate
 vec2 rotate(vec2 uv, vec3 rotation) {
     if (rotation.z == 0) return(uv);
-    float cosAngle = cos(rotation.z);
-    float sinAngle = sin(rotation.z);
+    float s = sin(rotation.z);
+    float c = cos(rotation.z);
     uv -= rotation.xy;
-    uv = vec2(uv.x * cosAngle - uv.y * sinAngle, uv.x * sinAngle + uv.y * cosAngle);
+    uv = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c);
     uv += rotation.xy;
     return uv;
 }
@@ -70,6 +72,7 @@ void main() {
     settings = ubo.settings;
     rgba0 = ubo.rgba0;
     rgba1 = ubo.rgba1;
+    uvmax = ubo.frequency.xy + ubo.frequency.zw;
     contrast = ubo.contrast;
     envelope = ubo.envelope;
     defocus = ubo.defocus;
