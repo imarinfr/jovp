@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;
 import org.lwjgl.vulkan.*;
 
+import es.optocom.jovp.definitions.RenderType;
 import es.optocom.jovp.definitions.ViewMode;
 
 import java.nio.IntBuffer;
@@ -449,8 +450,8 @@ public class VulkanManager {
                 renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(image));
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 {
-                    for (Item item : items) item.render(stack, commandBuffer, image);
-                    for (Text text : texts) text.render(stack, commandBuffer, image);
+                    for (Item item : items) item.render(stack, commandBuffer, image, RenderType.ITEM);
+                    for (Text text : texts) text.render(stack, commandBuffer, image, RenderType.TEXT);
                 }
                 vkCmdEndRenderPass(commandBuffer);
                 result = vkEndCommandBuffer(commandBuffer);

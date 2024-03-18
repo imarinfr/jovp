@@ -4,9 +4,9 @@ layout(binding = 0) uniform UBO {
     ivec3 settings;
     mat4 model;
     mat4 view;
-    mat4 projection;
     vec4 centers; // lens center and screen center
     vec4 coefficients; // distortion coefficients
+    mat4 projection;
     vec4 rgba0;
     vec4 rgba1;
     vec4 frequency;

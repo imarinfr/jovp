@@ -60,10 +60,10 @@ public class PsychoEngine {
 
     /**
      * 
-     * Main method for the JOVP
+     * Main method for the JOVP MONO with validation layers
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param distance    Viewing distance
+     * @param distance Viewing distance
      *
      * @since 0.0.1
      */
@@ -71,40 +71,53 @@ public class PsychoEngine {
         this(psychoLogic, distance, VALIDATION_LAYERS, API_DUMP);
     }
 
+        /**
+     * 
+     * Main method for the JOVP with validation layers
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance
+     * @param viewMode Whether it is monocular of stereoscopic view
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode) {
+        this(psychoLogic, distance, viewMode, VALIDATION_LAYERS, API_DUMP);
+    }
+
     /**
      * 
      * Main method for the JOVP MONO
      *
-     * @param psychoLogic      Logic for the psychophysics experience
-     * @param distance         Viewing distance
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance
      * @param validationLayers Whether to use validation layers
-     * @param apiDump          Whether to use the VK_LAYER_LUNARG_api_dump layer
+     * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
      *
      * @since 0.0.1
      */
     public PsychoEngine(PsychoLogic psychoLogic, float distance, boolean validationLayers, boolean apiDump) {
-        this(psychoLogic, distance, ViewMode.MONO, 0, validationLayers, apiDump);
+        this(psychoLogic, distance, ViewMode.MONO, validationLayers, apiDump);
     }
 
     /**
      * 
      * Main method for the JOVP
      *
-     * @param psychoLogic      Logic for the psychophysics experience
-     * @param distance         Viewing distance
-     * @param viewMode         Whether it is monocular of stereoscopic view
-     * @param ipd              Intra-pupil distance
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance
+     * @param viewMode Whether it is monocular of stereoscopic view
      * @param validationLayers Whether to use validation layers
-     * @param apiDump          Whether to use the VK_LAYER_LUNARG_api_dump layer
+     * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode, float ipd, boolean validationLayers, boolean apiDump) {
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode, boolean validationLayers, boolean apiDump) {
         glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
         if (!glfwInit()) throw new RuntimeException("Cannot initialize GLFW");
         this.psychoLogic = psychoLogic;
         window = new Window();
-        observer = new Observer(window, distance, viewMode, ipd);
+        observer = new Observer(window, distance, viewMode);
         vulkanManager = new VulkanManager(observer, validationLayers, apiDump);
         physicalDevices = vulkanManager.getPhysicalDevices();
         getRunTimeInfo();
@@ -344,14 +357,14 @@ public class PsychoEngine {
 
     /**
      * 
-     * Set intra-pupil distance
+     * Set pupilary distance
      * 
-     * @param ipd Intra-pupil distance in mm
+     * @param ipd pupilary distance in mm
      *
      * @since 0.0.1
      */
-    void setPupilDistance(double ipd) {
-        observer.setPupilDistance(ipd);
+    void setPupilDistance(double pd) {
+        observer.setPupilDistance(pd);
     }
 
     /**
@@ -416,7 +429,7 @@ public class PsychoEngine {
         observer.setCoefficients(k1, 0.0f, 0.0f, 0.0f);
     }
 
-        /**
+    /**
      *
      * Set Brown-Conrady model distortion coefficients
      * 

@@ -976,7 +976,6 @@ public class VisualTests {
         @Override
         public void init(PsychoEngine psychoEngine) {
             psychoEngine.setViewMode(ViewMode.STEREO);
-
             float[] fov = psychoEngine.getFieldOfView();
             background = new Item(new Model(ModelType.CIRCLE), new Texture(filenames[0]));
             background.position(0, 0);

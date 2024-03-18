@@ -19,9 +19,11 @@ import static org.lwjgl.vulkan.VK10.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_SAMPLED_BIT;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 import static org.lwjgl.vulkan.VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
 import static org.lwjgl.vulkan.VK10.VK_MEMORY_HEAP_DEVICE_LOCAL_BIT;
 import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_TRANSFER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_QUEUE_FAMILY_IGNORED;
@@ -33,9 +35,14 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 import static org.lwjgl.vulkan.VK10.vkAllocateDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
+import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
+import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
+import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
 import static org.lwjgl.vulkan.VK10.vkCmdBlitImage;
 import static org.lwjgl.vulkan.VK10.vkCmdCopyBuffer;
 import static org.lwjgl.vulkan.VK10.vkCmdCopyBufferToImage;
+import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
 import static org.lwjgl.vulkan.VK10.vkCmdPipelineBarrier;
 import static org.lwjgl.vulkan.VK10.vkCreateDescriptorPool;
 import static org.lwjgl.vulkan.VK10.vkCreateSampler;
@@ -73,11 +80,13 @@ import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 import es.optocom.jovp.definitions.ViewEye;
+import es.optocom.jovp.definitions.ViewMode;
+import es.optocom.jovp.definitions.RenderType;
 import es.optocom.jovp.definitions.Vertex;
 
 abstract class Renderable {
     
-    ViewEye eye;
+    ViewEye viewEye;
     Model model;
     Texture texture;
 
@@ -118,7 +127,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public Renderable(Model model, Texture texture) {
-        this.eye = ViewEye.BOTH;
+        this.viewEye = ViewEye.BOTH;
         this.model = model;
         this.texture = texture;
         createBuffers();
@@ -126,7 +135,7 @@ abstract class Renderable {
 
     /**
      * 
-     * Render object
+     * Render item or text
      *
      * @param stack Memory stack
      * @param commandBuffer Command buffer
@@ -134,11 +143,25 @@ abstract class Renderable {
      *
      * @since 0.0.1
      */
-    abstract void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image);
+    void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image, RenderType renderType) {
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO & viewEye != ViewEye.NONE) { // monoscopic view
+            renderEye(stack, commandBuffer, image, 0, renderType);
+            return;
+        }
+        switch (viewEye) { // stereoscopic view
+            case LEFT -> renderEye(stack, commandBuffer, image, 0, renderType);
+            case RIGHT -> renderEye(stack, commandBuffer, image, 1, renderType);
+            case BOTH -> {
+                renderEye(stack, commandBuffer, image, 0, renderType);
+                renderEye(stack, commandBuffer, image, 1, renderType);
+            }
+            case NONE -> {}
+        }
+    }
 
     /**
      * 
-     * Render object for a specific eye
+     * Render item for a specific eye
      * 
      * @param stack  stack
      * @param commandBuffer Command buffer
@@ -148,17 +171,40 @@ abstract class Renderable {
      *
      * @since 0.0.1
      */
-    abstract void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber);
+    void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber, RenderType renderType) {
+        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
+        long pipeline, pipelineLayout;
+        if (renderType == RenderType.ITEM) {
+            pipeline = viewPass.graphicsPipeline;
+            pipelineLayout = viewPass.graphicsPipelineLayout;
+        } else {
+            pipeline = viewPass.textPipeline;
+            pipelineLayout = viewPass.textPipelineLayout;
+        }
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        updateUniforms(image, VulkanSetup.observer.eyes.get(passNumber));
+        if (updateModel) recreateModel();
+        if (updateTexture) recreateTexture();
+        LongBuffer vertexBuffers = stack.longs(vertexBuffer);
+        LongBuffer offsets = stack.longs(0);
+        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout, 0,
+                stack.longs(descriptorSets.get(image)), null);
+        vkCmdDrawIndexed(commandBuffer, model.length, 1, 0, 0, 0);
+    }
 
     /**
      *
      * Update uniforms for the object to be rendered
      *
      * @param imageIndex Image where to render
+     * @param eye Eye to render
      *
      * @since 0.0.1
      */
-    abstract void updateUniforms(int imageIndex, int passNumber);
+    abstract void updateUniforms(int imageIndex, Observer.Eye eye);
 
     /**
      * 
@@ -223,12 +269,12 @@ abstract class Renderable {
      * 
      * Set eye where to render the item
      *
-     * @param eye Eye to display
+     * @param viewEye Eye to display
      *
      * @since 0.0.1
      */
-    public void show(ViewEye eye) {
-        this.eye = eye;
+    public void show(ViewEye viewEye) {
+        this.viewEye = viewEye;
     }
 
     /**
@@ -239,7 +285,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public boolean showing() {
-        return this.eye != ViewEye.NONE;
+        return this.viewEye != ViewEye.NONE;
     }
 
     /**
@@ -251,7 +297,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public ViewEye getEye() {
-        return this.eye;
+        return this.viewEye;
     }
 
     /**

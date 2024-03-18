@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -18,21 +17,11 @@ import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.VkCommandBuffer;
 
-import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.FontType;
 import es.optocom.jovp.definitions.Vertex;
-import es.optocom.jovp.definitions.ViewMode;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
-import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
-import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
-import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
-import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
-import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
@@ -360,63 +349,6 @@ public class Text extends Renderable {
     }
 
     /**
-     * 
-     * Render item
-     *
-     * @param stack Memory stack
-     * @param commandBuffer Command buffer
-     * @param image in-flight frame to render
-     *
-     * @since 0.0.1
-     */
-    @Override
-    void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
-        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != ViewEye.NONE) { // monoscopic view
-            renderEye(stack, commandBuffer, image, 0);
-            return;
-        }
-        switch (eye) { // stereoscopic view
-            case LEFT -> renderEye(stack, commandBuffer, image, 0);
-            case RIGHT -> renderEye(stack, commandBuffer, image, 1);
-            case BOTH -> {
-                renderEye(stack, commandBuffer, image, 0);
-                renderEye(stack, commandBuffer, image, 1);
-            }
-            case NONE -> {}
-        }
-    }
-
-    /**
-     * 
-     * Render item for a specific eye
-     * 
-     * @param stack  stack
-     * @param commandBuffer Command buffer
-     * @param image in-flight frame to render
-     * @param passNumber pass number. For MONO vision, it ought to be 0. For
-     *                   STEREO, left is 0 and right is 1
-     *
-     * @since 0.0.1
-     */
-    @Override
-    void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
-        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.textPipeline);
-        updateUniforms(image, passNumber);
-        if (updateModel) recreateModel();
-        if (updateTexture) recreateTexture();
-        LongBuffer vertexBuffers = stack.longs(vertexBuffer);
-        LongBuffer offsets = stack.longs(0);
-        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                viewPass.textPipelineLayout, 0,
-                stack.longs(descriptorSets.get(image)), null);
-        vkCmdDrawIndexed(commandBuffer, model.length, 1,
-                0, 0, 0);
-    }
-
-    /**
      *
      * Update uniforms for the image to be rendered
      *
@@ -425,7 +357,7 @@ public class Text extends Renderable {
      * @since 0.0.1
      */
     @Override
-    void updateUniforms(int imageIndex, int passNumber) {
+    void updateUniforms(int imageIndex, Observer.Eye eye) {
         if (updateModelMatrix) {
             modelMatrix.translationRotateScale(new Vector3f(position.x, position.y, 0.0f), new Quaternionf(), new Vector3f(size, size, 0.0f));
             updateModelMatrix = false;

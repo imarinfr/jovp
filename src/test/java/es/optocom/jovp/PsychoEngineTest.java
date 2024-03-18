@@ -107,8 +107,7 @@ public class PsychoEngineTest {
      */
     @Test
     public void stereoMode() {
-        PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic());
-        psychoEngine.setViewMode(ViewMode.STEREO);
+        PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic(), 500, ViewMode.STEREO);
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }

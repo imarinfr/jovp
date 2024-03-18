@@ -1,7 +1,6 @@
 package es.optocom.jovp.rendering;
 
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
@@ -11,22 +10,12 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkCommandBuffer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.VK_INDEX_TYPE_UINT32;
-import static org.lwjgl.vulkan.VK10.VK_PIPELINE_BIND_POINT_GRAPHICS;
-import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
-import static org.lwjgl.vulkan.VK10.vkCmdBindIndexBuffer;
-import static org.lwjgl.vulkan.VK10.vkCmdBindPipeline;
-import static org.lwjgl.vulkan.VK10.vkCmdBindVertexBuffers;
-import static org.lwjgl.vulkan.VK10.vkCmdDrawIndexed;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
-import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.EnvelopeType;
-import es.optocom.jovp.definitions.ViewMode;
 
 /**
  * 
@@ -306,7 +295,7 @@ public class Item extends Renderable {
         processing.contrast(r, g, b, a);
     }
 
-        /**
+    /**
      * 
      * Rotate the texture inside the model
      *
@@ -327,7 +316,6 @@ public class Item extends Renderable {
      * @param rotation Angle of rotation in degrees
      *
      * @since 0.0.1
-     * 
      */
     public void texRotation(double u, double v, double rotation) {
         processing.rotation(u, v, rotation);
@@ -441,65 +429,6 @@ public class Item extends Renderable {
         processing.removeDefocus();
     }
 
-
-    
-    /**
-     * 
-     * Render item
-     *
-     * @param stack Memory stack
-     * @param commandBuffer Command buffer
-     * @param image in-flight frame to render
-     *
-     * @since 0.0.1
-     */
-    @Override
-     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
-        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != ViewEye.NONE) { // monoscopic view
-            renderEye(stack, commandBuffer, image, 0);
-            return;
-        }
-        switch (eye) { // stereoscopic view
-            case LEFT -> renderEye(stack, commandBuffer, image, 0);
-            case RIGHT -> renderEye(stack, commandBuffer, image, 1);
-            case BOTH -> {
-                renderEye(stack, commandBuffer, image, 0);
-                renderEye(stack, commandBuffer, image, 1);
-            }
-            case NONE -> {}
-        }
-    }
-
-    /**
-     * 
-     * Render item
-     * 
-     * @param stack  stack
-     * @param commandBuffer Command buffer
-     * @param image in-flight frame to render
-     * @param passNumber pass number. For MONO vision, it ought to be 0. For
-     *                   STEREO, left is 0 and right is 1
-     *
-     * @since 0.0.1
-     */
-    @Override
-     void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
-        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, viewPass.graphicsPipeline);
-        updateUniforms(image, passNumber);
-        if (updateModel) recreateModel();
-        if (updateTexture) recreateTexture();
-        LongBuffer vertexBuffers = stack.longs(vertexBuffer);
-        LongBuffer offsets = stack.longs(0);
-        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                viewPass.graphicsPipelineLayout, 0,
-                stack.longs(descriptorSets.get(image)), null);
-        vkCmdDrawIndexed(commandBuffer, model.length, 1,
-                0, 0, 0);
-    }
-
     /**
      *
      * Update uniforms for the image to be rendered
@@ -509,7 +438,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     @Override
-     void updateUniforms(int imageIndex, int passNumber) {
+     void updateUniforms(int imageIndex, Observer.Eye eye) {
         if (updateModelMatrix) {
             Vector3d position = new Vector3d(direction.x, direction.y, direction.z).mul(distance);
             Quaterniond quaternion = new Quaterniond()
@@ -542,10 +471,10 @@ public class Item extends Renderable {
                 ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
                 (new Matrix4f(modelMatrix)).get(n * Float.BYTES, buffer); n += 16;
-                VulkanSetup.observer.views.get(passNumber).get(n * Float.BYTES, buffer); n += 16;
+                eye.getView().get(n * Float.BYTES, buffer); n += 16;
+                eye.optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
+                eye.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
                 VulkanSetup.observer.projection.get(n * Float.BYTES, buffer); n += 16;
-                VulkanSetup.observer.optics.getCenters().get(n * Float.BYTES, buffer); n += 4;
-                VulkanSetup.observer.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
                 freq.get(n * Float.BYTES, buffer); n += 4;
