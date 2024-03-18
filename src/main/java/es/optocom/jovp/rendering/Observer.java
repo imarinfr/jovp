@@ -19,7 +19,7 @@ public class Observer {
 
     public static final float ZNEAR = 0.01f; // Near and far planes in in meters
     public static final float ZFAR = 1000.0f;
-    private static final float IPD = 62.4f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
+    private static final float IPD = 0.2f; // Default IPD in mm (mean is 61.1 mm for women and 63.6 mm for men)
 
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
@@ -64,10 +64,10 @@ public class Observer {
      * Define the observer, whether we use monocular or stereoscopic view
      * and the intra-pupil distance between left and right eyes
      * 
-     * @param window   The window that the observer is looking at
+     * @param window The window that the observer is looking at
      * @param distance Viewing distance to compute fovx and fovy
      * @param viewMode Whether it is monocular of stereoscopic view
-     * @param ipd      Intra-pupil distance in mm
+     * @param ipd Intra-pupil distance in mm
      *
      * @since 0.0.1
      */
@@ -238,10 +238,14 @@ public class Observer {
                 views.get(0).set(new Matrix4f().setLookAt(eye, center, up));
             }
             case STEREO -> {
-                Vector3f leftEye = eye;
-                Vector3f rightEye = eye;
-                leftEye.x = leftEye.x - ipd / 2.0f;
-                rightEye.x = rightEye.x + ipd / 2.0f;
+                Vector3f leftEye = new Vector3f();
+                Vector3f rightEye = new Vector3f();
+                leftEye.x = eye.x - ipd / 2.0f;
+                leftEye.y = eye.y;
+                leftEye.z = eye.z;
+                rightEye.x = eye.x + ipd / 2.0f;
+                rightEye.y = eye.y;
+                rightEye.z = eye.z;
                 views.get(0).set(new Matrix4f().setLookAt(leftEye, center, up));
                 views.get(1).set(new Matrix4f().setLookAt(rightEye, center, up));
             }
@@ -274,8 +278,6 @@ public class Observer {
         float rx = -(float) Math.toRadians(rotation.x);
         float ry = -(float) Math.toRadians(rotation.y);
         float rz = (float) Math.toRadians(rotation.z);
-        //rotateTowardsXY(float dirX, float dirY)
-        //rotateTowards(Vector3fc dir, Vector3fc up)
         views.get(0).rotateXYZ(rx, ry, rz);
         if (viewMode == ViewMode.STEREO) views.get(1).rotateXYZ(rx, ry, rz);
     }

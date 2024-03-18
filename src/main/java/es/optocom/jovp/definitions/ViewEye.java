@@ -6,7 +6,7 @@ package es.optocom.jovp.definitions;
  *
  * @since 0.0.1
  */
-public enum Eye {
+public enum ViewEye {
     /** Left eye */
     LEFT,
     /** Right eye */

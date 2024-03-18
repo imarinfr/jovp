@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Paradigm;
@@ -201,7 +201,7 @@ public class PsychoEngineTest {
         public void init(PsychoEngine psychoEngine) {
             background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor)); // background
             background.position(0, 0);
-            background.distance(90);
+            background.distance(900);
             view.add(background);
             fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
             fixation.size(2);
@@ -210,7 +210,7 @@ public class PsychoEngineTest {
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus1.position(-3, -3);
             stimulus1.size(4.5, 4.5);
-            stimulus1.distance(75);
+            stimulus1.distance(500);
             stimulus1.frequency(0, 0.5);
             stimulus1.rotation(45);
             stimulus1.contrast(0.75);
@@ -219,16 +219,16 @@ public class PsychoEngineTest {
             stimulus2.frequency(0, 2);
             stimulus2.position(6, 2);
             stimulus2.size(4, 2);
-            stimulus2.distance(75);
-            stimulus2.show(Eye.LEFT);
+            stimulus2.distance(250);
+            stimulus2.show(ViewEye.LEFT);
             stimulus2.contrast(0.25);
             view.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE));
             stimulus3.frequency(0, 2);
             stimulus3.position(3, -2);
             stimulus3.size(2, 2);
-            stimulus3.distance(75);
-            stimulus3.show(Eye.RIGHT);
+            stimulus3.distance(100);
+            stimulus3.show(ViewEye.RIGHT);
             stimulus3.distance(75);
             stimulus3.contrast(0.5);
             view.add(stimulus3);
@@ -270,14 +270,14 @@ public class PsychoEngineTest {
             background.size(fov[0], fov[1]);
             double time = timer.getElapsedTime();
             if (swapEyeTimer.getElapsedTime() > swapEyeTime) {
-                if (stimulus2.getEye() == Eye.LEFT)
-                    stimulus2.show(Eye.RIGHT);
+                if (stimulus2.getEye() == ViewEye.LEFT)
+                    stimulus2.show(ViewEye.RIGHT);
                 else
-                    stimulus2.show(Eye.LEFT);
-                if (stimulus3.getEye() == Eye.RIGHT)
-                    stimulus3.show(Eye.LEFT);
+                    stimulus2.show(ViewEye.LEFT);
+                if (stimulus3.getEye() == ViewEye.RIGHT)
+                    stimulus3.show(ViewEye.LEFT);
                 else
-                    stimulus3.show(Eye.RIGHT);
+                    stimulus3.show(ViewEye.RIGHT);
                 swapEyeTimer.start();
             }
             stimulus1.contrast(Math.sin(time / 1000.0) / 2 + 0.5);

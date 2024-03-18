@@ -2,7 +2,7 @@ package es.optocom.jovp;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.EnvelopeType;
-import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
 import es.optocom.jovp.definitions.Paradigm;
@@ -594,7 +594,7 @@ public class VisualTests {
             circle.position(0, ypos);
             circle.distance(zpos);
             circle.size(size, size);
-            circle.show(Eye.BOTH);
+            circle.show(ViewEye.BOTH);
             view.add(circle);
             try {
                 Thread.sleep(5000);
@@ -614,7 +614,7 @@ public class VisualTests {
             if (time > 13425) {
                 // throw myself at observer
                 if (time > 14425) {
-                    circle.show(Eye.BOTH);
+                    circle.show(ViewEye.BOTH);
                     circle.position(0, ypos + Math.sin(time / 100));
                     circle.distance(zpos);
                 }
@@ -626,7 +626,7 @@ public class VisualTests {
                     circle.distance(zpos);
                     circle.size(size, size);
                 }
-                if (zpos < 2) for (Item item : view.items()) item.show(Eye.BOTH);
+                if (zpos < 2) for (Item item : view.items()) item.show(ViewEye.BOTH);
                 return;
             }
             iteration++;
@@ -659,7 +659,7 @@ public class VisualTests {
             for (Item item : view.items()) {
                 if (item.getModel().getType() != ModelType.CIRCLE) continue;
                 if (time < 8000) continue;
-                item.show(Eye.BOTH);
+                item.show(ViewEye.BOTH);
                 leadPosition += 1 / 60.0;
                 if (imageNumber < 10)
                     item.position(leadPosition - 5 * imageNumber, 8);
@@ -751,7 +751,7 @@ public class VisualTests {
                 fileName = "ivanito.jpeg";
             Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
             circle.size(2.25, 2.25);
-            circle.show(Eye.NONE);
+            circle.show(ViewEye.NONE);
             view.add(circle);
         }
 
@@ -870,10 +870,10 @@ public class VisualTests {
                 textureTimer.start();
             }
             if (blinkTimer.getElapsedTime() > blinkItemTime) {
-                if (item2.getEye() == Eye.BOTH)
-                    item2.show(Eye.NONE);
+                if (item2.getEye() == ViewEye.BOTH)
+                    item2.show(ViewEye.NONE);
                 else
-                    item2.show(Eye.BOTH);
+                    item2.show(ViewEye.BOTH);
                 blinkTimer.start();
             }
             if (timerFps.getElapsedTime() <= refreshTime)
@@ -991,7 +991,7 @@ public class VisualTests {
 
             text = new Text();
             text.setText("Swap Count: " + count);
-            text.show(Eye.BOTH);
+            text.show(ViewEye.BOTH);
             text.setPosition(0, 0.1);
             text.setSize(0.5);
             view.add(text);

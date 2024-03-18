@@ -20,7 +20,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
-import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.FontType;
 import es.optocom.jovp.definitions.Vertex;
 import es.optocom.jovp.definitions.ViewMode;
@@ -371,7 +371,7 @@ public class Text extends Renderable {
      */
     @Override
     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
-        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != Eye.NONE) { // monoscopic view
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO & eye != ViewEye.NONE) { // monoscopic view
             renderEye(stack, commandBuffer, image, 0);
             return;
         }

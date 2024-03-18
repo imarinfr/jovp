@@ -72,12 +72,12 @@ import org.lwjgl.vulkan.VkImageMemoryBarrier;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
-import es.optocom.jovp.definitions.Eye;
+import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.Vertex;
 
 abstract class Renderable {
     
-    Eye eye;
+    ViewEye eye;
     Model model;
     Texture texture;
 
@@ -118,7 +118,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public Renderable(Model model, Texture texture) {
-        this.eye = Eye.BOTH;
+        this.eye = ViewEye.BOTH;
         this.model = model;
         this.texture = texture;
         createBuffers();
@@ -227,7 +227,7 @@ abstract class Renderable {
      *
      * @since 0.0.1
      */
-    public void show(Eye eye) {
+    public void show(ViewEye eye) {
         this.eye = eye;
     }
 
@@ -239,7 +239,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public boolean showing() {
-        return this.eye != Eye.NONE;
+        return this.eye != ViewEye.NONE;
     }
 
     /**
@@ -250,7 +250,7 @@ abstract class Renderable {
      *
      * @since 0.0.1
      */
-    public Eye getEye() {
+    public ViewEye getEye() {
         return this.eye;
     }
 
