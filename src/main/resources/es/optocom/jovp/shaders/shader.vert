@@ -28,7 +28,6 @@ layout(location = 5) out flat vec4 contrast;
 layout(location = 6) out flat vec3 envelope;
 layout(location = 7) out flat vec3 defocus;
 
-
 // Functions on texture: spatial frequency
 vec2 spatial(vec2 uv, vec4 frequency) {
     return(frequency.xy + frequency.zw * uv);
@@ -63,8 +62,7 @@ vec4 distortion(vec4 position) {
 void main() {
     // apply distortion as necessary
     vec4 position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
-    //gl_Position = distortion(position);
-    gl_Position = position;
+    gl_Position = distortion(position);
     // Calculate the texture coordinates for the distorted vertex
     //vec2 tc = (gl_Position.xy - ubo.centers.wz) * vec2(1.0, -1.0) + ubo.centers.xy;
     //uv_out = vec2(tc.x, tc.y);

@@ -438,7 +438,7 @@ public class PsychoEngineTest {
             if (distortion) {
                 psychoEngine.setNoDistortion();
             } else {
-                psychoEngine.setDistortion(-0.1, -0.03);
+                psychoEngine.setDistortion(0.01, -0.001);
             }
             distortion = !distortion;
         };

@@ -384,9 +384,12 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
      * Add Gaussian defocus (only spherical)
      *
      * @param dx Defocus in Diopters
+     * 
+     * TODO: Defocus not functional
      *
      * @since 0.0.1
      */
@@ -395,11 +398,14 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
      * Add Gaussian defocus (spherical and astigmatic defocus)
      *
      * @param dx    Defocus for the x-axis in Diopters
      * @param dy    Defocus for the x-axis
      * @param angle Angle
+     * 
+     * TODO: Defocus not functional
      *
      * @since 0.0.1
      */
@@ -408,12 +414,15 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
      * Add Gaussian defocus (spherical and astigmatic defocus)
      *
      * @param dx    Defocus for the x-axis in Diopters
      * @param dy    Defocus for the x-axis
      * @param angle Angle
      *
+     * TODO: Defocus not functional
+     * 
      * @since 0.0.1
      */
     public void defocus(float dx, float dy, float angle) {
@@ -421,6 +430,7 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
      * Remove the Gaussian defocus
      *
      * @since 0.0.1

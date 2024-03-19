@@ -77,6 +77,7 @@ public class Observer {
         this.window = window;
         this.distance = distance;
         this.viewMode = viewMode;
+        this.pd = pd;
         resetViewMatrix();
         computePerspective();
         switch(viewMode) {
@@ -85,8 +86,8 @@ public class Observer {
                 eyes.add(null);
             }
             case STEREO -> {
-                eyes.add(new Eye(-pd));
-                eyes.add(new Eye(pd));
+                eyes.add(new Eye(-this.pd));
+                eyes.add(new Eye(this.pd));
             }
         }
     }
@@ -218,7 +219,7 @@ public class Observer {
      */
     public void setCoefficients(double k1, double k2, double k3, double k4) {
         eyes.get(0).optics.setCoefficients(k1, k2, k3, k4);
-        eyes.get(1).optics.setCoefficients(k1, k2, k3, k4);
+        if (viewMode == ViewMode.STEREO) eyes.get(1).optics.setCoefficients(k1, k2, k3, k4);
     }
 
     /**
@@ -283,8 +284,7 @@ public class Observer {
         float width = window.getPixelWidth() * window.getWidth();
         float height = window.getPixelHeight() * window.getHeight();
         if (viewMode == ViewMode.STEREO) width = width / 2.0f; // only half of the screen is used per eye
-        projection.setPerspective((float) (2 * Math.atan(height / distance / 2)),
-                                  width / height, ZNEAR, ZFAR);
+        projection.setPerspective((float) (2 * Math.atan(height / distance / 2)), width / height, ZNEAR, ZFAR);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
@@ -331,7 +331,7 @@ public class Observer {
          * @since 0.0.1
          */
         public Matrix4f getView() {
-            return viewMatrix;
+            return new Matrix4f(viewMatrix).translate(new Vector3f(pd, 0.0f, 0.0f));
         }
 
         /**

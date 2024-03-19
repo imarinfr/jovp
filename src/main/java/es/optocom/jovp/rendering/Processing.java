@@ -20,6 +20,7 @@ class Processing {
     Vector4f contrast = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f); // xyzw = amplitudes for R, G, B, and alpha channels
     Vector3f rotation = new Vector3f(); // texture rotation around u and v values (x and y) and by an angle of z radians.
     Vector3f envelope = new Vector3f(); // xy = SD of ellipse x and y axes, z = ellipse rotation in radians
+    //TODO: Defocus not functional
     Vector3f defocus = new Vector3f(); // xy = Geometric defocus x and y axes, z = astigmatism axis
 
     TextureType type;
@@ -31,7 +32,6 @@ class Processing {
      * @param type Texture type
      *
      * @since 0.0.1
-     * 
      */
     Processing(TextureType type) {
         setType(type);
@@ -44,7 +44,6 @@ class Processing {
      * @return Texture type
      *
      * @since 0.0.1
-     * 
      */
     public TextureType getType() {
         return type;
@@ -57,7 +56,6 @@ class Processing {
      * @param type Texture type
      *
      * @since 0.0.1
-     * 
      */
     public void setType(TextureType type) {
         this.type = type;
@@ -79,7 +77,6 @@ class Processing {
      * @param yf Frequency on the y-axis on cycles per degree
      *
      * @since 0.0.1
-     * 
      */
     public void frequency(double xp, double xf, double yp, double yf) {
         this.frequency = new Vector4f((float) (Math.toRadians(xp) / (2 * Math.PI)),
@@ -97,7 +94,6 @@ class Processing {
      * @param a Amplitude for alpha channel
      *
      * @since 0.0.1
-     * 
      */
     public void contrast(double r, double g, double b, double a) {
         this.contrast = new Vector4f((float) r, (float) g, (float) b, (float) a);
@@ -112,7 +108,6 @@ class Processing {
      * @param rotation Angle of rotation in degrees
      *
      * @since 0.0.1
-     * 
      */
     public void rotation(double u, double v, double rotation) {
         this.rotation = new Vector3f((float) u, (float) v, (float) Math.toRadians(rotation));
@@ -128,7 +123,6 @@ class Processing {
      * @param angle Angle of rotation in degrees
      *
      * @since 0.0.1
-     * 
      */
     void envelope(EnvelopeType type, double sdx, double sdy, double angle) {
         settings.y = switch(type) {
@@ -144,31 +138,9 @@ class Processing {
 
     /**
      *
-     * Add Gaussian defocus (spherical and astigmatic defocus)
-     *
-     * @param dx Defocus in diopters for the x-axis
-     * @param dy Defocus in diopters for the y-axis
-     * @param angle Angle
-     *
-     * @since 0.0.1
-     * 
-     */
-    void defocus(double dx, double dy, double angle) {
-        settings.z = 1;
-        // TODO: convert from Diopters to Gaussian SD in visual angle
-        double sdx = dx;
-        double sdy = dy;
-        defocus.x = (float) Math.toRadians(sdx) / 2;
-        defocus.y = (float) Math.toRadians(sdy) / 2;
-        defocus.z = (float) Math.toRadians(angle);
-    }
-
-    /**
-     *
      * Remove envelope
      *
      * @since 0.0.1
-     * 
      */
     void removeEnvelope() {
         settings.y = 0;
@@ -177,10 +149,32 @@ class Processing {
 
     /**
      *
-     * Remove defocus
+     * Add Gaussian defocus (spherical and astigmatic defocus)
+     *
+     * @param dx Defocus in diopters for the x-axis
+     * @param dy Defocus in diopters for the y-axis
+     * @param angle Angle
+     * 
+     * TODO: Defocus not functional
      *
      * @since 0.0.1
+     */
+    void defocus(double dx, double dy, double angle) {
+        settings.z = 0;
+        //double sdx = dx;
+        //double sdy = dy;
+        //defocus.x = (float) Math.toRadians(sdx) / 2;
+        //defocus.y = (float) Math.toRadians(sdy) / 2;
+        //defocus.z = (float) Math.toRadians(angle);
+    }
+
+    /**
+     *
+     * Remove defocus
      * 
+     * TODO: Defocus not functional
+     *
+     * @since 0.0.1
      */
     void removeDefocus() {
         settings.z = 0;
