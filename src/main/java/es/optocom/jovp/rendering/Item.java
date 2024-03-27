@@ -16,6 +16,7 @@ import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import es.optocom.jovp.definitions.EnvelopeType;
+import es.optocom.jovp.definitions.Units;
 
 /**
  * 
@@ -25,19 +26,16 @@ import es.optocom.jovp.definitions.EnvelopeType;
  */
 public class Item extends Renderable {
 
-    private double distance = (Observer.ZFAR - Observer.ZNEAR) / 2; // distance of the item in meters
-    private Vector3d size; // (x, y) size in degrees and z y meters
-    private Vector3d scale; // size in x, y, and z in meters (size = 2 * scale)
+    private Units coordinates; // type of projection
+    private Vector3d position; // unit vector with (x, y, z) position in meters
+    private Vector3d size; // size in x, y, and z in meters
     private Vector3d rotation; // angles of rotation in each axis in radians
-    private Vector3d direction; // unit vector with (x, y, z) direction in meters
     private Matrix4d modelMatrix; // model matrix
     private Processing processing; // Post-processing things
 
-    private boolean updateModelMatrix = false;
-
     /**
      * 
-     * Create an item for psychophysics experience
+     * Create an item for psychophysics experience with default projection
      *
      * @param model The model (square, circle, etc)
      * @param texture The texture
@@ -45,13 +43,28 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
+        this(model, texture, Units.ANGLES);
+    }
+
+    /**
+     * 
+     * Create an item for psychophysics experience
+     *
+     * @param model The model (square, circle, etc)
+     * @param texture The texture
+     * @param coordinates Either specifying item projection
+     * (specification in METERS, DEGREES, or degrees on a SPHERIC surface)
+     *
+     * @since 0.0.1
+     */
+    public Item(Model model, Texture texture, Units coordinates) {
         super(model, texture);
-        direction = new Vector3d(0, 0, 1);
-        size = new Vector3d(1, 1, 1);
-        scale = new Vector3d(1, 1, 1);
-        rotation = new Vector3d();
-        modelMatrix = new Matrix4d();
-        processing = new Processing(texture.getType());
+        this.coordinates = coordinates;
+        this.position = new Vector3d(0, 0, 0);
+        this.size = new Vector3d(1, 1, 0);
+        this.rotation = new Vector3d();
+        this.modelMatrix = new Matrix4d();
+        this.processing = new Processing(texture.getType());
     }
 
     /**
@@ -76,27 +89,70 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Vector3d getPosition() {
-        return (new Vector3d(distance * direction.x,
-                             distance * direction.y,
-                             distance * direction.z));
+        return position;
+    }
+
+    /**
+     * 
+     * Position the item in meters or degrees of visual angle
+     * depending on the mode of projection
+     *
+     * @param x x-axis position in meters of degrees of visual angle
+     * @param y y-axis position in meters of degrees of visual angle
+     *
+     * @since 0.0.1
+     */
+    public void position(double x, double y) {
+        position(x, y, position.z);
+        //if (coordinates == Coordinates.SPHERICAL) {
+        //    d = position.length();
+        //    if (Double.isNaN(d)) d = VulkanSetup.observer.getDistanceM();
+        //}
     }
 
     /**
      * 
      * Position the item
      *
-     * @param x x-axis position in degrees of visual angle
-     * @param y y-axis position in degrees of visual angle
+     * @param x x-axis position in degrees of visual angle, meters or pixels
+     * @param y y-axis position in degrees of visual angle, meters or pixels
+     * @param d z-axis position or radial distance in meters
      *
      * @since 0.0.1
      */
-    public void position(double x, double y) {
-        double xp = Math.toRadians(x);
-        double yp = Math.toRadians(y);
-        direction.x = Math.sin(xp);
-        direction.y = Math.sin(yp);
-        direction.z = Math.cos(xp) * Math.cos(yp);
-        updateModelMatrix = true;
+    public void position(double x, double y, double d) {
+        switch (coordinates) {
+            case ANGLES -> {
+                double eye = VulkanSetup.observer.getDistanceM();
+                x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
+                y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
+                position.x = eye * Math.tan(x);
+                position.y = eye * Math.tan(y);
+                position.z = d + Observer.ZNEAR;
+            }
+            case METERS -> {
+                position.x = x;
+                position.y = y;
+                position.z = d + Observer.ZNEAR;
+            }
+            case PIXELS -> {
+                position.x = VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
+                position.y = VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
+                position.z = d + Observer.ZNEAR;
+            }
+            case SPHERICAL -> {
+                double eye = VulkanSetup.observer.getDistanceM();
+                x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
+                y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
+                double theta;
+                if (x == 0) theta = y;
+                else theta = Math.atan(Math.cos(x) * Math.tan(y));
+                position.x = eye * Math.cos(theta) * Math.sin(x);
+                position.y = eye * Math.sin(theta);
+                position.z = eye * Math.cos(theta) * Math.cos(x);
+            }
+        }
+        updateModelMatrix();
     }
 
     /**
@@ -108,28 +164,29 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void distance(double distance) {
-        if(distance == 0) distance = Observer.ZNEAR;
-        else if(Math.abs(distance) < Observer.ZNEAR)
-            distance = Math.signum(distance) * Observer.ZNEAR;
-        // recalculate scale
-        double sc = Math.abs(distance / this.distance);
-        scale.x = sc * scale.x;
-        scale.y = sc * scale.y;
-        scale.z = sc * scale.z;
-        this.distance = distance;
-        updateModelMatrix = true;
+        position.z = distance + Observer.ZNEAR;
+            //case SPHERICAL -> {
+            //    double sc = distance / position.length();
+            //    position = position.normalize().mul(distance);
+            //    size.mul(sc);
+            //}
+        updateModelMatrix();
     }
 
     /**
      * 
-     * Get distance in meters
+     * Get distance in meters from the eye
      *
      * @return distance in meters
      *
      * @since 0.0.1
      */
     public double getDistance() {
-        return distance;
+        // TODO
+        return switch(coordinates) {
+            case SPHERICAL -> position.length();
+            default -> position.z;
+        };
     }
 
     /**
@@ -141,7 +198,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Vector3d getSize() {
-        return (new Vector3d(2 * scale.x, 2 * scale.y, 2 * scale.z));
+        return size;
     }
 
     /**
@@ -153,7 +210,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void size(double x) {
-        size(x, x);
+        size(x, x, 0);
     }
 
     /**
@@ -171,25 +228,43 @@ public class Item extends Renderable {
 
     /**
      * 
-     * Set item size
+     * Set item size in meters or degrees of visual angle
      *
-     * @param x Size along the x-axis in degrees fo visual angle
-     * @param y Size along the y-axis in degrees fo visual angle
-     * @param z Size along the z-axis in meters
+     * @param x Size along the x-axis
+     * @param y Size along the y-axis
+     * @param z Size along the z-axis always in meters
      *
      * @since 0.0.1
      */
     public void size(double x, double y, double z) {
-        if(Math.abs(x) < 0) x = 0;
-        if(Math.abs(y) < 0) y = 0;
-        if(Math.abs(z) < 0) z = 0;
-        size.x = x;
-        size.y = y;
-        size.z = z;
-        scale.x = distance * Math.tan(Math.toRadians(Math.abs(x)) / 2);
-        scale.y = distance * Math.tan(Math.toRadians(Math.abs(y)) / 2);
-        scale.z = Math.abs(z) / 2;
-        updateModelMatrix = true;
+        if(Math.abs(x) < 0) x = 0; if(Math.abs(y) < 0) y = 0; if(Math.abs(z) < 0) z = 0;
+        switch (coordinates) {
+            case ANGLES -> {
+                double distance = VulkanSetup.observer.getDistanceM();
+                size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
+                size.y = 2 * distance * Math.tan(Math.toRadians(y) / 2);
+                size.z = z;
+            }
+            case METERS -> {
+                size.x = x;
+                size.y = y;
+                size.z = z;
+            }
+            case PIXELS -> {
+                size.x = VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
+                size.y = VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
+                size.z = z;
+            }
+            case SPHERICAL -> {
+                double distance;
+                if (coordinates == Units.ANGLES) distance = position.z;
+                else distance = position.length();
+                size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
+                size.y = 2 * distance * Math.tan(Math.toRadians(y) / 2);
+                size.z = z;
+            }
+        }
+        updateModelMatrix();
     }
 
     /**
@@ -214,7 +289,7 @@ public class Item extends Renderable {
      */
     public void rotation(double x, double y, double z) {
         rotation = new Vector3d(Math.toRadians(x), Math.toRadians(y), Math.toRadians(z));
-        updateModelMatrix = true;
+        updateModelMatrix();
     }
 
     /**
@@ -448,30 +523,24 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     @Override
-     void updateUniforms(int imageIndex, Observer.Eye eye) {
-        if (updateModelMatrix) {
-            Vector3d position = new Vector3d(direction.x, direction.y, direction.z).mul(distance);
-            Quaterniond quaternion = new Quaterniond()
-                .rotationTo(new Vector3d(0, 0, 1), direction)
-                .rotateZYX(rotation.z, rotation.y, rotation.x);
-            modelMatrix.translationRotateScale(position, quaternion, scale);
-            updateModelMatrix = false;
-        }
+    void updateUniforms(int imageIndex, Observer.Eye eye) {
         int n = 0;
         Vector4f freq = new Vector4f();
         freq.x = processing.frequency.x;
         freq.y = processing.frequency.y;
-        if (processing.frequency.z == 0) freq.z = 1;
-        else freq.z = processing.frequency.z * (float) size.x;
-        if (processing.frequency.w == 0) freq.w = 1;
-        else freq.w = processing.frequency.w * (float) size.y;
+        // TODO
+        //if (processing.frequency.z == 0) freq.z = 1;
+        //else freq.z = processing.frequency.z * (float) size.x;
+        //if (processing.frequency.w == 0) freq.w = 1;
+        //else freq.w = processing.frequency.w * (float) size.y;
         Vector3f rotation = new Vector3f();
         rotation.x = freq.z * processing.rotation.x;
         rotation.y = freq.w * processing.rotation.y;
         rotation.z = processing.rotation.z;
         Vector3f envelope = new Vector3f();
-        envelope.x = processing.envelope.x / (float) size.x;
-        envelope.y = processing.envelope.y / (float) size.y;
+        // TODO
+        //envelope.x = processing.envelope.x / (float) size.x;
+        //envelope.y = processing.envelope.y / (float) size.y;
         envelope.z = processing.envelope.z;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
@@ -482,9 +551,13 @@ public class Item extends Renderable {
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
                 (new Matrix4f(modelMatrix)).get(n * Float.BYTES, buffer); n += 16;
                 eye.getView().get(n * Float.BYTES, buffer); n += 16;
+                if (coordinates == Units.SPHERICAL) {
+                    VulkanSetup.observer.perspective.get(n * Float.BYTES, buffer); n += 16;
+                } else {
+                    VulkanSetup.observer.orthographic.get(n * Float.BYTES, buffer); n += 16;
+                }
                 eye.optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
                 eye.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
-                VulkanSetup.observer.projection.get(n * Float.BYTES, buffer); n += 16;
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
                 freq.get(n * Float.BYTES, buffer); n += 4;
@@ -495,6 +568,20 @@ public class Item extends Renderable {
             }
             vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
         }
+    }
+
+    /** update model matrix */
+    private void updateModelMatrix() {
+        Vector3d scale = new Vector3d();
+        size.mul(0.5, scale);
+        Quaterniond quaternion = new Quaterniond();
+        if (coordinates == Units.SPHERICAL) {
+            Vector3d direction = new Vector3d(0, 0, Observer.ZNEAR);
+            if (position.length() > 0) direction = position;
+            quaternion.rotationTo(new Vector3d(0, 0, 1), direction);
+        }
+        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
+        modelMatrix.translationRotateScale(position, quaternion, scale);
     }
 
 }

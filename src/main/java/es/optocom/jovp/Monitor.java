@@ -173,6 +173,18 @@ public class Monitor {
 
     /**
      * 
+     * Get monitor pixel width
+     *
+     * @return The pixel width in meters
+     *
+     * @since 0.0.1
+     */
+    public float getPixelWidthM() {
+        return pixelWidth / 1000.0f;
+    }
+
+    /**
+     * 
      * Get monitor pixel height
      *
      * @return The pixel height in mm
@@ -181,6 +193,18 @@ public class Monitor {
      */
     public float getPixelHeight() {
         return pixelHeight;
+    }
+
+    /**
+     * 
+     * Get monitor pixel height
+     *
+     * @return The pixel height in meters
+     *
+     * @since 0.0.1
+     */
+    public float getPixelHeightM() {
+        return pixelHeight / 1000.0f;
     }
 
     /**

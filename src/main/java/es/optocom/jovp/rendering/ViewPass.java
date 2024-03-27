@@ -317,7 +317,6 @@ class ViewPass {
             .depthTestEnable(VulkanSetup.DEPTH_TEST_ENABLE).depthWriteEnable(VulkanSetup.DEPTH_WRITE_ENABLE)
             .depthCompareOp(VulkanSetup.DEPTH_COMPARE_OPERATION)
             .depthBoundsTestEnable(VulkanSetup.DEPTH_BOUNDS_TEST_ENABLE)
-            .minDepthBounds(VulkanSetup.MIN_DEPTH_BOUNDS).maxDepthBounds(VulkanSetup.MAX_DEPTH_BOUNDS)
             .stencilTestEnable(VulkanSetup.STENCIL_TEST_ENABLE);
     }
 

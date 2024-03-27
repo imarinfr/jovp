@@ -79,9 +79,7 @@ class Processing {
      * @since 0.0.1
      */
     public void frequency(double xp, double xf, double yp, double yf) {
-        this.frequency = new Vector4f((float) (Math.toRadians(xp) / (2 * Math.PI)),
-                                      (float) (Math.toRadians(yp) / (2 * Math.PI)),
-                                      (float) xf, (float) yf);
+        this.frequency = new Vector4f((float) xp, (float) yp, (float) xf, (float) yf);
     }
 
     /**

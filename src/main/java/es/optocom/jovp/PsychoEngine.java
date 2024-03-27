@@ -63,7 +63,7 @@ public class PsychoEngine {
      * Main method for the JOVP MONO with validation layers
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param distance Viewing distance
+     * @param distance Viewing distance in mm
      *
      * @since 0.0.1
      */
@@ -76,7 +76,7 @@ public class PsychoEngine {
      * Main method for the JOVP with validation layers
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param distance Viewing distance
+     * @param distance Viewing distance in mm
      * @param viewMode Whether it is monocular of stereoscopic view
      *
      * @since 0.0.1
@@ -90,7 +90,7 @@ public class PsychoEngine {
      * Main method for the JOVP MONO
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param distance Viewing distance
+     * @param distance Viewing distance in mm
      * @param validationLayers Whether to use validation layers
      * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
      *
@@ -105,7 +105,7 @@ public class PsychoEngine {
      * Main method for the JOVP
      *
      * @param psychoLogic Logic for the psychophysics experience
-     * @param distance Viewing distance
+     * @param distance Viewing distance in mm
      * @param viewMode Whether it is monocular of stereoscopic view
      * @param validationLayers Whether to use validation layers
      * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
@@ -323,7 +323,7 @@ public class PsychoEngine {
      * 
      * Get observer's distance
      *
-     * @return the distance
+     * @return the distance in mm
      *
      * @since 0.0.1
      */
@@ -333,9 +333,21 @@ public class PsychoEngine {
 
     /**
      * 
+     * Get observer's distance in meters
+     *
+     * @return the distance in meters
+     *
+     * @since 0.0.1
+     */
+    public float getDistanceM() {
+        return observer.getDistanceM();
+    }
+
+    /**
+     * 
      * Set observer's distance
      *
-     * @param distance The distance of the observer from the display
+     * @param distance The distance of the observer from the display in mm
      *
      * @since 0.0.1
      */
@@ -347,7 +359,7 @@ public class PsychoEngine {
      * 
      * Get the intra-pupil distance distance
      *
-     * @return The intra-pupil distance in mm
+     * @return The pupillary distance in mm
      *
      * @since 0.0.1
      */
@@ -359,7 +371,7 @@ public class PsychoEngine {
      * 
      * Set pupilary distance
      * 
-     * @param ipd pupilary distance in mm
+     * @param pd pupilary distance in mm
      *
      * @since 0.0.1
      */
@@ -389,8 +401,8 @@ public class PsychoEngine {
      *
      * @since 0.0.1
      */
-    public void translate(Vector3f offset) {
-        observer.translate(offset);
+    public void translateView(Vector3f offset) {
+        observer.translateView(offset);
     }
 
     /**
@@ -401,8 +413,8 @@ public class PsychoEngine {
      *
      * @since 0.0.1
      */
-    public void rotate(Vector3f rotation) {
-        observer.rotate(rotation);
+    public void rotateView(Vector3f rotation) {
+        observer.rotateView(rotation);
     }
 
     /**

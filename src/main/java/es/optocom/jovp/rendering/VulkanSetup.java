@@ -40,8 +40,8 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
-import static org.lwjgl.vulkan.VK13.*;
-import static org.lwjgl.vulkan.VK13.VK_ERROR_OUT_OF_POOL_MEMORY;
+import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK11.VK_ERROR_OUT_OF_POOL_MEMORY;
 import static org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3;
 
 import java.nio.IntBuffer;
@@ -149,11 +149,8 @@ class VulkanSetup {
     static final boolean DEPTH_WRITE_ENABLE = true;
     static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
     static final boolean DEPTH_BOUNDS_TEST_ENABLE = false;
-    static final float MIN_DEPTH_BOUNDS = 0.0f;
-    static final float MAX_DEPTH_BOUNDS = 1.0f;
     static final boolean STENCIL_TEST_ENABLE = false;
-    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     static final boolean BLEND_ENABLE = true;
     static final int BLEND_COLOR_SOURCE_FACTOR = VK_BLEND_FACTOR_SRC_ALPHA;
     static final int BLEND_COLOR_DESTINATION_FACTOR = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -180,12 +177,13 @@ class VulkanSetup {
     static boolean validationLayers;
     static long messenger;
     static boolean apiDump;
-    static Observer observer;
     static long surface;
     static List<VkPhysicalDevice> physicalDevices;
     static VkPhysicalDevice physicalDevice;
     static LogicalDevice logicalDevice;
     static SwapChain swapChain;
+
+    static Observer observer;
 
     /** clean after use */
     static void cleanup() {
@@ -193,12 +191,12 @@ class VulkanSetup {
         validationLayers = true;
         messenger = -1;
         apiDump = true;
-        observer = null;
         surface = -1;
         physicalDevices = null;
         physicalDevice = null;
         logicalDevice = null;
         swapChain = null;
+        observer = null;
     }
 
     /** result translator */
