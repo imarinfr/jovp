@@ -293,6 +293,30 @@ public class Window {
 
     /**
      * 
+     * Get window width in meters
+     *
+     * @return The window width in meters
+     *
+     * @since 0.0.1
+     */
+    public float getWidthM() {
+        return getPixelWidth() * getWidth() / 1000.0f;
+    }
+
+    /**
+     * 
+     * Get window height in meters
+     *
+     * @return The window height in meters
+     *
+     * @since 0.0.1
+     */
+    public float getHeightM() {
+        return getPixelHeight() * getHeight() / 1000.0f;
+    }
+
+    /**
+     * 
      * Change to full-screen mode on demand
      *
      * @since 0.0.1

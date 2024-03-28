@@ -101,36 +101,36 @@ class Processing {
      * 
      * Rotate the texture inside the model
      *
-     * @param u Pivot on the u axis
-     * @param v pivot on the v axis
+     * @param ucenter Pivot on the u axis
+     * @param vcenter pivot on the v axis
      * @param rotation Angle of rotation in degrees
      *
      * @since 0.0.1
      */
-    public void rotation(double u, double v, double rotation) {
-        this.rotation = new Vector3f((float) u, (float) v, (float) Math.toRadians(rotation));
+    public void rotation(double ucenter, double vcenter, double rotation) {
+        this.rotation = new Vector3f((float) ucenter, (float) vcenter, (float) Math.toRadians(rotation));
     }
 
     /**
      *
-     * Add a Gaussian envelope
+     * Add an envelope
      *
      * @param type Envelope type
-     * @param sdx Envelope Gaussian standard deviation for x-axis in degrees of visual angle
-     * @param sdy Envelope Gaussian standard deviation for y-axis in degrees of visual angle
+     * @param x Envelope x-axis window half size or (standard deviation if Gaussian)
+     * @param y Envelope y-axis window half size or (standard deviation if Gaussian)
      * @param angle Angle of rotation in degrees
      *
      * @since 0.0.1
      */
-    void envelope(EnvelopeType type, double sdx, double sdy, double angle) {
+    void envelope(EnvelopeType type, double x, double y, double angle) {
         settings.y = switch(type) {
             case NONE -> 0;
             case SQUARE -> 1;
             case CIRCLE -> 2;
             case GAUSSIAN -> 3;
         };
-        envelope.x = (float) sdx;
-        envelope.y = (float) sdy;
+        envelope.x = (float) x;
+        envelope.y = (float) y;
         envelope.z = (float) Math.toRadians(angle);
     }
 

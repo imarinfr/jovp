@@ -26,13 +26,20 @@ public class Observer {
 
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
-    Matrix4f perspective = new Matrix4f(); // perspective projection
+    Matrix4f viewMatrix; // view matrix
+
     Matrix4f orthographic = new Matrix4f(); // orthographic projection
-    Matrix4f viewMatrix; // nose view matrix
+    Matrix4f perspective = new Matrix4f(); // perspective projection
+    ArrayList<Eye> eyes = new ArrayList<>(2); // Observer's eyes: 0 for monocular view or left eye 1 for right eye (null if monocular view)
+
+    private float width; // view width and height in meters
+    private float height;
+    private float aspect; // aspect ratio
+    private float fovx; // field of view for x and y
+    private float fovy;
 
     private float distance; // viewing distance in meters
     private float pd; // pupilary distance (PD) in meters
-    ArrayList<Eye> eyes = new ArrayList<>(2); // Observer's eyes: 0 for monocular view or left eye 1 for right eye (null if monocular view)
 
     /**
      * 
@@ -80,7 +87,7 @@ public class Observer {
         this.viewMode = viewMode;
         this.pd = pd;
         resetViewMatrix();
-        computePerspective();
+        computeProjections();
         switch(viewMode) {
             case MONO -> {
                 eyes.add(new Eye(0));
@@ -95,6 +102,32 @@ public class Observer {
 
     /**
      * 
+     * Get window width in meters
+     *
+     * @return the window width in meters
+     *
+     * @since 0.0.1
+     * 
+     */
+    public float getWidth() {
+        return width;
+    }
+
+    /**
+     * 
+     * Get window height in meters
+     *
+     * @return the window height in meters
+     *
+     * @since 0.0.1
+     * 
+     */
+    public float getHeight() {
+        return height;
+    }
+
+    /**
+     * 
      * Get field of view
      *
      * @return The x and y fields of view in degrees.
@@ -103,10 +136,7 @@ public class Observer {
      * 
      */
     public float[] getFieldOfView() {
-        return new float[] {
-            (float) Math.toDegrees(2.0 * Math.atan(1.0 / perspective.get(0, 0))),
-            (float) Math.toDegrees(2.0 * Math.atan(1.0 / perspective.get(1, 1)))
-        };
+        return new float[] {(float) Math.toDegrees(fovx), (float) Math.toDegrees(fovy)};
     }
 
     /**
@@ -128,7 +158,7 @@ public class Observer {
 
         }
         this.viewMode = viewMode;
-        computePerspective();
+        computeProjections();
     }
 
     /**
@@ -153,7 +183,7 @@ public class Observer {
      */
     public void setDistance(double distance) {
         this.distance = (float) (distance / 1000); // to meters
-        computePerspective();
+        computeProjections();
     }
 
     /**
@@ -266,11 +296,14 @@ public class Observer {
      *
      * @since 0.0.1
      */
-    public void computePerspective() {
-        float width = window.getPixelWidth() * window.getWidth() / 1000.0f; // in meters
-        float height = window.getPixelHeight() * window.getHeight() / 1000.0f; // in meters
+    public void computeProjections() {
+        width = window.getWidthM();
+        height = window.getHeightM();
+        aspect = width / height;
         if (viewMode == ViewMode.STEREO) width = width / 2.0f; // only half of the screen is used per eye
-        perspective.setPerspective((float) (2 * Math.atan(height / distance / 2)), width / height, ZNEAR, ZFAR, true);
+        fovx = (float) (2 * Math.atan(width / distance / 2));
+        fovy = (float) (2 * Math.atan(height / distance / 2));
+        perspective.setPerspective(fovy, aspect, ZNEAR, ZFAR, true);
         orthographic.setOrthoSymmetric(width, height, ZNEAR, ZFAR, true);
     }
 
@@ -325,7 +358,7 @@ public class Observer {
          * @since 0.0.1
          */
         public Matrix4f getView() {
-            return new Matrix4f(viewMatrix).translate(new Vector3f(pd, 0.0f, 0.0f));
+            return viewMatrix; // TODO
         }
 
         /**

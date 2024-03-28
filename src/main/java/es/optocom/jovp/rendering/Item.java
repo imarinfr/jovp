@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -16,6 +17,7 @@ import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import es.optocom.jovp.definitions.EnvelopeType;
+import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.Units;
 
 /**
@@ -26,7 +28,8 @@ import es.optocom.jovp.definitions.Units;
  */
 public class Item extends Renderable {
 
-    private Units coordinates; // type of projection
+    private Projection projection; // whether to apply orthographic or perspective projection
+    private Units units; // units to use for the item
     private Vector3d position; // unit vector with (x, y, z) position in meters
     private Vector3d size; // size in x, y, and z in meters
     private Vector3d rotation; // angles of rotation in each axis in radians
@@ -43,7 +46,35 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
-        this(model, texture, Units.ANGLES);
+        this(model, texture, Projection.ORTHOGRAPHIC, Units.ANGLES);
+    }
+
+    /**
+     * 
+     * Create an item for psychophysics experience with default projection
+     *
+     * @param model The model (square, circle, etc)
+     * @param texture The texture
+     * @param projection Either ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public Item(Model model, Texture texture, Projection projection) {
+        this(model, texture, projection, Units.ANGLES);
+    }
+
+    /**
+     * 
+     * Create an item for psychophysics experience with default projection
+     *
+     * @param model The model (square, circle, etc)
+     * @param texture The texture
+     * @param units units of measurement (METERS, ANGLES of vision, PIXELS or angles on a SPHERICAL surface)
+     *
+     * @since 0.0.1
+     */
+    public Item(Model model, Texture texture, Units units) {
+        this(model, texture, Projection.ORTHOGRAPHIC, units);
     }
 
     /**
@@ -52,14 +83,15 @@ public class Item extends Renderable {
      *
      * @param model The model (square, circle, etc)
      * @param texture The texture
-     * @param coordinates Either specifying item projection
-     * (specification in METERS, DEGREES, or degrees on a SPHERIC surface)
+     * @param projection Either ORTHOGRAPHIC or PERSPECTIVE
+     * @param units units of measurement (METERS, ANGLES of vision, PIXELS or angles on a SPHERICAL surface)
      *
      * @since 0.0.1
      */
-    public Item(Model model, Texture texture, Units coordinates) {
+    public Item(Model model, Texture texture, Projection projection, Units units) {
         super(model, texture);
-        this.coordinates = coordinates;
+        this.projection = projection;
+        this.units = units;
         this.position = new Vector3d(0, 0, 0);
         this.size = new Vector3d(1, 1, 0);
         this.rotation = new Vector3d();
@@ -78,6 +110,10 @@ public class Item extends Renderable {
     public void update(Texture texture) {
         super.update(texture);
         processing.setType(texture.getType());
+    }
+
+    public void setProjection(Projection projection) {
+        this.projection = projection;
     }
 
     /**
@@ -121,7 +157,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void position(double x, double y, double d) {
-        switch (coordinates) {
+        switch (units) {
             case ANGLES -> {
                 double eye = VulkanSetup.observer.getDistanceM();
                 x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
@@ -183,7 +219,7 @@ public class Item extends Renderable {
      */
     public double getDistance() {
         // TODO
-        return switch(coordinates) {
+        return switch(units) {
             case SPHERICAL -> position.length();
             default -> position.z;
         };
@@ -238,7 +274,7 @@ public class Item extends Renderable {
      */
     public void size(double x, double y, double z) {
         if(Math.abs(x) < 0) x = 0; if(Math.abs(y) < 0) y = 0; if(Math.abs(z) < 0) z = 0;
-        switch (coordinates) {
+        switch (units) {
             case ANGLES -> {
                 double distance = VulkanSetup.observer.getDistanceM();
                 size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
@@ -257,7 +293,7 @@ public class Item extends Renderable {
             }
             case SPHERICAL -> {
                 double distance;
-                if (coordinates == Units.ANGLES) distance = position.z;
+                if (units == Units.ANGLES) distance = position.z;
                 else distance = position.length();
                 size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
                 size.y = 2 * distance * Math.tan(Math.toRadians(y) / 2);
@@ -386,67 +422,58 @@ public class Item extends Renderable {
      * 
      * Rotate the texture inside the model
      *
-     * @param u Pivot on the u axis in degrees of visual angle from the center
-     * @param v pivot on the v axis in degrees of visual angle from the center
+     * @param ucenter Pivot on the u axis in degrees of visual angle from the center
+     * @param vcenter pivot on the v axis in degrees of visual angle from the center
      * @param rotation Angle of rotation in degrees
      *
      * @since 0.0.1
      */
-    public void texRotation(double u, double v, double rotation) {
-        processing.rotation(u, v, rotation);
+    public void texRotation(double ucenter, double vcenter, double rotation) {
+        processing.rotation(ucenter, vcenter, rotation);
     }
 
     /**
      * Add an envelope
      *
      * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
-     * @param sd   Standard deviation in meters for the x- and y-axis
+     * @param len Envelope x- and y-axis window half size or (standard deviation if Gaussian)
      *
      * @since 0.0.1
      */
-    public void envelope(EnvelopeType type, double sd) {
-        processing.envelope(type, sd, sd, 0);
+    public void envelope(EnvelopeType type, double len) {
+        envelope(type, len, len, 0);
     }
 
     /**
      * Add an envelope
      *
      * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
-     * @param sdx Standard deviation in meters for the x-axis
-     * @param sdy Standard deviation in meters for the y-axis
+     * @param x Envelope x-axis window half size or (standard deviation if Gaussian)
+     * @param y Envelope y-axis window half size or (standard deviation if Gaussian)
      *
      * @since 0.0.1
      */
-    public void envelope(EnvelopeType type, double sdx, double sdy) {
-        processing.envelope(type, sdx, sdy, 0);
+    public void envelope(EnvelopeType type, double x, double y) {
+        envelope(type, x, y, 0);
     }
 
     /**
      * Add an envelope
      *
-     * @param type  Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
-     * @param sdx   Standard deviation in meters for the x-axis
-     * @param sdy   Standard deviation in meters for the y-axis
+     * @param type Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
+     * @param x Envelope x-axis window half size or (standard deviation if Gaussian)
+     * @param y Envelope y-axis window half size or (standard deviation if Gaussian)
      * @param angle Angle
      *
      * @since 0.0.1
      */
-    public void envelope(EnvelopeType type, double sdx, double sdy, double angle) {
-        processing.envelope(type, sdx, sdy, angle);
-    }
-
-    /**
-     * Add an envelope
-     *
-     * @param type  Type of envelope. Can be SQUARE, CIRCLE, or GAUSSIAN
-     * @param sdx   Standard deviation in meters for the x-axis
-     * @param sdy   Standard deviation in meters for the y-axis
-     * @param angle Angle
-     *
-     * @since 0.0.1
-     */
-    public void envelope(EnvelopeType type, float sdx, float sdy, float angle) {
-        processing.envelope(type, sdx, sdy, angle);
+    public void envelope(EnvelopeType type, double x, double y, double angle) {
+        if (units == Units.ANGLES | units == Units.SPHERICAL) {
+            double distance = VulkanSetup.observer.getDistanceM();
+            x = distance * Math.tan(Math.toRadians(x));
+            y = distance * Math.tan(Math.toRadians(y));
+        }
+        processing.envelope(type, x, y, angle);
     }
 
     /**
@@ -524,46 +551,31 @@ public class Item extends Renderable {
      */
     @Override
     void updateUniforms(int imageIndex, Observer.Eye eye) {
-        int n = 0;
-        Vector4f freq = new Vector4f();
-        freq.x = processing.frequency.x;
-        freq.y = processing.frequency.y;
-        // TODO
-        //if (processing.frequency.z == 0) freq.z = 1;
-        //else freq.z = processing.frequency.z * (float) size.x;
-        //if (processing.frequency.w == 0) freq.w = 1;
-        //else freq.w = processing.frequency.w * (float) size.y;
-        Vector3f rotation = new Vector3f();
-        rotation.x = freq.z * processing.rotation.x;
-        rotation.y = freq.w * processing.rotation.y;
-        rotation.z = processing.rotation.z;
-        Vector3f envelope = new Vector3f();
-        // TODO
-        //envelope.x = processing.envelope.x / (float) size.x;
-        //envelope.y = processing.envelope.y / (float) size.y;
-        envelope.z = processing.envelope.z;
+        Vector4f freq = getFrequency();
+        Vector3f rot = getRotation(freq);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
             vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
                     VulkanSetup.UNIFORM_SIZEOF, 0, data);
             {
                 ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
+                int n = 0;
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
                 (new Matrix4f(modelMatrix)).get(n * Float.BYTES, buffer); n += 16;
                 eye.getView().get(n * Float.BYTES, buffer); n += 16;
-                if (coordinates == Units.SPHERICAL) {
-                    VulkanSetup.observer.perspective.get(n * Float.BYTES, buffer); n += 16;
-                } else {
-                    VulkanSetup.observer.orthographic.get(n * Float.BYTES, buffer); n += 16;
-                }
+                Matrix4f proj = switch (projection) {
+                    case ORTHOGRAPHIC -> VulkanSetup.observer.orthographic;
+                    case PERSPECTIVE -> VulkanSetup.observer.perspective;
+                };
+                proj.get(n * Float.BYTES, buffer); n += 16;
                 eye.optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
                 eye.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
                 texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
                 freq.get(n * Float.BYTES, buffer); n += 4;
-                rotation.get(n * Float.BYTES, buffer); n += 4;
+                rot.get(n * Float.BYTES, buffer); n += 4;
                 processing.contrast.get(n * Float.BYTES, buffer); n += 4;
-                envelope.get(n * Float.BYTES, buffer); n += 4;
+                getEnvelope().get(n * Float.BYTES, buffer); n += 4;
                 processing.defocus.get(n * Float.BYTES, buffer);
             }
             vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
@@ -575,7 +587,7 @@ public class Item extends Renderable {
         Vector3d scale = new Vector3d();
         size.mul(0.5, scale);
         Quaterniond quaternion = new Quaterniond();
-        if (coordinates == Units.SPHERICAL) {
+        if (units == Units.SPHERICAL) {
             Vector3d direction = new Vector3d(0, 0, Observer.ZNEAR);
             if (position.length() > 0) direction = position;
             quaternion.rotationTo(new Vector3d(0, 0, 1), direction);
@@ -584,4 +596,44 @@ public class Item extends Renderable {
         modelMatrix.translationRotateScale(position, quaternion, scale);
     }
 
+    /** get frequency parameters to send to the shader */
+    private Vector4f getFrequency() {
+        Vector2d angle = visualAngle();
+        Vector4f freq = new Vector4f();
+        freq.x = processing.frequency.x / (float) size.x;
+        freq.y = processing.frequency.y / (float) size.y;
+        if (processing.frequency.z == 0) freq.z = 1;
+        else freq.z = processing.frequency.z * (float) angle.x;
+        if (processing.frequency.w == 0) freq.w = 1;
+        else freq.w = processing.frequency.w * (float) angle.y;
+        return freq;
+    }
+
+    /** get texture rotation parameters to send to the shader */
+    private Vector3f getRotation(Vector4f freq) {
+        return new Vector3f(
+            freq.z * processing.rotation.x,
+            freq.w * processing.rotation.y,
+            processing.rotation.z
+        );
+    }
+
+    /** get texture rotation parameters to send to the shader */
+    private Vector3f getEnvelope() {
+        return new Vector3f(
+            processing.envelope.x / (float) size.x,
+            processing.envelope.y / (float) size.y,
+            processing.envelope.z
+        );
+    }
+
+    /** computes the size visual angle */ 
+    private Vector2d visualAngle() {
+        double distance = VulkanSetup.observer.getDistanceM();
+        return new Vector2d(
+            2 * Math.toDegrees(Math.tan(size.x / 2 / distance)),
+            2 * Math.toDegrees(Math.tan(size.y / 2 / distance))
+        );
+    }
+    
 }

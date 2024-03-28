@@ -95,7 +95,7 @@ public class PsychoEngineTest {
      */
     @Test
     public void showTriangle() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 100);
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle(), 750);
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -108,7 +108,7 @@ public class PsychoEngineTest {
      */
     @Test
     public void coordinateSystems() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicCoordinates(), 572.943250647f);
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicCoordinates(), 572.943f);
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -197,12 +197,12 @@ public class PsychoEngineTest {
         int count = 0;
         @Override
         public void init(PsychoEngine psychoEngine) {
-            item = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.CHECKERBOARD), Units.METERS);
+            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
             item.setColors(new double[] { 1, 1, 1, 1 }, new double[] { 0, 0, 1, 1 });
-            item.frequency(90, 0.5);
+            item.frequency(0, 0.5, 0, 1);
             item.distance(0);
             item.position(0, 0);
-            item.size(0.05);
+            item.size(10);
             Text title = new Text();
             title.setText("Hello Triangle");
             title.setPosition(0.3, 0.05);
@@ -238,8 +238,6 @@ public class PsychoEngineTest {
             double posAngular = -5;
             double posSpherical = -4;
 
-            //psychoEngine.setMonitor(1);
-            psychoEngine.getWindow().setSize(1350, 1350);
             background.distance(1000);
             background.position(0, 0);
             view.add(background);

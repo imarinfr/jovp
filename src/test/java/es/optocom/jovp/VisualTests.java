@@ -6,7 +6,6 @@ import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
 import es.optocom.jovp.definitions.Paradigm;
-import es.optocom.jovp.definitions.Units;
 import es.optocom.jovp.definitions.TextureType;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Item;
@@ -142,7 +141,7 @@ public class VisualTests {
      */
     @Test
     public void envelopeTypes() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelopeType());
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelopeType(), 572.943f);
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -566,8 +565,8 @@ public class VisualTests {
         double theta;
         double amplitude = 5;
         double frequency = 1;
-        double rx = 18;
-        double ry = 12;
+        double rx = 12;
+        double ry = 8;
         int iteration = 0;
         int fps = 0;
         Timer timer = new Timer();
@@ -652,7 +651,7 @@ public class VisualTests {
                 if (pos < 0) pos = 0;
                 item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0));
                 item.distance(20);
-                item.rotation(-theta / 5);
+                item.rotation(-theta / 2);
                 imageNumber++;
             }
             // process circles
@@ -758,6 +757,7 @@ public class VisualTests {
 
         private void addTriangle() {
             Item triangle = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.SINE, triangleColor1, triangleColor2));
+            triangle.distance(50);
             triangle.position(5, 3);
             triangle.size(6, 6);
             triangle.frequency(0, 1);
@@ -899,14 +899,14 @@ public class VisualTests {
             double y = 5;
             for (double contrast = 0.2 ;  contrast <= 1.0 ; contrast += 0.2) {
                 x = -5;
-                for (double sd = 0.1; sd <= 1.0; sd += 0.2) {
+                for (double sd = 0.2; sd <= 1.0; sd += 0.2) {
                     Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
                     stimuli.position(x, y);
                     stimuli.distance(50);
                     stimuli.size(2, 2);
                     stimuli.frequency(0, 2);
                     stimuli.contrast(contrast);
-                    stimuli.envelope(EnvelopeType.GAUSSIAN, 0.1 * sd, 0.1 * sd);
+                    stimuli.envelope(EnvelopeType.GAUSSIAN, sd, sd);
                     view.add(stimuli);
                     x += 2.5;
                 }

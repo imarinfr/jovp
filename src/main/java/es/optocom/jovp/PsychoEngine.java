@@ -556,7 +556,7 @@ public class PsychoEngine {
     public void setSize(int width, int height) {
         window.setSize(width, height);
         window.update();
-        observer.computePerspective();
+        observer.computeProjections();
     }
 
     /**

@@ -174,12 +174,15 @@ abstract class Renderable {
     void renderEye(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber, RenderType renderType) {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
         long pipeline, pipelineLayout;
-        if (renderType == RenderType.ITEM) {
-            pipeline = viewPass.graphicsPipeline;
-            pipelineLayout = viewPass.graphicsPipelineLayout;
-        } else {
-            pipeline = viewPass.textPipeline;
-            pipelineLayout = viewPass.textPipelineLayout;
+        switch (renderType) {
+            case TEXT -> {
+                pipeline = viewPass.textPipeline;
+                pipelineLayout = viewPass.textPipelineLayout;
+            }
+            default -> {
+                pipeline = viewPass.graphicsPipeline;
+                pipelineLayout = viewPass.graphicsPipelineLayout;
+            }
         }
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
         updateUniforms(image, VulkanSetup.observer.eyes.get(passNumber));

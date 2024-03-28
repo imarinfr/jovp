@@ -2,18 +2,16 @@ package es.optocom.jovp.definitions;
 
 /**
  * 
- * Coordinates: CARTESIAN (in meters), spherical, and angular
- * (both in degrees of visual angle). The z-axis in both
- * SPHERICAL and ANGULAR are also in meters but x and y are in
- * degrees of visual angle. The difference between ANGULAR and
- * SPHERICAL is that the former projects onto a the x-y plane
- * at a distance z whereas the later projects on a sphere so that
- * all items are at the same distance from the space origin.
+ * Units. The z-axis in all units are meters. The x and y can be
+ * in METERS, ANGLES (degrees of visual angle), PIXELS, or in
+ * ANGLES but projected on a SPHERICAL surface instead of a plane
  *
  * @since 0.0.1
  */
 public enum Units {
-    /** Degrees of visual angle from observer in a flat world (z-axis in meters from the plane in the screen) */
+    /** Degrees of visual angle from observer in a flat world
+     * (z-axis in meters from the plane in the screen)
+    */
     ANGLES,
     /** Distance from camera (in meters) */
     METERS,

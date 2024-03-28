@@ -104,7 +104,7 @@ public class VulkanManager {
         for (Text text : texts) text.createBuffers();
         vulkanCommands = new VulkanCommands(items, texts);
         createSyncObjects();
-        VulkanSetup.observer.computePerspective();
+        VulkanSetup.observer.computeProjections();
     }
 
     /**
@@ -364,7 +364,7 @@ public class VulkanManager {
         vkDeviceWaitIdle(VulkanSetup.logicalDevice.device);
         VulkanSetup.swapChain.destroy();
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
-        VulkanSetup.observer.computePerspective();
+        VulkanSetup.observer.computeProjections();
     }
 
     /** create synchronization objects */

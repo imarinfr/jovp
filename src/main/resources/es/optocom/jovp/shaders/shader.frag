@@ -79,4 +79,8 @@ void main() {
     // Post-processing: defocus
     if (settings.z == 1) color = blur(uvsp, color, defocus);
     color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
+    //if(uvsp.x < 0) color = vec4(1, 0, 0, 1);
+    //if(uvsp.x / uvmax.x > 1) color = vec4(1, 0, 0, 1);
+    //if(uvsp.y < 0) color = vec4(1, 0, 0, 1);
+    //if(uvsp.y / uvmax.y > 1) color = vec4(1, 0, 0, 1);
 }
