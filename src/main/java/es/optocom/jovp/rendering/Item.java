@@ -164,17 +164,17 @@ public class Item extends Renderable {
                 y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
                 position.x = eye * Math.tan(x);
                 position.y = eye * Math.tan(y);
-                position.z = d + Observer.ZNEAR;
+                position.z = d;
             }
             case METERS -> {
                 position.x = x;
                 position.y = y;
-                position.z = d + Observer.ZNEAR;
+                position.z = d;
             }
             case PIXELS -> {
                 position.x = VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
                 position.y = VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
-                position.z = d + Observer.ZNEAR;
+                position.z = d;
             }
             case SPHERICAL -> {
                 double eye = VulkanSetup.observer.getDistanceM();
@@ -598,10 +598,10 @@ public class Item extends Renderable {
 
     /** get frequency parameters to send to the shader */
     private Vector4f getFrequency() {
-        Vector2d angle = visualAngle();
+        Vector2d angle = visualAngle(size.x, size.y);
         Vector4f freq = new Vector4f();
-        freq.x = processing.frequency.x / (float) size.x;
-        freq.y = processing.frequency.y / (float) size.y;
+        freq.x = (float) (Math.toRadians(processing.frequency.x) / (2 * Math.PI));
+        freq.y = (float) (Math.toRadians(processing.frequency.y) / (2 * Math.PI));
         if (processing.frequency.z == 0) freq.z = 1;
         else freq.z = processing.frequency.z * (float) angle.x;
         if (processing.frequency.w == 0) freq.w = 1;
@@ -628,12 +628,12 @@ public class Item extends Renderable {
     }
 
     /** computes the size visual angle */ 
-    private Vector2d visualAngle() {
+    private Vector2d visualAngle(double x, double y) {
         double distance = VulkanSetup.observer.getDistanceM();
         return new Vector2d(
-            2 * Math.toDegrees(Math.tan(size.x / 2 / distance)),
-            2 * Math.toDegrees(Math.tan(size.y / 2 / distance))
+            2 * Math.toDegrees(Math.tan(x / 2 / distance)),
+            2 * Math.toDegrees(Math.tan(y / 2 / distance))
         );
     }
-    
+
 }
