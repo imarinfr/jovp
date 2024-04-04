@@ -199,7 +199,7 @@ public class PsychoEngineTest {
         public void init(PsychoEngine psychoEngine) {
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
             item.setColors(new double[] { 1, 1, 1, 1 }, new double[] { 0, 0, 1, 1 });
-            item.frequency(0, 0.5, 0, 1);
+            item.frequency(90, 0.25);
             item.distance(0);
             item.position(0, 0);
             item.size(10);
