@@ -226,6 +226,17 @@ public class Item extends Renderable {
     }
 
     /**
+     * Change units of Item
+     *
+     * @param units Type of units to change to. 
+     *
+     * @since 0.0.3
+     */
+    public void units(Units units) {
+        this.units = units;
+    }
+
+    /**
      * 
      * Get size in meters
      *
