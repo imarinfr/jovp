@@ -37,7 +37,6 @@ public class Model {
     private static final Optotype DEFAULT_OPTOTYPE = Optotype.E;
 
     ModelType type;
-    int length;
     Vertex[] vertices;
     Integer[] indices;
 
@@ -50,7 +49,6 @@ public class Model {
         type = ModelType.TEXT;
         vertices = new Vertex[] { new Vertex() };
         indices = new Integer[] { 0 };
-        length = 1;
     }
 
     /**
@@ -72,7 +70,6 @@ public class Model {
             case OPTOTYPE -> optotype(DEFAULT_OPTOTYPE);
             default -> throw new IllegalStateException("Invalid model type: " + type);
         }
-        length = indices.length;
     }
 
     /**
@@ -87,7 +84,6 @@ public class Model {
             throw new RuntimeException("Use TRIANGLE or SQUARE for less than 5 vertices");
         type = ModelType.POLYGON;
         polygon(numberOfVertices);
-        length = indices.length;
     }
 
     /**
@@ -108,7 +104,6 @@ public class Model {
             case ANNULUS -> annulus(ratio);
             default -> throw new IllegalStateException("Invalid model type: " + type);
         }
-        length = indices.length;
     }
 
     /**
@@ -126,7 +121,6 @@ public class Model {
             throw new RuntimeException("Ratio must be between 0 and 1");
         type = ModelType.HOLLOW_POLYGON;
         hollowPolygon(numberOfVertices, ratio);
-        length = indices.length;
     }
 
     /**
@@ -139,7 +133,6 @@ public class Model {
     public Model(Optotype optotype) {
         type = ModelType.OPTOTYPE;
         optotype(optotype);
-        length = indices.length;
     }
 
     /**
@@ -164,7 +157,6 @@ public class Model {
     public Model(String fileName, int flags) {
         type = ModelType.MODEL;
         loadModel(fileName, flags);
-        length = indices.length;
     }
 
     /**
@@ -174,7 +166,6 @@ public class Model {
      */
     public void destroy() {
         type = null;
-        length = 0;
         vertices = null;
         indices = null;
     }
@@ -210,7 +201,6 @@ public class Model {
      */
     void setIndices(Integer[] indices) {
         this.indices = indices;
-        length = indices.length;
     }
 
     /** loads a model from a file with specific flags */

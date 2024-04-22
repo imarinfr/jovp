@@ -970,7 +970,7 @@ public class VisualTests {
         Item background, fixation;
         Text text;
         Timer timer = new Timer();
-        int refreshTime = 150;
+        int refreshTime = 500;
         int count;
         String[] filenames = { "ecceIvanito.jpeg", "ecceHomo.jpeg", "ivanito.jpeg" };
 

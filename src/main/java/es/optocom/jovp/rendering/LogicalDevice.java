@@ -17,6 +17,9 @@ import static org.lwjgl.vulkan.VK13.*;
  */
 public class LogicalDevice {
 
+    static final boolean SAMPLER_ANISOTROPY = true;
+    static final boolean SAMPLE_RATE_SHADING = true;
+
     VkDevice device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
@@ -58,8 +61,8 @@ public class LogicalDevice {
                         .pQueuePriorities(stack.floats(VulkanSetup.QueueFamilyIndices.PRIORITY));
             }
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack)
-                    .samplerAnisotropy(VulkanSetup.SAMPLER_ANISOTROPY)
-                    .sampleRateShading(VulkanSetup.SAMPLE_RATE_SHADING)
+                    .samplerAnisotropy(SAMPLER_ANISOTROPY)
+                    .sampleRateShading(SAMPLE_RATE_SHADING)
                     .multiViewport(true);
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
@@ -71,8 +74,7 @@ public class LogicalDevice {
             PointerBuffer pDevice = stack.pointers(VK_NULL_HANDLE);
             int result = vkCreateDevice(physicalDevice, createInfo, null, pDevice);
             if (result != VK_SUCCESS)
-                throw new AssertionError(
-                        "Failed to create logical device: " + VulkanSetup.translateVulkanResult(result));
+                throw new AssertionError("Failed to create logical device: " + VulkanSetup.translateVulkanResult(result));
             device = new VkDevice(pDevice.get(0), physicalDevice, createInfo);
             PointerBuffer pQueue = stack.pointers(VK_NULL_HANDLE);
             vkGetDeviceQueue(device, indices.graphicsFamily, 0, pQueue);
@@ -88,14 +90,14 @@ public class LogicalDevice {
             VkDescriptorSetLayoutBinding.Buffer bindings = VkDescriptorSetLayoutBinding.calloc(2, stack);
             VkDescriptorSetLayoutBinding uboLayoutBinding = bindings.get(0);
             uboLayoutBinding.binding(0)
-                    .descriptorCount(1)
                     .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                    .descriptorCount(1)
                     .pImmutableSamplers(null)
                     .stageFlags(VK_SHADER_STAGE_VERTEX_BIT);
             VkDescriptorSetLayoutBinding samplerLayoutBinding = bindings.get(1);
             samplerLayoutBinding.binding(1)
-                    .descriptorCount(1)
                     .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                    .descriptorCount(1)
                     .pImmutableSamplers(null)
                     .stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT);
             VkDescriptorSetLayoutCreateInfo layoutInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack)
@@ -104,8 +106,7 @@ public class LogicalDevice {
             LongBuffer pDescriptorSetLayout = stack.mallocLong(1);
             int result = vkCreateDescriptorSetLayout(device, layoutInfo, null, pDescriptorSetLayout);
             if (result != VK_SUCCESS)
-                throw new AssertionError(
-                        "Failed to create descriptor set layout: " + VulkanSetup.translateVulkanResult(result));
+                throw new AssertionError("Failed to create descriptor set layout: " + VulkanSetup.translateVulkanResult(result));
             descriptorSetLayout = pDescriptorSetLayout.get(0);
         }
     }

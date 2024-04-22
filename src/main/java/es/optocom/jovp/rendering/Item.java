@@ -5,12 +5,11 @@ import java.nio.ByteBuffer;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
-import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VkCommandBuffer;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
@@ -19,6 +18,8 @@ import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.Units;
+import es.optocom.jovp.definitions.ViewEye;
+import es.optocom.jovp.definitions.ViewMode;
 
 /**
  * 
@@ -28,7 +29,6 @@ import es.optocom.jovp.definitions.Units;
  */
 public class Item extends Renderable {
 
-    private Projection projection; // whether to apply orthographic or perspective projection
     private Units units; // units to use for the item
     private Vector3d position; // unit vector with (x, y, z) position in meters
     private Vector3d size; // size in x, y, and z in meters
@@ -89,8 +89,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture, Projection projection, Units units) {
-        super(model, texture);
-        this.projection = projection;
+        super(model, texture, projection);
         this.units = units;
         this.position = new Vector3d(0, 0, 0);
         this.size = new Vector3d(1, 1, 0);
@@ -110,10 +109,6 @@ public class Item extends Renderable {
     public void update(Texture texture) {
         super.update(texture);
         processing.setType(texture.getType());
-    }
-
-    public void setProjection(Projection projection) {
-        this.projection = projection;
     }
 
     /**
@@ -218,7 +213,6 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public double getDistance() {
-        // TODO
         return switch(units) {
             case SPHERICAL -> position.length();
             default -> position.z;
@@ -274,32 +268,12 @@ public class Item extends Renderable {
      */
     public void size(double x, double y, double z) {
         if(Math.abs(x) < 0) x = 0; if(Math.abs(y) < 0) y = 0; if(Math.abs(z) < 0) z = 0;
-        switch (units) {
-            case ANGLES -> {
-                double distance = VulkanSetup.observer.getDistanceM();
-                size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
-                size.y = 2 * distance * Math.tan(Math.toRadians(y) / 2);
-                size.z = z;
-            }
-            case METERS -> {
-                size.x = x;
-                size.y = y;
-                size.z = z;
-            }
-            case PIXELS -> {
-                size.x = VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
-                size.y = VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
-                size.z = z;
-            }
-            case SPHERICAL -> {
-                double distance;
-                if (units == Units.ANGLES) distance = position.z;
-                else distance = position.length();
-                size.x = 2 * distance * Math.tan(Math.toRadians(x) / 2);
-                size.y = 2 * distance * Math.tan(Math.toRadians(y) / 2);
-                size.z = z;
-            }
-        }
+        size = switch (units) {
+            case ANGLES -> anglesToMeters(x, y, z);
+            case METERS -> new Vector3d(x, y, z);
+            case PIXELS -> pixelsToMeters(x, y, z);
+            case SPHERICAL -> anglesToMetersSpherical(x, y, z);
+        };
         updateModelMatrix();
     }
 
@@ -326,31 +300,6 @@ public class Item extends Renderable {
     public void rotation(double x, double y, double z) {
         rotation = new Vector3d(Math.toRadians(x), Math.toRadians(y), Math.toRadians(z));
         updateModelMatrix();
-    }
-
-    /**
-     * 
-     * Set texture color
-     *
-     * @param rgba The RGBA channels to use
-     *
-     * @since 0.0.1
-     */
-    public void setColor(double[] rgba) {
-        texture.setColor(rgba);
-    }
-
-    /**
-     * 
-     * Set texture minimum color for grids
-     *
-     * @param rgbaMin The RGBA values of the minimum color
-     * @param rgbaMax The RGBA values of the maximum color
-     *
-     * @since 0.0.1
-     */
-    public void setColors(double[] rgbaMin, double[] rgbaMax) {
-        texture.setColors(rgbaMin, rgbaMax);
     }
 
     /**
@@ -490,8 +439,6 @@ public class Item extends Renderable {
      * Add Gaussian defocus (only spherical)
      *
      * @param dx Defocus in Diopters
-     * 
-     * TODO: Defocus not functional
      *
      * @since 0.0.1
      */
@@ -506,8 +453,6 @@ public class Item extends Renderable {
      * @param dx    Defocus for the x-axis in Diopters
      * @param dy    Defocus for the x-axis
      * @param angle Angle
-     * 
-     * TODO: Defocus not functional
      *
      * @since 0.0.1
      */
@@ -522,8 +467,6 @@ public class Item extends Renderable {
      * @param dx    Defocus for the x-axis in Diopters
      * @param dy    Defocus for the x-axis
      * @param angle Angle
-     *
-     * TODO: Defocus not functional
      * 
      * @since 0.0.1
      */
@@ -542,43 +485,95 @@ public class Item extends Renderable {
     }
 
     /**
+     * 
+     * Render item or text
      *
-     * Update uniforms for the image to be rendered
-     *
-     * @param imageIndex Image to be rendered
+     * @param stack Memory stack
+     * @param commandBuffer Command buffer
+     * @param image in-flight frame to render
      *
      * @since 0.0.1
      */
     @Override
-    void updateUniforms(int imageIndex, Observer.Eye eye) {
-        Vector4f freq = getFrequency();
-        Vector3f rot = getRotation(freq);
+     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
+        if (viewEye == ViewEye.NONE) return;
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO) {
+            draw(stack, commandBuffer, image, 0);
+            return;
+        }
+        switch (viewEye) {
+            case LEFT -> draw(stack, commandBuffer, image, 0);
+            case RIGHT-> draw(stack, commandBuffer, image, 1);
+            case BOTH-> {
+                draw(stack, commandBuffer, image, 0);
+                draw(stack, commandBuffer, image, 1);
+            }
+            default-> {return;}
+        }
+    }
+
+    /** Update uniforms for the image to be rendered */
+    private void draw(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
+        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
+        Matrix4f view;
+        Matrix4f proj;
+        Optics optics;
+        switch (VulkanSetup.observer.viewMode) {
+            case STEREO -> {
+                view = passNumber == 0 ? VulkanSetup.observer.viewLeft : VulkanSetup.observer.viewRight;
+                proj = switch (projection) {
+                    case ORTHOGRAPHIC -> passNumber == 0 ? VulkanSetup.observer.orthoLeft : VulkanSetup.observer.orthoRight;
+                    case PERSPECTIVE -> passNumber == 0 ? VulkanSetup.observer.perspLeft : VulkanSetup.observer.perspRight;
+                };
+                optics = passNumber == 0 ? VulkanSetup.observer.opticsLeft : VulkanSetup.observer.opticsRight;
+            }
+            default -> {
+                view = VulkanSetup.observer.viewCyclops;
+                proj = switch (projection) {
+                    case ORTHOGRAPHIC -> VulkanSetup.observer.orthoCyclops;
+                    case PERSPECTIVE -> VulkanSetup.observer.perspCyclops;
+                };
+                optics = VulkanSetup.observer.opticsCyclops;
+            }
+        }
+        updateUniforms(image, passNumber, view, proj, optics);
+        draw(stack, commandBuffer, image, passNumber, viewPass.graphicsPipeline, viewPass.graphicsPipelineLayout);
+    }
+
+    /**
+     *
+     * Update uniforms for the image to be rendered
+     *
+     * @param image Image to be rendered
+     * @param view View matrix
+     * @param projection Projection matrix
+     * @param optics optics
+     *
+     * @since 0.0.1
+     */
+    void updateUniforms(int image, int eye, Matrix4f view, Matrix4f projection, Optics optics) {
+        Vector4f frequency = processing.getFrequency(metersToAngles(size));
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
-                    VulkanSetup.UNIFORM_SIZEOF, 0, data);
+            vkMapMemory(VulkanSetup.logicalDevice.device, getUniformMemory(image, eye), 0, UNIFORM_SIZEOF, 0, data);
             {
-                ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_SIZEOF);
+                ByteBuffer buffer = data.getByteBuffer(0, UNIFORM_SIZEOF);
                 int n = 0;
                 processing.settings.get(n * Float.BYTES, buffer); n += 4;
-                (new Matrix4f(modelMatrix)).get(n * Float.BYTES, buffer); n += 16;
-                eye.getView().get(n * Float.BYTES, buffer); n += 16;
-                Matrix4f proj = switch (projection) {
-                    case ORTHOGRAPHIC -> VulkanSetup.observer.orthographic;
-                    case PERSPECTIVE -> VulkanSetup.observer.perspective;
-                };
-                proj.get(n * Float.BYTES, buffer); n += 16;
-                eye.optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
-                eye.optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
-                texture.rgba0.get(n * Float.BYTES, buffer); n += 4;
-                texture.rgba1.get(n * Float.BYTES, buffer); n += 4;
-                freq.get(n * Float.BYTES, buffer); n += 4;
-                rot.get(n * Float.BYTES, buffer); n += 4;
+                new Matrix4f(modelMatrix).get(n * Float.BYTES, buffer); n += 16;
+                view.get(n * Float.BYTES, buffer); n += 16;
+                projection.get(n * Float.BYTES, buffer); n += 16;
+                optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
+                optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
+                getTexture().rgba0.get(n * Float.BYTES, buffer); n += 4;
+                getTexture().rgba1.get(n * Float.BYTES, buffer); n += 4;
+                frequency.get(n * Float.BYTES, buffer); n += 4;
+                processing.getRotation(frequency).get(n * Float.BYTES, buffer); n += 4;
                 processing.contrast.get(n * Float.BYTES, buffer); n += 4;
-                getEnvelope().get(n * Float.BYTES, buffer); n += 4;
+                processing.getEnvelope(size).get(n * Float.BYTES, buffer); n += 4;
                 processing.defocus.get(n * Float.BYTES, buffer);
             }
-            vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
+            vkUnmapMemory(VulkanSetup.logicalDevice.device, getUniformMemory(image, eye));
         }
     }
 
@@ -596,44 +591,45 @@ public class Item extends Renderable {
         modelMatrix.translationRotateScale(position, quaternion, scale);
     }
 
-    /** get frequency parameters to send to the shader */
-    private Vector4f getFrequency() {
-        Vector2d angle = visualAngle(size.x, size.y);
-        Vector4f freq = new Vector4f();
-        freq.x = (float) (Math.toRadians(processing.frequency.x) / (2 * Math.PI));
-        freq.y = (float) (Math.toRadians(processing.frequency.y) / (2 * Math.PI));
-        if (processing.frequency.z == 0) freq.z = 1;
-        else freq.z = processing.frequency.z * (float) angle.x;
-        if (processing.frequency.w == 0) freq.w = 1;
-        else freq.w = processing.frequency.w * (float) angle.y;
-        return freq;
+    /** computes the x and y in meters from visual angles */ 
+    private Vector3d anglesToMeters(double x, double y, double z) {
+        return new Vector3d(
+            2 * VulkanSetup.observer.getDistanceM() * Math.tan(Math.toRadians(x) / 2),
+            2 * VulkanSetup.observer.getDistanceM() * Math.tan(Math.toRadians(y) / 2),
+            z);
     }
 
-    /** get texture rotation parameters to send to the shader */
-    private Vector3f getRotation(Vector4f freq) {
-        return new Vector3f(
-            freq.z * processing.rotation.x,
-            freq.w * processing.rotation.y,
-            processing.rotation.z
-        );
+    /** from visual angles to meters */
+    private Vector3d metersToAngles(Vector3d size) {
+        return new Vector3d(
+            2.0 * Math.toDegrees(Math.atan(size.x / 2 / VulkanSetup.observer.getDistanceM())),
+            2.0 * Math.toDegrees(Math.atan(size.y / 2 / VulkanSetup.observer.getDistanceM())),
+            size.z);
     }
 
-    /** get texture rotation parameters to send to the shader */
-    private Vector3f getEnvelope() {
-        return new Vector3f(
-            processing.envelope.x / (float) size.x,
-            processing.envelope.y / (float) size.y,
-            processing.envelope.z
-        );
+    /** computes the x and y in meters from visual angles for spherical projection */
+    private Vector3d anglesToMetersSpherical(double x, double y, double z) {
+        return new Vector3d(
+            2 * position.length() * Math.tan(Math.toRadians(x) / 2),
+            2 * position.length() * Math.tan(Math.toRadians(y) / 2),
+            z);
     }
 
-    /** computes the size visual angle */ 
-    private Vector2d visualAngle(double x, double y) {
-        double distance = VulkanSetup.observer.getDistanceM();
-        return new Vector2d(
-            2 * Math.toDegrees(Math.tan(x / 2 / distance)),
-            2 * Math.toDegrees(Math.tan(y / 2 / distance))
-        );
+    /** from visual angles to meters for spherical projection TODO
+    private Vector3d metersToAnglesSpherical(Vector3d size) {
+        return new Vector3d(
+            2.0 * Math.toDegrees(Math.atan(size.x / 2 / position.length())),
+            2.0 * Math.toDegrees(Math.atan(size.y / 2 / position.length())),
+            size.z);
+    }
+    */
+
+    /** computes the x and y in meters from pixels */ 
+    private Vector3d pixelsToMeters(double x, double y, double z) {
+        return  new Vector3d(
+            VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x,
+            VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y,
+            z);
     }
 
 }

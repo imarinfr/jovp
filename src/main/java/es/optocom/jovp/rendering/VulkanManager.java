@@ -7,7 +7,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;
 import org.lwjgl.vulkan.*;
 
-import es.optocom.jovp.definitions.RenderType;
 import es.optocom.jovp.definitions.ViewMode;
 
 import java.nio.IntBuffer;
@@ -61,6 +60,8 @@ import static org.lwjgl.vulkan.VK10.vkWaitForFences;
  */
 public class VulkanManager {
 
+    static final int MAX_FRAMES_IN_FLIGHT = 2;
+
     private VulkanCommands vulkanCommands;
     private List<VulkanSetup.Frame> inFlightFrames;
     private Map<Integer, VulkanSetup.Frame> imagesInFlight;
@@ -100,6 +101,7 @@ public class VulkanManager {
         VulkanSetup.physicalDevice = physicalDevice;
         VulkanSetup.logicalDevice = new LogicalDevice(VulkanSetup.surface, physicalDevice);
         VulkanSetup.swapChain = new SwapChain(VulkanSetup.observer.viewMode);
+        VulkanSetup.commandPool = VulkanSetup.createCommandPool();
         for (Item item : items) item.createBuffers();
         for (Text text : texts) text.createBuffers();
         vulkanCommands = new VulkanCommands(items, texts);
@@ -158,8 +160,7 @@ public class VulkanManager {
             result = vkQueueSubmit(VulkanSetup.logicalDevice.graphicsQueue, submitInfo, thisFrame.fence());
             if (result != VK_SUCCESS) {
                 vkResetFences(VulkanSetup.logicalDevice.device, thisFrame.pFence());
-                throw new AssertionError("Failed to submit draw command buffer: " +
-                        VulkanSetup.translateVulkanResult(result));
+                throw new AssertionError("Failed to submit draw command buffer: " + VulkanSetup.translateVulkanResult(result));
             }
             VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
@@ -172,9 +173,8 @@ public class VulkanManager {
                 recreateSwapChain();
                 VulkanSetup.observer.window.resized(false);
             } else if (result != VK_SUCCESS)
-                throw new AssertionError("Failed to present swap chain image: " +
-                        VulkanSetup.translateVulkanResult(result));
-            currentFrame = (currentFrame + 1) % VulkanSetup.MAX_FRAMES_IN_FLIGHT;
+                throw new AssertionError("Failed to present swap chain image: " + VulkanSetup.translateVulkanResult(result));
+            currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         }
     }
 
@@ -188,6 +188,8 @@ public class VulkanManager {
         if (VulkanSetup.logicalDevice != null) {
             destroySyncObjects();
             vulkanCommands.destroy();
+            VulkanSetup.destroyCommandPool(VulkanSetup.commandPool);
+            VulkanSetup.commandPool = 0;
             VulkanSetup.swapChain.destroy();
             VulkanSetup.logicalDevice.destroy();
             VulkanSetup.swapChain = null;
@@ -369,7 +371,7 @@ public class VulkanManager {
 
     /** create synchronization objects */
     private void createSyncObjects() {
-        inFlightFrames = new ArrayList<>(VulkanSetup.MAX_FRAMES_IN_FLIGHT);
+        inFlightFrames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
         imagesInFlight = new HashMap<>(VulkanSetup.swapChain.images.size());
         try (MemoryStack stack = stackPush()) {
             VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.calloc(stack)
@@ -380,7 +382,7 @@ public class VulkanManager {
             LongBuffer pImageAvailableSemaphore = stack.mallocLong(1);
             LongBuffer pRenderFinishedSemaphore = stack.mallocLong(1);
             LongBuffer pFence = stack.mallocLong(1);
-            for (int i = 0; i < VulkanSetup.MAX_FRAMES_IN_FLIGHT; i++) {
+            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 if (vkCreateSemaphore(VulkanSetup.logicalDevice.device, semaphoreInfo,
                         null, pImageAvailableSemaphore) != VK_SUCCESS
                         || vkCreateSemaphore(VulkanSetup.logicalDevice.device, semaphoreInfo,
@@ -388,8 +390,7 @@ public class VulkanManager {
                         || vkCreateFence(VulkanSetup.logicalDevice.device, fenceInfo, null, pFence) != VK_SUCCESS) {
                     throw new RuntimeException("Failed to create synchronization objects for the frame " + i);
                 }
-                inFlightFrames.add(new VulkanSetup.Frame(pImageAvailableSemaphore.get(0),
-                        pRenderFinishedSemaphore.get(0), pFence.get(0)));
+                inFlightFrames.add(new VulkanSetup.Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
             }
         }
     }
@@ -450,14 +451,13 @@ public class VulkanManager {
                 renderPassInfo.framebuffer(VulkanSetup.swapChain.frameBuffers.get(image));
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 {
-                    for (Item item : items) item.render(stack, commandBuffer, image, RenderType.ITEM);
-                    for (Text text : texts) text.render(stack, commandBuffer, image, RenderType.TEXT);
+                    for (Item item : items) item.render(stack, commandBuffer, image);
+                    for (Text text : texts) text.render(stack, commandBuffer, image);
                 }
                 vkCmdEndRenderPass(commandBuffer);
                 result = vkEndCommandBuffer(commandBuffer);
                 if (result != VK_SUCCESS)
-                    throw new AssertionError(
-                            "Failed to record command buffer: " + VulkanSetup.translateVulkanResult(result));
+                    throw new AssertionError("Failed to record command buffer: " + VulkanSetup.translateVulkanResult(result));
             }
         }
 

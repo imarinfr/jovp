@@ -197,7 +197,7 @@ public class PsychoEngineTest {
         int count = 0;
         @Override
         public void init(PsychoEngine psychoEngine) {
-            item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
+            item = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
             item.setColors(new double[] { 1, 1, 1, 1 }, new double[] { 0, 0, 1, 1 });
             item.frequency(90, 0.25);
             item.distance(0);

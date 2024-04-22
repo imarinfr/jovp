@@ -1,7 +1,8 @@
 package es.optocom.jovp.rendering;
 
-import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import es.optocom.jovp.definitions.EnvelopeType;
@@ -20,7 +21,6 @@ class Processing {
     Vector4f contrast = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f); // xyzw = amplitudes for R, G, B, and alpha channels
     Vector3f rotation = new Vector3f(); // texture rotation around u and v values (x and y) and by an angle of z radians.
     Vector3f envelope = new Vector3f(); // xy = SD of ellipse x and y axes, z = ellipse rotation in radians
-    //TODO: Defocus not functional
     Vector3f defocus = new Vector3f(); // xy = Geometric defocus x and y axes, z = astigmatism axis
 
     TextureType type;
@@ -170,13 +170,40 @@ class Processing {
      *
      * Remove defocus
      * 
-     * TODO: Defocus not functional
-     *
      * @since 0.0.1
      */
     void removeDefocus() {
         settings.z = 0;
         defocus = new Vector3f();
+    }
+
+
+    /** get frequency parameters to send to the shader */
+    Vector4f getFrequency(Vector3d size) {
+        return new Vector4f(
+            (float) (Math.toRadians(frequency.x) / (2 * Math.PI)),
+            (float) (Math.toRadians(frequency.y) / (2 * Math.PI)),
+            frequency.z == 0 ? 1 : frequency.z * (float) size.x,
+            frequency.w == 0 ? 1 : frequency.w * (float) size.y
+        );
+    }
+
+    /** get texture rotation parameters to send to the shader */
+    Vector3f getRotation(Vector4f freq) {
+        return new Vector3f(
+            freq.z * rotation.x,
+            freq.w * rotation.y,
+            rotation.z
+        );
+    }
+
+    /** get texture rotation parameters to send to the shader */
+    Vector3f getEnvelope(Vector3d size) {
+        return new Vector3f(
+            envelope.x / (float) size.x,
+            envelope.y / (float) size.y,
+            envelope.z
+        );
     }
 
 }

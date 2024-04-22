@@ -17,9 +17,12 @@ import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.VkCommandBuffer;
 
 import es.optocom.jovp.definitions.FontType;
 import es.optocom.jovp.definitions.Vertex;
+import es.optocom.jovp.definitions.ViewEye;
+import es.optocom.jovp.definitions.ViewMode;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
@@ -129,7 +132,7 @@ public class Text extends Renderable {
             throw new RuntimeException(e);
         }
         createAtlasTexture(bitmap, rgba);
-        model = new Model();
+        update(new Model());
     }
 
     /**
@@ -192,6 +195,7 @@ public class Text extends Renderable {
             lastCodepoint = codepoint;
         }
         quad.free();
+        Model model = getModel();
         model.setVertices(vertices);
         model.setIndices(indices);
         update(model);
@@ -271,18 +275,6 @@ public class Text extends Renderable {
     }
 
     /**
-     * 
-     * Set text color
-     *
-     * @param rgba The RGBA channels to use
-     *
-     * @since 0.0.1
-     */
-    public void setColor(double[] rgba) {
-        texture.setColor(rgba);
-    }
-
-    /**
      * Return the defined size for this font
      * 
      * @return font size
@@ -349,15 +341,42 @@ public class Text extends Renderable {
     }
 
     /**
+     * 
+     * Render item or text
      *
-     * Update uniforms for the image to be rendered
-     *
-     * @param imageIndex Image to be rendered
+     * @param stack Memory stack
+     * @param commandBuffer Command buffer
+     * @param image in-flight frame to render
      *
      * @since 0.0.1
      */
     @Override
-    void updateUniforms(int imageIndex, Observer.Eye eye) {
+     void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
+        if (viewEye == ViewEye.NONE) return;
+        if (VulkanSetup.observer.viewMode == ViewMode.MONO) {
+            draw(stack, commandBuffer, image, 0);
+            return;
+        }
+        switch (viewEye) {
+            case LEFT -> draw(stack, commandBuffer, image, 0);
+            case RIGHT-> draw(stack, commandBuffer, image, 1);
+            case BOTH-> {
+                draw(stack, commandBuffer, image, 0);
+                draw(stack, commandBuffer, image, 1);
+            }
+            default-> {return;}
+        }
+    }
+
+    /** Update uniforms for the image to be rendered */
+    private void draw(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
+        ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
+        updateUniforms(image, passNumber, VulkanSetup.observer.opticsCyclops);
+        draw(stack, commandBuffer, image, passNumber, viewPass.textPipeline, viewPass.textPipelineLayout);
+    }
+
+    /** Update uniforms for the image to be rendered */
+    private void updateUniforms(int image, int eye, Optics optics) {
         if (updateModelMatrix) {
             modelMatrix.translationRotateScale(new Vector3f(position.x, position.y, 0.0f), new Quaternionf(), new Vector3f(size, size, 0.0f));
             updateModelMatrix = false;
@@ -365,15 +384,16 @@ public class Text extends Renderable {
         int n = 0;
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
-            vkMapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex), 0,
-                    VulkanSetup.UNIFORM_SIZEOF, 0, data);
+            vkMapMemory(VulkanSetup.logicalDevice.device, getUniformMemory(image, eye), 0, UNIFORM_SIZEOF, 0, data);
             {
-                ByteBuffer buffer = data.getByteBuffer(0, VulkanSetup.UNIFORM_TEXTSIZEOF);
+                ByteBuffer buffer = data.getByteBuffer(0, UNIFORM_TEXTSIZEOF);
                 modelMatrix.get(n * Float.BYTES, buffer); n += 16;
                 projection.get(n * Float.BYTES, buffer); n += 16;
-                texture.rgba0.get(n * Float.BYTES, buffer);
+                optics.lensCenter.get(n * Float.BYTES, buffer); n += 4;
+                optics.coefficients.get(n * Float.BYTES, buffer); n += 4;
+                getTexture().rgba0.get(n * Float.BYTES, buffer);
             }
-            vkUnmapMemory(VulkanSetup.logicalDevice.device, uniformBuffersMemory.get(imageIndex));
+            vkUnmapMemory(VulkanSetup.logicalDevice.device, getUniformMemory(image, eye));
         }
     }
 
@@ -415,7 +435,7 @@ public class Text extends Renderable {
                 pixels[k++] = alpha;
             }
         }
-        texture = new Texture(rgba, pixels, ATLAS_WIDTH, ATLAS_HEIGHT);
+        update(new Texture(rgba, pixels, ATLAS_WIDTH, ATLAS_HEIGHT));
     }
 
 }

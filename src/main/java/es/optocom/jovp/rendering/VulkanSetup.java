@@ -65,7 +65,6 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
 import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
@@ -110,68 +109,6 @@ class VulkanSetup {
     static final int UINT32_MAX = 0xFFFFFFFF;
     static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
     static final int MODEL_SIZEOF = (3 + 2) * Float.BYTES;
-    // Uniform size: remember that the GPU reads in blocks of 4 bits, even if the variable sent is smaller than that.
-    static final int UNIFORM_SIZEOF = 88 * Float.BYTES;
-    // Uniform size for overlay text
-    static final int UNIFORM_TEXTSIZEOF = 36 * Float.BYTES;
-    // VulkanManager
-    static final int MAX_FRAMES_IN_FLIGHT = 2;
-    // LogicalDevice
-    static final boolean SAMPLER_ANISOTROPY = true;
-    static final boolean SAMPLE_RATE_SHADING = true;
-    // SwapChain
-    static final int COMPOSITE_ALPHA_MODE = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    static final int MIP_LEVELS = 1;
-    static final int COLOR_ATTACHMENT_SAMPLES = VK_SAMPLE_COUNT_1_BIT;
-    static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    static final int SURFACE_FORMAT = VK_FORMAT_B8G8R8_SRGB;
-    static final int COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    static final int PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
-    // ViewPass
-    static final int VERTEX_FORMAT = VK_FORMAT_R32G32B32_SFLOAT;
-    static final int VERTEX_OFFSET = 0;
-    static final int TEXTURE_FORMAT = VK_FORMAT_R32G32_SFLOAT;
-    static final int TEXTURE_OFFSET = 3 * Float.BYTES;
-    static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    static final boolean PRIMITIVE_RESTART_ENABLE = false;
-    static final float VIEWPORT_MIN_DEPTH = 0.0f;
-    static final float VIEWPORT_MAX_DEPTH = 1.0f;
-    static final boolean DEPTH_CLAMP_ENABLE = false;
-    static final boolean RASTERIZER_DISCARD_ENABLE = false;
-    static final int POLYGON_MODE = VK_POLYGON_MODE_FILL;
-    static final float LINE_WIDTH = 1.0f;
-    static final int CULL_MODE = VK_CULL_MODE_BACK_BIT;
-    static final int FRONT_FACE = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    static final boolean DEPTH_BIAS_ENABLE = false;
-    static final boolean SAMPLE_SHADING_ENABLE = true;
-    static final float MIN_SAMPLE_SHADING = 0.2f;
-    static final boolean DEPTH_TEST_ENABLE = true;
-    static final boolean DEPTH_WRITE_ENABLE = true;
-    static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
-    static final boolean DEPTH_BOUNDS_TEST_ENABLE = false;
-    static final boolean STENCIL_TEST_ENABLE = false;
-    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    static final boolean BLEND_ENABLE = true;
-    static final int BLEND_COLOR_SOURCE_FACTOR = VK_BLEND_FACTOR_SRC_ALPHA;
-    static final int BLEND_COLOR_DESTINATION_FACTOR = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    static final int BLEND_COLOR_OPERATION = VK_BLEND_OP_ADD;
-    static final int BLEND_ALPHA_SOURCE_FACTOR = VK_BLEND_FACTOR_ONE;
-    static final int BLEND_ALPHA_DESTINATION_FACTOR = VK_BLEND_FACTOR_ZERO;
-    static final int BLEND_ALPHA_OPERATION = VK_BLEND_OP_ADD;
-    static final boolean LOGIC_OPERATION_ENABLE = false;
-    static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
-    static final float BLEND_CONSTANTS_X = 0.0f;
-    static final float BLEND_CONSTANTS_Y = 0.0f;
-    static final float BLEND_CONSTANTS_Z = 0.0f;
-    static final float BLEND_CONSTANTS_W = 0.0f;
-    // ItemBuffers
-    static final int SAMPLER_FILTER = VK_FILTER_NEAREST;
-    static final int SAMPLER_ADDRESS_MODE = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    static final int SAMPLER_COMPARISONS = VK_COMPARE_OP_ALWAYS;
-    static final int SAMPLER_MIPMAP_MODE = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-    static final int SAMPLER_MIPMAP_FILTER = VK_FILTER_LINEAR;
-    static final int SAMPLER_COLOR_FORMAT = VK_FORMAT_R32G32B32A32_SFLOAT;
     // Vulkan instances
     static VkInstance instance;
     static boolean validationLayers;
@@ -182,7 +119,7 @@ class VulkanSetup {
     static VkPhysicalDevice physicalDevice;
     static LogicalDevice logicalDevice;
     static SwapChain swapChain;
-
+    static long commandPool = 0;
     static Observer observer;
 
     /** clean after use */
@@ -573,10 +510,10 @@ class VulkanSetup {
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.malloc();
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, memProperties);
         for (int i = 0; i < memProperties.memoryTypeCount(); i++) {
-            if ((typeFilter & (1 << i)) != 0 &&
-                    (memProperties.memoryTypes(i).propertyFlags() & properties) == properties)
+            if ((typeFilter & (1 << i)) != 0 && (memProperties.memoryTypes(i).propertyFlags() & properties) == properties)
                 return i;
         }
+        memProperties.free();
         throw new RuntimeException("Failed to find suitable memory type");
     }
 
@@ -632,23 +569,22 @@ class VulkanSetup {
     }
 
     /** Create image */
-    static void createImage(int width, int height, int mipLevels, int numSamples, int format, int usage,
-            LongBuffer pTextureImage, LongBuffer pTextureImageMemory) {
+    static void createImage(int width, int height, int mipLevels, int numSamples, int format, int usage, LongBuffer pTextureImage, LongBuffer pTextureImageMemory) {
         try (MemoryStack stack = stackPush()) {
             VkImageCreateInfo imageInfo = VkImageCreateInfo.calloc(stack)
                     .sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
-                    .imageType(VK_IMAGE_TYPE_2D);
+                    .imageType(VK_IMAGE_TYPE_2D)
+                    .format(format)
+                    .mipLevels(mipLevels)
+                    .arrayLayers(1)
+                    .samples(numSamples)
+                    .tiling(VK_IMAGE_TILING_OPTIMAL)
+                    .usage(usage)
+                    .sharingMode(VK_SHARING_MODE_EXCLUSIVE)
+                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
             imageInfo.extent().width(width)
                     .height(height)
                     .depth(1);
-            imageInfo.mipLevels(mipLevels)
-                    .arrayLayers(1)
-                    .format(format)
-                    .tiling(VK_IMAGE_TILING_OPTIMAL)
-                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                    .usage(usage)
-                    .samples(numSamples)
-                    .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
             int result = vkCreateImage(logicalDevice.device, imageInfo, null, pTextureImage);
             if (result != VK_SUCCESS)
                 throw new RuntimeException("Failed to create image: " + translateVulkanResult(result));
@@ -748,30 +684,6 @@ class VulkanSetup {
         SIZEOF_CACHE.put(Vector3f.class, 3 * Float.BYTES);
         SIZEOF_CACHE.put(Vector4f.class, 4 * Float.BYTES);
         SIZEOF_CACHE.put(Matrix4f.class, SIZEOF_CACHE.get(Vector4f.class));
-    }
-
-    /** create buffer */
-    static void createBuffer(long size, int usage, int properties, LongBuffer pBuffer, LongBuffer pBufferMemory) {
-        try (MemoryStack stack = stackPush()) {
-            VkBufferCreateInfo bufferInfo = VkBufferCreateInfo.calloc(stack);
-            bufferInfo.sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
-                    .size(size)
-                    .usage(usage)
-                    .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
-            int result = vkCreateBuffer(logicalDevice.device, bufferInfo, null, pBuffer);
-            if (result != VK_SUCCESS)
-                throw new RuntimeException("Failed to create buffer: " + translateVulkanResult(result));
-            VkMemoryRequirements memRequirements = VkMemoryRequirements.calloc(stack);
-            vkGetBufferMemoryRequirements(logicalDevice.device, pBuffer.get(0), memRequirements);
-            VkMemoryAllocateInfo allocInfo = VkMemoryAllocateInfo.calloc(stack)
-                    .sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
-                    .allocationSize(memRequirements.size())
-                    .memoryTypeIndex(findMemoryType(memRequirements.memoryTypeBits(), properties));
-            result = vkAllocateMemory(logicalDevice.device, allocInfo, null, pBufferMemory);
-            if (result != VK_SUCCESS)
-                throw new RuntimeException("Failed to allocate buffer memory: " + translateVulkanResult(result));
-            vkBindBufferMemory(logicalDevice.device, pBuffer.get(0), pBufferMemory.get(0), 0);
-        }
     }
 
     /** create command pool */

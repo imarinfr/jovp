@@ -10,10 +10,27 @@ import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_bytes;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_compilation_status;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_get_error_message;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ONE;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_SRC_ALPHA;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_FACTOR_ZERO;
+import static org.lwjgl.vulkan.VK10.VK_BLEND_OP_ADD;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_A_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_B_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_G_BIT;
+import static org.lwjgl.vulkan.VK10.VK_COLOR_COMPONENT_R_BIT;
 import static org.lwjgl.vulkan.VK10.VK_COMPARE_OP_ALWAYS;
+import static org.lwjgl.vulkan.VK10.VK_COMPARE_OP_LESS;
+import static org.lwjgl.vulkan.VK10.VK_CULL_MODE_BACK_BIT;
 import static org.lwjgl.vulkan.VK10.VK_CULL_MODE_NONE;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
+import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FRONT_FACE_CLOCKWISE;
+import static org.lwjgl.vulkan.VK10.VK_FRONT_FACE_COUNTER_CLOCKWISE;
+import static org.lwjgl.vulkan.VK10.VK_LOGIC_OP_COPY;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_POLYGON_MODE_FILL;
+import static org.lwjgl.vulkan.VK10.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -72,6 +89,43 @@ import es.optocom.jovp.definitions.ShaderKind;
  * @since 0.0.1
  */
 class ViewPass {
+
+    static final int VERTEX_FORMAT = VK_FORMAT_R32G32B32_SFLOAT;
+    static final int VERTEX_OFFSET = 0;
+    static final int TEXTURE_FORMAT = VK_FORMAT_R32G32_SFLOAT;
+    static final int TEXTURE_OFFSET = 3 * Float.BYTES;
+    static final int PRIMITIVE_TOPOLOGY = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    static final boolean PRIMITIVE_RESTART_ENABLE = false;
+    static final float VIEWPORT_MIN_DEPTH = 0.0f;
+    static final float VIEWPORT_MAX_DEPTH = 1.0f;
+    static final boolean DEPTH_CLAMP_ENABLE = false;
+    static final boolean RASTERIZER_DISCARD_ENABLE = false;
+    static final int POLYGON_MODE = VK_POLYGON_MODE_FILL;
+    static final float LINE_WIDTH = 1.0f;
+    static final int CULL_MODE = VK_CULL_MODE_BACK_BIT;
+    static final int FRONT_FACE = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    static final boolean DEPTH_BIAS_ENABLE = false;
+    static final boolean SAMPLE_SHADING_ENABLE = true;
+    static final float MIN_SAMPLE_SHADING = 0.2f;
+    static final boolean DEPTH_TEST_ENABLE = true;
+    static final boolean DEPTH_WRITE_ENABLE = true;
+    static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
+    static final boolean DEPTH_BOUNDS_TEST_ENABLE = false;
+    static final boolean STENCIL_TEST_ENABLE = false;
+    static final int COLOR_WRITE_MASK = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    static final boolean BLEND_ENABLE = true;
+    static final int BLEND_COLOR_SOURCE_FACTOR = VK_BLEND_FACTOR_SRC_ALPHA;
+    static final int BLEND_COLOR_DESTINATION_FACTOR = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    static final int BLEND_COLOR_OPERATION = VK_BLEND_OP_ADD;
+    static final int BLEND_ALPHA_SOURCE_FACTOR = VK_BLEND_FACTOR_ONE;
+    static final int BLEND_ALPHA_DESTINATION_FACTOR = VK_BLEND_FACTOR_ZERO;
+    static final int BLEND_ALPHA_OPERATION = VK_BLEND_OP_ADD;
+    static final boolean LOGIC_OPERATION_ENABLE = false;
+    static final int LOGIC_OPERATION = VK_LOGIC_OP_COPY;
+    static final float BLEND_CONSTANTS_X = 0.0f;
+    static final float BLEND_CONSTANTS_Y = 0.0f;
+    static final float BLEND_CONSTANTS_Z = 0.0f;
+    static final float BLEND_CONSTANTS_W = 0.0f;
 
     final VkExtent2D extent;
     long graphicsPipelineLayout;
@@ -254,15 +308,15 @@ class ViewPass {
     private VkPipelineInputAssemblyStateCreateInfo createAssemblyStage(MemoryStack stack) {
         return VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
-            .topology(VulkanSetup.PRIMITIVE_TOPOLOGY)
-            .primitiveRestartEnable(VulkanSetup.PRIMITIVE_RESTART_ENABLE);
+            .topology(PRIMITIVE_TOPOLOGY)
+            .primitiveRestartEnable(PRIMITIVE_RESTART_ENABLE);
     }
 
     /** create viewport state */
     private VkPipelineViewportStateCreateInfo createViewPortState(MemoryStack stack, int offset, VkExtent2D extent) {
         VkViewport.Buffer viewport = VkViewport.calloc(1, stack)
             .x(offset).y(0).width(extent.width()).height(extent.height())
-            .minDepth(VulkanSetup.VIEWPORT_MIN_DEPTH).maxDepth(VulkanSetup.VIEWPORT_MAX_DEPTH);
+            .minDepth(VIEWPORT_MIN_DEPTH).maxDepth(VIEWPORT_MAX_DEPTH);
         VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack)
             .offset(VkOffset2D.calloc(stack).set(offset, 0)).extent(extent);
         return VkPipelineViewportStateCreateInfo.calloc(stack)
@@ -274,22 +328,22 @@ class ViewPass {
     private VkPipelineRasterizationStateCreateInfo createGraphicsRasterizer(MemoryStack stack) {
         return VkPipelineRasterizationStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
-            .depthClampEnable(VulkanSetup.DEPTH_CLAMP_ENABLE)
-            .rasterizerDiscardEnable(VulkanSetup.RASTERIZER_DISCARD_ENABLE)
-            .polygonMode(VulkanSetup.POLYGON_MODE).lineWidth(VulkanSetup.LINE_WIDTH)
-            .cullMode(VulkanSetup.CULL_MODE).frontFace(VulkanSetup.FRONT_FACE)
-            .depthBiasEnable(VulkanSetup.DEPTH_BIAS_ENABLE);
+            .depthClampEnable(DEPTH_CLAMP_ENABLE)
+            .rasterizerDiscardEnable(RASTERIZER_DISCARD_ENABLE)
+            .polygonMode(POLYGON_MODE).lineWidth(LINE_WIDTH)
+            .cullMode(CULL_MODE).frontFace(FRONT_FACE)
+            .depthBiasEnable(DEPTH_BIAS_ENABLE);
     }
 
     /** create overlay text rasterizer */
     private VkPipelineRasterizationStateCreateInfo createTextRasterizer(MemoryStack stack) {
         return VkPipelineRasterizationStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
-            .depthClampEnable(VulkanSetup.DEPTH_CLAMP_ENABLE)
-            .rasterizerDiscardEnable(VulkanSetup.RASTERIZER_DISCARD_ENABLE)
-            .polygonMode(VulkanSetup.POLYGON_MODE).lineWidth(VulkanSetup.LINE_WIDTH)
+            .depthClampEnable(DEPTH_CLAMP_ENABLE)
+            .rasterizerDiscardEnable(RASTERIZER_DISCARD_ENABLE)
+            .polygonMode(POLYGON_MODE).lineWidth(LINE_WIDTH)
             .cullMode(VK_CULL_MODE_NONE).frontFace(VK_FRONT_FACE_CLOCKWISE)
-            .depthBiasEnable(VulkanSetup.DEPTH_BIAS_ENABLE);
+            .depthBiasEnable(DEPTH_BIAS_ENABLE);
     }
 
 
@@ -305,8 +359,8 @@ class ViewPass {
     private VkPipelineMultisampleStateCreateInfo createMultisampling(MemoryStack stack) {
         return VkPipelineMultisampleStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
-            .sampleShadingEnable(VulkanSetup.SAMPLE_SHADING_ENABLE)
-            .minSampleShading(VulkanSetup.MIN_SAMPLE_SHADING)
+            .sampleShadingEnable(SAMPLE_SHADING_ENABLE)
+            .minSampleShading(MIN_SAMPLE_SHADING)
             .rasterizationSamples(VulkanSetup.logicalDevice.msaaSamples);
     }
 
@@ -314,10 +368,11 @@ class ViewPass {
     private VkPipelineDepthStencilStateCreateInfo createGraphicsDepthStencil(MemoryStack stack) {
         return VkPipelineDepthStencilStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-            .depthTestEnable(VulkanSetup.DEPTH_TEST_ENABLE).depthWriteEnable(VulkanSetup.DEPTH_WRITE_ENABLE)
-            .depthCompareOp(VulkanSetup.DEPTH_COMPARE_OPERATION)
-            .depthBoundsTestEnable(VulkanSetup.DEPTH_BOUNDS_TEST_ENABLE)
-            .stencilTestEnable(VulkanSetup.STENCIL_TEST_ENABLE);
+            .depthTestEnable(DEPTH_TEST_ENABLE)
+            .depthWriteEnable(DEPTH_WRITE_ENABLE)
+            .depthCompareOp(DEPTH_COMPARE_OPERATION)
+            .depthBoundsTestEnable(DEPTH_BOUNDS_TEST_ENABLE)
+            .stencilTestEnable(STENCIL_TEST_ENABLE);
     }
 
     /** create overlay text depth stencil */
@@ -332,21 +387,18 @@ class ViewPass {
     /** color blending */
     private VkPipelineColorBlendStateCreateInfo createColorBlending(MemoryStack stack) {
         VkPipelineColorBlendAttachmentState.Buffer colorBlendAttachment = VkPipelineColorBlendAttachmentState
-            .calloc(1, stack).colorWriteMask(VulkanSetup.COLOR_WRITE_MASK).blendEnable(VulkanSetup.BLEND_ENABLE)
-            .srcColorBlendFactor(VulkanSetup.BLEND_COLOR_SOURCE_FACTOR)
-            .dstColorBlendFactor(VulkanSetup.BLEND_COLOR_DESTINATION_FACTOR)
-            .colorBlendOp(VulkanSetup.BLEND_COLOR_OPERATION)
-            .srcAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_SOURCE_FACTOR)
-            .dstAlphaBlendFactor(VulkanSetup.BLEND_ALPHA_DESTINATION_FACTOR)
-            .alphaBlendOp(VulkanSetup.BLEND_ALPHA_OPERATION);
+            .calloc(1, stack).colorWriteMask(COLOR_WRITE_MASK).blendEnable(BLEND_ENABLE)
+            .srcColorBlendFactor(BLEND_COLOR_SOURCE_FACTOR)
+            .dstColorBlendFactor(BLEND_COLOR_DESTINATION_FACTOR)
+            .colorBlendOp(BLEND_COLOR_OPERATION)
+            .srcAlphaBlendFactor(BLEND_ALPHA_SOURCE_FACTOR)
+            .dstAlphaBlendFactor(BLEND_ALPHA_DESTINATION_FACTOR)
+            .alphaBlendOp(BLEND_ALPHA_OPERATION);
         return VkPipelineColorBlendStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
-            .logicOpEnable(VulkanSetup.LOGIC_OPERATION_ENABLE).logicOp(VulkanSetup.LOGIC_OPERATION)
+            .logicOpEnable(LOGIC_OPERATION_ENABLE).logicOp(LOGIC_OPERATION)
             .pAttachments(colorBlendAttachment)
-            .blendConstants(
-                    stack.floats(VulkanSetup.BLEND_CONSTANTS_X, VulkanSetup.BLEND_CONSTANTS_Y,
-                            VulkanSetup.BLEND_CONSTANTS_Z,
-                            VulkanSetup.BLEND_CONSTANTS_W));
+            .blendConstants(stack.floats(BLEND_CONSTANTS_X,BLEND_CONSTANTS_Y, BLEND_CONSTANTS_Z,BLEND_CONSTANTS_W));
     }
 
     /** get vertex input binding description */
@@ -360,12 +412,11 @@ class ViewPass {
         VkVertexInputAttributeDescription.Buffer attributeDescriptions = VkVertexInputAttributeDescription.calloc(2);
         // Position
         VkVertexInputAttributeDescription positionDescription = attributeDescriptions.get(0);
-        positionDescription.binding(0).location(0)
-                .format(VulkanSetup.VERTEX_FORMAT).offset(VulkanSetup.VERTEX_OFFSET);
+        positionDescription.binding(0).location(0).format(VERTEX_FORMAT).offset(VERTEX_OFFSET);
         // Texture coordinates
         VkVertexInputAttributeDescription texturesCoordinatesDescription = attributeDescriptions.get(1);
         texturesCoordinatesDescription.binding(0).location(1)
-                .format(VulkanSetup.TEXTURE_FORMAT).offset(VulkanSetup.TEXTURE_OFFSET);
+                .format(TEXTURE_FORMAT).offset(TEXTURE_OFFSET);
         return attributeDescriptions.rewind();
     }
 
