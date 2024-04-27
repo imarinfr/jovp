@@ -9,44 +9,44 @@ import org.joml.Vector3f;
 /**
  * 
  * Observer to apply the required transformations during rendering,
- * including view mode, distance, FOV, near and far planes, culling, etc
+ * including view mode, distance, FOV, near and far planes, culling, etc.
+ * 
+ * Stereoscopic view requires the specification of the pupillary
+ * distance (PD) of the left and right eye. The mean PD is 61.1 / 2 mm
+ * for women , 63.6 / 2 mm for men, and 62.35 / 2 overall
  *
  * @since 0.0.1
  */
 public class Observer {
 
     public static final float ZNEAR = 0.1f; // Near and far planes in in meters
-    public static final float ZFAR = 10000.0f;
-    //private static final float PD = 0.06235f / 2.0f; // Default pupillary distance (PD) in meters:
-                                                     // mean is 61.1 / 2 mm for women 
-                                                     //         63.6 / 2 mm for men
-                                                     //         62.35 / 2 overall
-    private static final float PD = 0.00001f;
-
+    public static final float ZFAR = 100.1f;
+    public static final float DEFAULT_DEPTH = 50.0f; // default depth: distance between item and screen
+    private static final float PD = 62.35f / 2000.0f; // Default pupillary distance (PD) in meters:
+                                                     
     Window window; // the observed window
     ViewMode viewMode; // view mode MONO or STEREO
 
-    Matrix4f viewCyclops; // view matrix for the midpoint between eyes
-    Matrix4f orthoCyclops = new Matrix4f(); // orthographic projection for the midpoint between eyes
-    Matrix4f perspCyclops = new Matrix4f(); // perspective projection for the midpoint between eyes
-    Optics opticsCyclops = new Optics(); // optics for the cyclops
-
+    Matrix4f view; // view matrix for the midpoint between eyes
     Matrix4f viewLeft; // view matrix for the left eye
-    Matrix4f orthoLeft = new Matrix4f(); // orthographic projection for the left eye
-    Matrix4f perspLeft = new Matrix4f(); // perspective projection for the left eye
-    Optics opticsLeft = new Optics(); // optics for the left eye
-
     Matrix4f viewRight; // view matrix for the left eye
-    Matrix4f orthoRight = new Matrix4f(); // orthographic projection for the right eye
-    Matrix4f perspRight = new Matrix4f(); // perspective projection for the right eye
+
+    Matrix4f orthographic = new Matrix4f(); // orthographic projection for the midpoint between eyes
+    Matrix4f orthographicLeft = new Matrix4f(); // orthographic projection for the left eye
+    Matrix4f orthographicRight = new Matrix4f(); // orthographic projection for the left eye
+    Matrix4f perspective = new Matrix4f(); // perspective projection for the midpoint between eyes
+    Matrix4f perspectiveLeft = new Matrix4f(); // perspective projection for the left eye
+    Matrix4f perspectiveRight = new Matrix4f(); // perspective projection for the right eye
+    Optics optics = new Optics(); // optics for the cyclops
+    Optics opticsLeft = new Optics(); // optics for the left eye
     Optics opticsRight = new Optics(); // optics for the right eye
 
     private float width; // view width and height in meters
     private float height;
     private float aspect; // aspect ratio
-    private float fovx; // field of view for x and y
-    private float fovxhalf; // field of view for x and y
-    private float fovy;
+    private float fovx; // field of view for x in monocular view
+    private float fovxhalf; // field of view for x in stereoscopic view
+    private float fovy; // field of view for y
 
     private float distance; // viewing distance in meters
     private float pd; // pupilary distance in meters
@@ -165,19 +165,6 @@ public class Observer {
 
     /**
      * 
-     * Set viewing distance
-     *
-     * @param distance The distance of the observer from the display in mm
-     *
-     * @since 0.0.1
-     */
-    public void setDistance(double distance) {
-        this.distance = (float) (distance / 1000); // to meters
-        computeProjections();
-    }
-
-    /**
-     * 
      * Get viewing distance
      *
      * @return The distance of the observer from the display
@@ -210,8 +197,9 @@ public class Observer {
      */
     public void setPupilDistance(double pd) {
         this.pd = (float) pd;
+        translateViewMatrix(viewLeft, new Vector3f(-(float) pd + this.pd, 0.0f, 0.0f));
+        translateViewMatrix(viewRight, new Vector3f((float) pd - this.pd, 0.0f, 0.0f));
         computeProjections();
-        resetViewMatrices();
     }
 
     /**
@@ -238,7 +226,7 @@ public class Observer {
      * @since 0.0.1
      */
     public void setCoefficients(double k1, double k2, double k3, double k4) {
-        opticsCyclops.setCoefficients(k1, k2, k3, k4);
+        optics.setCoefficients(k1, k2, k3, k4);
         opticsLeft.setCoefficients(k1, k2, k3, k4);
         opticsLeft.setCoefficients(k1, k2, k3, k4);
     }
@@ -250,7 +238,7 @@ public class Observer {
      * @since 0.0.1
      */
     public void lookAt() {
-        lookAt(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), new Vector3f(0, 1, 0));
+        lookAt(new Vector3f(0, 0, -distance), new Vector3f(0, 0, 0), new Vector3f(0, 1, 0));
     }
 
     /**
@@ -265,11 +253,11 @@ public class Observer {
      */
     public void lookAt(Vector3f eye, Vector3f center, Vector3f up) {
         up.y = -up.y;
-        Vector3f leftEye = new Vector3f(eye).add(-pd, 0.0f, 0.0f);
-        Vector3f rightEye = new Vector3f(eye).add(pd, 0.0f, 0.0f);
-        viewCyclops.lookAt(eye, center, up);
-        viewLeft.lookAt(leftEye, center, up);
-        viewRight.lookAt(rightEye, center, up);
+        view.lookAt(eye, center, up);
+        viewLeft = new Matrix4f(view);
+        viewRight = new Matrix4f(view);
+        translateViewMatrix(viewLeft, new Vector3f(-pd, 0.0f, 0.0f));
+        translateViewMatrix(viewRight, new Vector3f(pd, 0.0f, 0.0f));
     }
 
     /**
@@ -281,7 +269,7 @@ public class Observer {
      * @since 0.0.1
      */
     public void translateView(Vector3f offset) {
-        translateViewMatrix(viewCyclops, offset);
+        translateViewMatrix(view, offset);
         translateViewMatrix(viewLeft, offset);
         translateViewMatrix(viewRight, offset);
     }
@@ -299,19 +287,17 @@ public class Observer {
         fovx = (float) (2 * Math.atan(width / distance / 2));
         fovxhalf = (float) (2 * Math.atan(width / distance / 4));
         fovy = (float) (2 * Math.atan(height / distance / 2));
-        perspCyclops.setPerspective(fovy, aspect, ZNEAR, ZFAR, true);
-        perspLeft = new Matrix4f(perspCyclops);
-        perspLeft.m20(-pd / ZNEAR * aspect);
-        perspRight = new Matrix4f(perspCyclops);
-        perspLeft.m20(pd / ZNEAR * aspect);
-        orthoCyclops.setOrtho(-width / 2, width / 2, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthoLeft.setOrtho(-width / 4 - pd, width / 4 - pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthoRight.setOrtho(-width / 4 + pd, width / 4 + pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        perspective.setPerspective(fovy, aspect, ZNEAR, ZFAR, true);
+        perspectiveLeft.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(-pd);
+        perspectiveRight.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(pd);
+        orthographic.setOrtho(-width / 2, width / 2, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicLeft.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicRight.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
     public void resetViewMatrices() {
-        viewCyclops = new Matrix4f();
+        view = new Matrix4f();
         viewLeft = new Matrix4f();
         viewRight = new Matrix4f();
         lookAt();
@@ -329,7 +315,7 @@ public class Observer {
         float rx = -(float) Math.toRadians(rotation.x);
         float ry = -(float) Math.toRadians(rotation.y);
         float rz = (float) Math.toRadians(rotation.z);
-        viewCyclops.rotateXYZ(rx, ry, rz);
+        view.rotateXYZ(rx, ry, rz);
         viewLeft.rotateXYZ(rx, ry, rz);
         viewRight.rotateXYZ(rx, ry, rz);
     }

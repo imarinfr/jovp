@@ -82,8 +82,6 @@ public class VisualTests {
      */
     @Test
     public void showAllOptotypes() {
-        final String classPath = System.getProperty("java.class.path", ".");
-        System.out.println(classPath);
         PsychoEngine psychoEngine = new PsychoEngine(new LogicOptotypes());
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
@@ -189,39 +187,39 @@ public class VisualTests {
             // TODO: check the texture to avoid edge problems
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1);
-            item.distance(100);
+            item.depth(10);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, black, white));
             item.position(9, 0);
-            item.distance(100);
+            item.depth(10);
             item.frequency(0.25, 0.5);
             item.size(15, 12);
             view.add(item);
             item = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, blackSemi, whiteSemi));
             item.size(3);
             item.position(14, 4);
-            item.distance(90);
+            item.depth(9);
             item.frequency(0, 1);
             item.rotation(45);
             item.contrast(0.5);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.SQUARESINE, blueSemi, whiteSemi));
             item.position(6, -3);
-            item.distance(90);
+            item.depth(9);
             item.frequency(135, 0.5);
             item.size(6, 3);
             item.contrast(0.2);
             view.add(item);
             item = new Item(new Model(ModelType.SQUARE), new Texture(TextureType.CHECKERBOARD, blackSemi, redSemi));
             item.position(5, 3);
-            item.distance(90);
+            item.depth(9);
             item.frequency(0.5, 3, 0.25, 2);
             item.size(4, 2);
             item.rotation(0);
             view.add(item);
             stimulus1 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, black, white));
             stimulus1.position(-8, -4);
-            stimulus1.distance(90);
+            stimulus1.depth(9);
             stimulus1.size(6, 6);
             stimulus1.frequency(0, 0.5);
             stimulus1.rotation(45);
@@ -229,18 +227,18 @@ public class VisualTests {
             stimulus2 = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE));
             stimulus2.frequency(0, 2);
             stimulus2.position(-12, 2);
-            stimulus2.distance(90);
+            stimulus2.depth(9);
             stimulus2.size(6, 3);
             view.add(stimulus2);
             stimulus3 = new Item(new Model(ModelType.ANNULUS, 0.5f), new Texture(TextureType.SINE, red, green));
             stimulus3.frequency(0, 2);
             stimulus3.position(-3, -3);
-            stimulus3.distance(90);
+            stimulus3.depth(9);
             stimulus3.size(2, 2);
             view.add(stimulus3);
             stimulus4 = new Item(new Model(ModelType.SQUARE), new Texture("ecceIvanito.jpeg"));
             stimulus4.position(-4, 3);
-            stimulus4.distance(90);
+            stimulus4.depth(9);
             stimulus4.size(6, 6);
             view.add(stimulus4);
             // Add title
@@ -297,13 +295,13 @@ public class VisualTests {
                 prefix = "FLAT vs ";
                 stimuli[0] = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 0, 1}));
                 stimuli[0].position(-4, -4);
-                stimuli[0].distance(90);
+                stimuli[0].depth(10);
                 stimuli[0].size(6, 6);
                 view.add(stimuli[0]);
     
                 stimuli[1] = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
                 stimuli[1].position(+4, -4);
-                stimuli[1].distance(90);
+                stimuli[1].depth(10);
                 stimuli[1].size(6, 6);
                 stimuli[1].frequency(0, 0.5);
                 stimuli[1].rotation(45);
@@ -370,12 +368,12 @@ public class VisualTests {
             Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
             bg.size(8, 8);
             bg.position(0, 0);
-            bg.distance(100);
+            bg.depth(10);
             view.add(bg);
             // Optotype
             optotype = new Item(new Model(Optotype.E), new Texture(black));
             optotype.position(0, 0);
-            optotype.distance(90);
+            optotype.depth(9);
             optotype.size(size, size);
             theta = 180 * random.nextInt(2);
             optotype.rotation(theta);
@@ -496,7 +494,6 @@ public class VisualTests {
             for (Item item : view.items()) {
                 item.position(xpos, 0.0f);
                 item.size(size, size);
-                item.distance(100);
                 xpos += spacing;
             }
             // Add title
@@ -579,20 +576,18 @@ public class VisualTests {
         Item circle;
         double size = 1;
         double ypos = 3;
-        double zpos = 25;
+        double zpos = 5;
 
         public void init(PsychoEngine psychoEngine) {
             addOptotypes();
-            for (int i = 0; i < 15; i++)
-                addPolygon(i);
-            for (int i = 0; i < 20; i++)
-                addCircle(i);
+            for (int i = 0; i < 15; i++) addPolygon(i);
+            for (int i = 0; i < 20; i++) addCircle(i);
             addTriangle();
             addSquares();
             addText();
             circle = new Item(new Model(ModelType.CIRCLE), new Texture("ecceIvanito.jpeg"));
             circle.position(0, ypos);
-            circle.distance(zpos);
+            circle.depth(zpos);
             circle.size(size, size);
             circle.show(ViewEye.BOTH);
             view.add(circle);
@@ -616,14 +611,14 @@ public class VisualTests {
                 if (time > 14425) {
                     circle.show(ViewEye.BOTH);
                     circle.position(0, ypos + Math.sin(time / 100));
-                    circle.distance(zpos);
+                    circle.depth(zpos);
                 }
                 if (time > 16425) {
                     size += 2;
                     ypos += 0.6;
-                    zpos -= 0.5;
+                    zpos -= 0.05;
                     circle.position(0, ypos);
-                    circle.distance(zpos);
+                    circle.depth(zpos);
                     circle.size(size, size);
                 }
                 if (zpos < 2) for (Item item : view.items()) item.show(ViewEye.BOTH);
@@ -636,8 +631,7 @@ public class VisualTests {
             // process optotypes
             for (Item item : view.items()) {
                 if (item.getModel().getType() != ModelType.OPTOTYPE) continue;
-                double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1)
-                        * timer.getElapsedTime()) / 500);
+                double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1) * timer.getElapsedTime()) / 500);
                 item.position(xpos, ypos);
                 item.rotation(theta);
                 xpos += 1.25;
@@ -650,7 +644,6 @@ public class VisualTests {
                 int pos = iteration - 38 * imageNumber;
                 if (pos < 0) pos = 0;
                 item.position(rx * Math.cos(pos / 90.0), ry * Math.sin(pos / 90.0));
-                item.distance(20);
                 item.rotation(-theta / 2);
                 imageNumber++;
             }
@@ -661,12 +654,10 @@ public class VisualTests {
                 if (time < 8000) continue;
                 item.show(ViewEye.BOTH);
                 leadPosition += 1 / 60.0;
-                if (imageNumber < 10)
-                    item.position(leadPosition - 5 * imageNumber, 8);
-                item.distance(10);
-                if (imageNumber >= 10 & imageNumber < 20)
-                    item.position(-leadPosition + 5 * (imageNumber - 10), -8);
-                item.distance(10);
+                if (imageNumber < 10) item.position(leadPosition - 5 * imageNumber, 8);
+                item.depth(10);
+                if (imageNumber >= 10 & imageNumber < 20) item.position(-leadPosition + 5 * (imageNumber - 10), -8);
+                item.depth(10);
                 imageNumber++;
             }
             // process triangle
@@ -679,10 +670,8 @@ public class VisualTests {
             int square = 0;
             for (Item item : view.items()) {
                 if (item.getModel().getType() != ModelType.SQUARE) continue;
-                if (square == 0)
-                    item.position(-10.025 + Math.sin(iteration / 20.0) / 2, -8);
-                if (square == 1)
-                    item.position(-8.975 - Math.sin(iteration / 20.0) / 2, -8);
+                if (square == 0) item.position(-10.025 + Math.sin(iteration / 20.0) / 2, -8);
+                if (square == 1) item.position(-8.975 - Math.sin(iteration / 20.0) / 2, -8);
                 square++;
             }
             // check FPS
@@ -732,12 +721,9 @@ public class VisualTests {
 
         private void addPolygon(int i) {
             String fileName = null;
-            if (i % 3 == 0)
-                fileName = "ecceIvanito.jpeg";
-            if (i % 3 == 1)
-                fileName = "ecceHomo.jpeg";
-            if (i % 3 == 2)
-                fileName = "ivanito.jpeg";
+            if (i % 3 == 0) fileName = "ecceIvanito.jpeg";
+            if (i % 3 == 1) fileName = "ecceHomo.jpeg";
+            if (i % 3 == 2) fileName = "ivanito.jpeg";
             Item polygon = new Item(new Model(12), new Texture(fileName));
             polygon.size(2, 2);
             view.add(polygon);
@@ -745,10 +731,8 @@ public class VisualTests {
 
         private void addCircle(int i) {
             String fileName = null;
-            if (i % 2 == 0)
-                fileName = "ecceIvanito.jpeg";
-            if (i % 2 == 1)
-                fileName = "ivanito.jpeg";
+            if (i % 2 == 0) fileName = "ecceIvanito.jpeg";
+            if (i % 2 == 1) fileName = "ivanito.jpeg";
             Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
             circle.size(2.25, 2.25);
             circle.show(ViewEye.NONE);
@@ -757,7 +741,7 @@ public class VisualTests {
 
         private void addTriangle() {
             Item triangle = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.SINE, triangleColor1, triangleColor2));
-            triangle.distance(50);
+            triangle.depth(5);
             triangle.position(5, 3);
             triangle.size(6, 6);
             triangle.frequency(0, 1);
@@ -807,10 +791,8 @@ public class VisualTests {
         int updateTextureTime = 5000;
         Text text;
         Item background, item1, item2;
-        ModelType[] models = { ModelType.CIRCLE, ModelType.SQUARE, ModelType.TRIANGLE, ModelType.ANNULUS,
-                ModelType.OPTOTYPE };
-        TextureType[] textures = { TextureType.CHECKERBOARD, TextureType.SINE, TextureType.G1, TextureType.G2,
-                TextureType.G3 };
+        ModelType[] models = { ModelType.CIRCLE, ModelType.SQUARE, ModelType.TRIANGLE, ModelType.ANNULUS, ModelType.OPTOTYPE };
+        TextureType[] textures = { TextureType.CHECKERBOARD, TextureType.SINE, TextureType.G1, TextureType.G2, TextureType.G3 };
         double[] backgroundColor = new double[] { 0.5, 0.5, 0.5, 1 };
         double[] color0 = new double[] { 1, 1, 1, 1 };
         double[] color1 = new double[] { 0, 0, 0.5, 1 };
@@ -819,7 +801,7 @@ public class VisualTests {
             // Background
             background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
             background.position(0, 0);
-            background.distance(100);
+            background.depth(10);
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
             view.add(background);
@@ -838,12 +820,12 @@ public class VisualTests {
             // Items
             item1 = new Item(new Model(ModelType.CIRCLE), new Texture(color0, color1));
             item1.size(10, 10);
-            item1.distance(90);
+            item1.depth(9);
             item1.position(0, 0);
             item1.frequency(0, 0.2);
             view.add(item1);
             item2 = new Item(new Model(ModelType.MALTESE), new Texture(new double[] { 0, 1, 0, 1 }));
-            item2.distance(50);
+            item2.depth(8);
             item2.position(0, 0);
             item2.size(2, 2);
             view.add(item2);
@@ -902,7 +884,6 @@ public class VisualTests {
                 for (double sd = 0.2; sd <= 1.0; sd += 0.2) {
                     Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
                     stimuli.position(x, y);
-                    stimuli.distance(50);
                     stimuli.size(2, 2);
                     stimuli.frequency(0, 2);
                     stimuli.contrast(contrast);
@@ -929,25 +910,20 @@ public class VisualTests {
         double[] black = new double[] { 0, 0, 0, 1 };
         
         public void init(PsychoEngine psychoEngine) {
-            System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
-
             Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
             stimuli.position(-8, 0);
-            stimuli.distance(90);
             stimuli.size(6);
             stimuli.frequency(0, 3);
             stimuli.envelope(EnvelopeType.GAUSSIAN, 2, 1);
             view.add(stimuli);
             stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
             stimuli.position(0, 0);
-            stimuli.distance(90);
             stimuli.size(6);
             stimuli.frequency(0, 3);
             stimuli.envelope(EnvelopeType.CIRCLE, 2, 1, 30);
             view.add(stimuli);
             stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
             stimuli.position(8, 0);
-            stimuli.distance(90);
             stimuli.size(6);
             stimuli.frequency(0, 3);
             stimuli.envelope(EnvelopeType.SQUARE, 2, 1, 60);
@@ -980,13 +956,12 @@ public class VisualTests {
             float[] fov = psychoEngine.getFieldOfView();
             background = new Item(new Model(ModelType.CIRCLE), new Texture(filenames[0]));
             background.position(0, 0);
-            background.distance(90);
             background.size(fov[0], fov[1]); 
             view.add(background);
 
             fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
             fixation.size(2);
-            fixation.distance(50);
+            fixation.depth(50);
             view.add(fixation);
 
             text = new Text();

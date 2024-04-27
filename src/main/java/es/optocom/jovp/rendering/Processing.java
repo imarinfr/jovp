@@ -1,6 +1,7 @@
 package es.optocom.jovp.rendering;
 
 import org.joml.Vector3i;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -179,7 +180,7 @@ class Processing {
 
 
     /** get frequency parameters to send to the shader */
-    Vector4f getFrequency(Vector3d size) {
+    Vector4f getFrequency(Vector2d size) {
         return new Vector4f(
             (float) (Math.toRadians(frequency.x) / (2 * Math.PI)),
             (float) (Math.toRadians(frequency.y) / (2 * Math.PI)),

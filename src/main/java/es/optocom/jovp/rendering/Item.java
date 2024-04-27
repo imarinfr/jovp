@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.joml.Matrix4d;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
@@ -16,7 +17,7 @@ import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import es.optocom.jovp.definitions.EnvelopeType;
-import es.optocom.jovp.definitions.Projection;
+import es.optocom.jovp.definitions.ProjectionType;
 import es.optocom.jovp.definitions.Units;
 import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ViewMode;
@@ -30,8 +31,9 @@ import es.optocom.jovp.definitions.ViewMode;
 public class Item extends Renderable {
 
     private Units units; // units to use for the item
-    private Vector3d position; // unit vector with (x, y, z) position in meters
-    private Vector3d size; // size in x, y, and z in meters
+    private Vector2d position; // unit vector with (x, y) position in item's units
+    private double depth; // distance from the screen in meters
+    private Vector3d size; // size in x, y in item's units, and z in meters
     private Vector3d rotation; // angles of rotation in each axis in radians
     private Matrix4d modelMatrix; // model matrix
     private Processing processing; // Post-processing things
@@ -46,7 +48,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
-        this(model, texture, Projection.ORTHOGRAPHIC, Units.ANGLES);
+        this(model, texture, ProjectionType.ORTHOGRAPHIC, Units.ANGLES);
     }
 
     /**
@@ -59,7 +61,7 @@ public class Item extends Renderable {
      *
      * @since 0.0.1
      */
-    public Item(Model model, Texture texture, Projection projection) {
+    public Item(Model model, Texture texture, ProjectionType projection) {
         this(model, texture, projection, Units.ANGLES);
     }
 
@@ -74,7 +76,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture, Units units) {
-        this(model, texture, Projection.ORTHOGRAPHIC, units);
+        this(model, texture, ProjectionType.ORTHOGRAPHIC, units);
     }
 
     /**
@@ -88,10 +90,11 @@ public class Item extends Renderable {
      *
      * @since 0.0.1
      */
-    public Item(Model model, Texture texture, Projection projection, Units units) {
+    public Item(Model model, Texture texture, ProjectionType projection, Units units) {
         super(model, texture, projection);
         this.units = units;
-        this.position = new Vector3d(0, 0, 0);
+        this.position = new Vector2d(0, 0);
+        this.depth = Observer.DEFAULT_DEPTH;
         this.size = new Vector3d(1, 1, 0);
         this.rotation = new Vector3d();
         this.modelMatrix = new Matrix4d();
@@ -113,13 +116,13 @@ public class Item extends Renderable {
 
     /**
      * 
-     * Get size in meters
+     * Get position in item's units
      *
-     * @return return position in x, y, and z in meters
+     * @return return position x, y in item's units
      *
      * @since 0.0.1
      */
-    public Vector3d getPosition() {
+    public Vector2d getPosition() {
         return position;
     }
 
@@ -128,106 +131,56 @@ public class Item extends Renderable {
      * Position the item in meters or degrees of visual angle
      * depending on the mode of projection
      *
-     * @param x x-axis position in meters of degrees of visual angle
+     * @param x x-axis position in item's units
      * @param y y-axis position in meters of degrees of visual angle
+     *
+     * Computing meters from visual angles needs special consideration as d is
+     * interpreted in different ways
+     * 
+     * For orthographic projection the distance is always between the observer
+     * and the screen. d is only to account for occlusion accounting for
+     * different depths.
+     *
+     * For perspective projection the distance is between the observer
+     * and the object. d is the z-postion (depth) so the distance between
+     * screen and observer needs to be subtracted.
      *
      * @since 0.0.1
      */
     public void position(double x, double y) {
-        position(x, y, position.z);
-        //if (coordinates == Coordinates.SPHERICAL) {
-        //    d = position.length();
-        //    if (Double.isNaN(d)) d = VulkanSetup.observer.getDistanceM();
-        //}
-    }
-
-    /**
-     * 
-     * Position the item
-     *
-     * @param x x-axis position in degrees of visual angle, meters or pixels
-     * @param y y-axis position in degrees of visual angle, meters or pixels
-     * @param d z-axis position or radial distance in meters
-     *
-     * @since 0.0.1
-     */
-    public void position(double x, double y, double d) {
-        switch (units) {
-            case ANGLES -> {
-                double eye = VulkanSetup.observer.getDistanceM();
-                x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
-                y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
-                position.x = eye * Math.tan(x);
-                position.y = eye * Math.tan(y);
-                position.z = d;
-            }
-            case METERS -> {
-                position.x = x;
-                position.y = y;
-                position.z = d;
-            }
-            case PIXELS -> {
-                position.x = VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
-                position.y = VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
-                position.z = d;
-            }
-            case SPHERICAL -> {
-                double eye = VulkanSetup.observer.getDistanceM();
-                x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
-                y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
-                double theta;
-                if (x == 0) theta = y;
-                else theta = Math.atan(Math.cos(x) * Math.tan(y));
-                position.x = eye * Math.cos(theta) * Math.sin(x);
-                position.y = eye * Math.sin(theta);
-                position.z = eye * Math.cos(theta) * Math.cos(x);
-            }
-        }
-        updateModelMatrix();
-    }
-
-    /**
-     *
-     * Distance of the item
-     *
-     * @param distance distance in meters
-     *
-     * @since 0.0.1
-     */
-    public void distance(double distance) {
-        position.z = distance + Observer.ZNEAR;
-            //case SPHERICAL -> {
-            //    double sc = distance / position.length();
-            //    position = position.normalize().mul(distance);
-            //    size.mul(sc);
-            //}
+        position.x = x;
+        position.y = y;
         updateModelMatrix();
     }
 
     /**
      * 
-     * Get distance in meters from the eye
+     * Change the depth position of the item
+     *
+     * @param depth
+     *
+     * @since 0.0.1
+     */
+    public void depth(double depth) {
+        this.depth = depth;
+        updateModelMatrix();
+    }
+
+    /**
+     * 
+     * Get item's distance in meters from the eye. For ORTHOGRAPHIC projection
+     * all objects are the same as the observer's distance for all computational
+     * purposes
      *
      * @return distance in meters
      *
      * @since 0.0.1
      */
     public double getDistance() {
-        return switch(units) {
-            case SPHERICAL -> position.length();
-            default -> position.z;
+        return switch (projectionType) {
+            case ORTHOGRAPHIC -> VulkanSetup.observer.getDistanceM();
+            case PERSPECTIVE -> depth + VulkanSetup.observer.getDistanceM();
         };
-    }
-
-    /**
-     * Change units of Item
-     *
-     * @param units Type of units to change to. 
-     *
-     * @since 0.0.3
-     */
-    public void units(Units units) {
-        this.units = units;
     }
 
     /**
@@ -269,7 +222,7 @@ public class Item extends Renderable {
 
     /**
      * 
-     * Set item size in meters or degrees of visual angle
+     * Set item size in corresponding units
      *
      * @param x Size along the x-axis
      * @param y Size along the y-axis
@@ -278,13 +231,9 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void size(double x, double y, double z) {
-        if(Math.abs(x) < 0) x = 0; if(Math.abs(y) < 0) y = 0; if(Math.abs(z) < 0) z = 0;
-        size = switch (units) {
-            case ANGLES -> anglesToMeters(x, y, z);
-            case METERS -> new Vector3d(x, y, z);
-            case PIXELS -> pixelsToMeters(x, y, z);
-            case SPHERICAL -> anglesToMetersSpherical(x, y, z);
-        };
+        size.x = x;
+        size.y = y;
+        size.z = z;
         updateModelMatrix();
     }
 
@@ -514,40 +463,35 @@ public class Item extends Renderable {
         }
         switch (viewEye) {
             case LEFT -> draw(stack, commandBuffer, image, 0);
-            case RIGHT-> draw(stack, commandBuffer, image, 1);
-            case BOTH-> {
+            case RIGHT -> draw(stack, commandBuffer, image, 1);
+            case BOTH -> {
                 draw(stack, commandBuffer, image, 0);
                 draw(stack, commandBuffer, image, 1);
             }
-            default-> {return;}
+            default -> { return; }
         }
     }
 
     /** Update uniforms for the image to be rendered */
     private void draw(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
-        Matrix4f view;
-        Matrix4f proj;
-        Optics optics;
-        switch (VulkanSetup.observer.viewMode) {
-            case STEREO -> {
-                view = passNumber == 0 ? VulkanSetup.observer.viewLeft : VulkanSetup.observer.viewRight;
-                proj = switch (projection) {
-                    case ORTHOGRAPHIC -> passNumber == 0 ? VulkanSetup.observer.orthoLeft : VulkanSetup.observer.orthoRight;
-                    case PERSPECTIVE -> passNumber == 0 ? VulkanSetup.observer.perspLeft : VulkanSetup.observer.perspRight;
-                };
-                optics = passNumber == 0 ? VulkanSetup.observer.opticsLeft : VulkanSetup.observer.opticsRight;
-            }
-            default -> {
-                view = VulkanSetup.observer.viewCyclops;
-                proj = switch (projection) {
-                    case ORTHOGRAPHIC -> VulkanSetup.observer.orthoCyclops;
-                    case PERSPECTIVE -> VulkanSetup.observer.perspCyclops;
-                };
-                optics = VulkanSetup.observer.opticsCyclops;
-            }
-        }
-        updateUniforms(image, passNumber, view, proj, optics);
+        Matrix4f view = switch (VulkanSetup.observer.viewMode) {
+            case MONO -> VulkanSetup.observer.view;
+            case STEREO -> passNumber == 0 ? VulkanSetup.observer.viewLeft : VulkanSetup.observer.viewRight;
+        };
+        Matrix4f projection = switch(projectionType) {
+            case ORTHOGRAPHIC -> projection = switch (VulkanSetup.observer.viewMode) {
+                case MONO -> VulkanSetup.observer.orthographic;
+                case STEREO -> passNumber == 0 ? VulkanSetup.observer.orthographicLeft : VulkanSetup.observer.orthographicRight;
+            };
+            case PERSPECTIVE -> projection = switch (VulkanSetup.observer.viewMode) {
+                case MONO -> VulkanSetup.observer.perspective;
+                case STEREO -> passNumber == 0 ? VulkanSetup.observer.perspectiveLeft : VulkanSetup.observer.perspectiveRight;
+            };
+        };
+
+        Optics optics = passNumber == 0 ? VulkanSetup.observer.opticsLeft : VulkanSetup.observer.opticsRight;
+        updateUniforms(image, passNumber, view, projection, optics);
         draw(stack, commandBuffer, image, passNumber, viewPass.graphicsPipeline, viewPass.graphicsPipelineLayout);
     }
 
@@ -563,7 +507,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     void updateUniforms(int image, int eye, Matrix4f view, Matrix4f projection, Optics optics) {
-        Vector4f frequency = processing.getFrequency(metersToAngles(size));
+        Vector4f frequency = processing.getFrequency(sizeUnitsToAngles());
         try (MemoryStack stack = stackPush()) {
             PointerBuffer data = stack.mallocPointer(1);
             vkMapMemory(VulkanSetup.logicalDevice.device, getUniformMemory(image, eye), 0, UNIFORM_SIZEOF, 0, data);
@@ -590,57 +534,67 @@ public class Item extends Renderable {
 
     /** update model matrix */
     private void updateModelMatrix() {
-        Vector3d scale = new Vector3d();
-        size.mul(0.5, scale);
-        Quaterniond quaternion = new Quaterniond();
-        if (units == Units.SPHERICAL) {
-            Vector3d direction = new Vector3d(0, 0, Observer.ZNEAR);
-            if (position.length() > 0) direction = position;
-            quaternion.rotationTo(new Vector3d(0, 0, 1), direction);
-        }
-        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
-        modelMatrix.translationRotateScale(position, quaternion, scale);
-    }
+        Vector3d scale  = switch (units) {
+            case ANGLES, SPHERICAL -> new Vector3d(sizeAnglesToMeters(size.x), sizeAnglesToMeters(size.y), size.z);
+            case PIXELS -> new Vector3d(xPixelsToMeters(size.x), yPixelsToMeters(size.y), size.z);
+            case METERS -> new Vector3d(size.x, size.y, size.z);
+        };
+        scale.mul(0.5);
+        Vector3d pos = switch (units) {
+            case ANGLES, SPHERICAL -> new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth);
+            case PIXELS -> new Vector3d(xPixelsToMeters(position.x), yPixelsToMeters(position.y), depth);
+            case METERS -> new Vector3d(position.x, position.y, depth);
+        };
 
-    /** computes the x and y in meters from visual angles */ 
-    private Vector3d anglesToMeters(double x, double y, double z) {
-        return new Vector3d(
-            2 * VulkanSetup.observer.getDistanceM() * Math.tan(Math.toRadians(x) / 2),
-            2 * VulkanSetup.observer.getDistanceM() * Math.tan(Math.toRadians(y) / 2),
-            z);
+
+        //x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
+        //y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
+        //double theta;
+        //if (x == 0) theta = y;
+        //else theta = Math.atan(Math.cos(x) * Math.tan(y));
+        //position.x = distance * Math.cos(theta) * Math.sin(x);
+        //position.y = distance * Math.sin(theta);
+        Quaterniond quaternion = new Quaterniond();
+        if (units == Units.SPHERICAL)
+            quaternion.rotationTo(new Vector3d(0, 0, VulkanSetup.observer.getDistanceM()),
+                                  new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth));
+        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
+        modelMatrix.translationRotateScale(pos, quaternion, scale);
     }
 
     /** from visual angles to meters */
-    private Vector3d metersToAngles(Vector3d size) {
-        return new Vector3d(
-            2.0 * Math.toDegrees(Math.atan(size.x / 2 / VulkanSetup.observer.getDistanceM())),
-            2.0 * Math.toDegrees(Math.atan(size.y / 2 / VulkanSetup.observer.getDistanceM())),
-            size.z);
+    private double anglesToMeters(double ang) {
+        return getDistance() * Math.tan(Math.toRadians(ang));
     }
 
-    /** computes the x and y in meters from visual angles for spherical projection */
-    private Vector3d anglesToMetersSpherical(double x, double y, double z) {
-        return new Vector3d(
-            2 * position.length() * Math.tan(Math.toRadians(x) / 2),
-            2 * position.length() * Math.tan(Math.toRadians(y) / 2),
-            z);
+    /** from meters to visual angles */
+    private double metersToAngles(double m) {
+        return Math.toDegrees(Math.atan(m / getDistance()));
     }
 
-    /** from visual angles to meters for spherical projection TODO
-    private Vector3d metersToAnglesSpherical(Vector3d size) {
-        return new Vector3d(
-            2.0 * Math.toDegrees(Math.atan(size.x / 2 / position.length())),
-            2.0 * Math.toDegrees(Math.atan(size.y / 2 / position.length())),
-            size.z);
+    /** computes meters from pixels for the x axis */ 
+    private double xPixelsToMeters(double x) {
+        return VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x;
     }
-    */
 
-    /** computes the x and y in meters from pixels */ 
-    private Vector3d pixelsToMeters(double x, double y, double z) {
-        return  new Vector3d(
-            VulkanSetup.observer.window.getMonitor().getPixelWidthM() * x,
-            VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y,
-            z);
+    /** computes meters from pixels for the y axis */ 
+    private double yPixelsToMeters(double y) {
+        return VulkanSetup.observer.window.getMonitor().getPixelHeightM() * y;
     }
+
+    /** size from visual angles to meters */
+    private double sizeAnglesToMeters(double ang) {
+        return 2.0 * getDistance() * Math.tan(Math.toRadians(ang) / 2.0);
+    }
+    
+    /** returns the size in visual angles */ 
+    private Vector2d sizeUnitsToAngles() {
+        return switch (units) {
+            case ANGLES, SPHERICAL -> new Vector2d(size.x, size.y);
+            case METERS -> new Vector2d(metersToAngles(size.x), metersToAngles(size.y));
+            case PIXELS -> new Vector2d(xPixelsToMeters(size.x), xPixelsToMeters(size.y));
+        };
+    }
+
 
 }

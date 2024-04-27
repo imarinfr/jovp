@@ -371,7 +371,7 @@ public class Text extends Renderable {
     /** Update uniforms for the image to be rendered */
     private void draw(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
-        updateUniforms(image, passNumber, VulkanSetup.observer.opticsCyclops);
+        updateUniforms(image, passNumber, VulkanSetup.observer.optics);
         draw(stack, commandBuffer, image, passNumber, viewPass.textPipeline, viewPass.textPipelineLayout);
     }
 

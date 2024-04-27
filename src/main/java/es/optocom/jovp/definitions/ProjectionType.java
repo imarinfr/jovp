@@ -6,7 +6,7 @@ package es.optocom.jovp.definitions;
  *
  * @since 0.0.1
  */
-public enum Projection {
+public enum ProjectionType {
     /** Orthographic projection */
     ORTHOGRAPHIC,
     /** Perspective projection */

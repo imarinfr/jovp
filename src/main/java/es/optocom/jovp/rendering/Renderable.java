@@ -97,7 +97,7 @@ import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 import es.optocom.jovp.definitions.ViewEye;
-import es.optocom.jovp.definitions.Projection;
+import es.optocom.jovp.definitions.ProjectionType;
 import es.optocom.jovp.definitions.Vertex;
 
 abstract class Renderable {
@@ -114,7 +114,7 @@ abstract class Renderable {
     static final float SAMPLER_MAX_ANISOTROPY = 16.0f;
 
     ViewEye viewEye;
-    Projection projection;
+    ProjectionType projectionType;
     private Model model;
     private Texture texture;
 
@@ -141,7 +141,7 @@ abstract class Renderable {
      * @since 0.0.1
      */
     public Renderable() {
-        this(new Model(), new Texture(), Projection.ORTHOGRAPHIC);
+        this(new Model(), new Texture(), ProjectionType.ORTHOGRAPHIC);
     }
 
     /**
@@ -150,14 +150,15 @@ abstract class Renderable {
      *
      * @param model   The model (square, circle, etc)
      * @param texture The texture
+     * @param texture The type of projection: ORTHOGRAPHIC or PERSPECTIVE
      *
      * @since 0.0.1
      */
-    public Renderable(Model model, Texture texture, Projection projection) {
+    public Renderable(Model model, Texture texture, ProjectionType projectionType) {
         this.viewEye = ViewEye.BOTH;
         this.model = model;
         this.texture = texture;
-        this.projection = projection;
+        this.projectionType = projectionType;
         createBuffers();
     }
 
@@ -165,12 +166,12 @@ abstract class Renderable {
      * 
      * Set projection type
      *
-     * @param projection Projection type: ORTHOGRAPHIC or PERSPECTIVE
+     * @param projectionType Projection type: ORTHOGRAPHIC or PERSPECTIVE
      *
      * @since 0.0.1
      */
-    public void setProjection(Projection projection) {
-        this.projection = projection;
+    public void setProjection(ProjectionType projectionType) {
+        this.projectionType = projectionType;
     }
 
     /**

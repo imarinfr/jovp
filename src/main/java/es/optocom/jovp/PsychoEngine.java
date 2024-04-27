@@ -29,7 +29,7 @@ import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
  */
 public class PsychoEngine {
 
-    public static final float DISTANCE = 500.0f; // Default distance in mm (half a meter)
+    public static final float DISTANCE = 572.943f; // 1 degree = 1 cm in screen
     public static final boolean VALIDATION_LAYERS = DEBUG.get(true);
     public static final boolean API_DUMP = false;
 
@@ -341,18 +341,6 @@ public class PsychoEngine {
      */
     public float getDistanceM() {
         return observer.getDistanceM();
-    }
-
-    /**
-     * 
-     * Set observer's distance
-     *
-     * @param distance The distance of the observer from the display in mm
-     *
-     * @since 0.0.1
-     */
-    public void setDistance(double distance) {
-        observer.setDistance(distance);
     }
 
     /**
