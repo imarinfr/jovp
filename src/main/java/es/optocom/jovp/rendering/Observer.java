@@ -1,6 +1,7 @@
 package es.optocom.jovp.rendering;
 
 import es.optocom.jovp.Window;
+import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.ViewMode;
 
 import org.joml.Matrix4f;
@@ -25,7 +26,10 @@ public class Observer {
     private static final float PD = 62.35f / 2000.0f; // Default pupillary distance (PD) in meters:
                                                      
     Window window; // the observed window
+    float distance; // viewing distance in meters
+    Projection projection; // projection type
     ViewMode viewMode; // view mode MONO or STEREO
+    float pd; // pupilary distance in meters
 
     Matrix4f view; // view matrix for the midpoint between eyes
     Matrix4f viewLeft; // view matrix for the left eye
@@ -48,12 +52,10 @@ public class Observer {
     private float fovxhalf; // field of view for x in stereoscopic view
     private float fovy; // field of view for y
 
-    private float distance; // viewing distance in meters
-    private float pd; // pupilary distance in meters
-
     /**
      * 
-     * Define observer: monocular view
+     * Default observer: monocular view, orthographic projection, and
+     * default pupillary distance (PD)
      *
      * @param window   The window that the observer is looking at
      * @param distance Viewing distance
@@ -61,13 +63,13 @@ public class Observer {
      * @since 0.0.1
      */
     public Observer(Window window, float distance) {
-        this(window, distance, ViewMode.MONO, PD);
+        this(window, distance, Projection.ORTHOGRAPHIC, ViewMode.MONO, PD);
     }
 
     /**
      * 
-     * Define the observer, monocular or stereoscopic view with
-     * a default intra-pupil distance between left and right eyes
+     * Observer with monocular or stereoscopic view, orthographic
+     * projection, and default pupillary distance (PD)
      * 
      * @param window   The window that the observer is looking at
      * @param distance Viewing distance
@@ -76,7 +78,38 @@ public class Observer {
      * @since 0.0.1
      */
     public Observer(Window window, float distance, ViewMode viewMode) {
-        this(window, distance, viewMode, PD);
+        this(window, distance, Projection.ORTHOGRAPHIC, viewMode, PD);
+    }
+
+    /**
+     * 
+     * Observer with monocular view, orthographic or perspective
+     * projection, and default pupillary distance (PD)
+     * 
+     * @param window   The window that the observer is looking at
+     * @param distance Viewing distance
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public Observer(Window window, float distance, Projection projection) {
+        this(window, distance, projection, ViewMode.MONO, PD);
+    }
+
+    /**
+     * 
+     * Observer with monocular or stereoscopic view, orthographic
+     * or perspective projection, and default pupillary distance (PD)
+     * 
+     * @param window   The window that the observer is looking at
+     * @param distance Viewing distance
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
+     * @param viewMode Whether it is monocular of stereoscopic view
+     *
+     * @since 0.0.1
+     */
+    public Observer(Window window, float distance, Projection projection, ViewMode viewMode) {
+        this(window, distance, projection, viewMode, PD);
     }
 
     /**
@@ -86,14 +119,16 @@ public class Observer {
      * 
      * @param window The window that the observer is looking at
      * @param distance Viewing distance to compute fovx and fovy
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
      * @param viewMode Whether it is monocular of stereoscopic view
      * @param pd Intra-pupil distance in mm
      *
      * @since 0.0.1
      */
-    public Observer(Window window, float distance, ViewMode viewMode, float pd) {
+    public Observer(Window window, float distance, Projection projection, ViewMode viewMode, float pd) {
         this.window = window;
         this.distance = distance / 1000.0f; // to meters
+        this.projection = projection;
         this.viewMode = viewMode;
         this.pd = pd;
         computeProjections();
@@ -141,6 +176,54 @@ public class Observer {
 
     /**
      * 
+     * Get viewing distance
+     *
+     * @return The distance of the observer from the display
+     * 
+     * @since 0.0.1
+     */
+    public float getDistance() {
+        return 1000.0f * distance; // to mm
+    }
+
+    /**
+     * 
+     * Get viewing distance in meters
+     *
+     * @return The distance of the observer from the display
+     * 
+     * @since 0.0.1
+     */
+    public float getDistanceM() {
+        return distance;
+    }
+
+    /**
+     * 
+     * Get projection type
+     *
+     * @return Projection type: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public Projection getProjection() {
+        return projection;
+    }
+
+    /**
+     * 
+     * Set projection type
+     *
+     * @param projection Projection type: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public void setProjection(Projection projection) {
+        this.projection = projection;
+    }
+
+    /**
+     * 
      * Set the view mode
      *
      * @param viewMode The view mode, whether MONO or STEREO
@@ -161,30 +244,6 @@ public class Observer {
      */
     public ViewMode getViewMode() {
         return viewMode;
-    }
-
-    /**
-     * 
-     * Get viewing distance
-     *
-     * @return The distance of the observer from the display
-     * 
-     * @since 0.0.1
-     */
-    public float getDistance() {
-        return 1000.0f * distance; // to mm
-    }
-
-        /**
-     * 
-     * Get viewing distance in meters
-     *
-     * @return The distance of the observer from the display
-     * 
-     * @since 0.0.1
-     */
-    public float getDistanceM() {
-        return distance;
     }
 
     /**
@@ -291,8 +350,8 @@ public class Observer {
         perspectiveLeft.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(-pd);
         perspectiveRight.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(pd);
         orthographic.setOrtho(-width / 2, width / 2, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthographicLeft.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthographicRight.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicLeft.setOrtho(-width / 4 - pd, width / 4 - pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicRight.setOrtho(-width / 4 + pd, width / 4 + pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
@@ -315,9 +374,9 @@ public class Observer {
         float rx = -(float) Math.toRadians(rotation.x);
         float ry = -(float) Math.toRadians(rotation.y);
         float rz = (float) Math.toRadians(rotation.z);
-        view.rotateXYZ(rx, ry, rz);
-        viewLeft.rotateXYZ(rx, ry, rz);
-        viewRight.rotateXYZ(rx, ry, rz);
+        view.rotateLocalX(rx).rotateLocalY(ry).rotateLocalZ(rz);
+        viewLeft.rotateLocalX(rx).rotateLocalY(ry).rotateLocalZ(rz);
+        viewRight.rotateLocalX(rx).rotateLocalY(ry).rotateLocalZ(rz);
     }
 
     /** Translate viewMatrix */

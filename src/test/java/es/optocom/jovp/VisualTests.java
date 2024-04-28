@@ -562,8 +562,8 @@ public class VisualTests {
         double theta;
         double amplitude = 5;
         double frequency = 1;
-        double rx = 12;
-        double ry = 8;
+        double rx = 10;
+        double ry = 6;
         int iteration = 0;
         int fps = 0;
         Timer timer = new Timer();
@@ -654,9 +654,9 @@ public class VisualTests {
                 if (time < 8000) continue;
                 item.show(ViewEye.BOTH);
                 leadPosition += 1 / 60.0;
-                if (imageNumber < 10) item.position(leadPosition - 5 * imageNumber, 8);
+                if (imageNumber < 10) item.position(leadPosition - 5 * imageNumber, 7);
                 item.depth(10);
-                if (imageNumber >= 10 & imageNumber < 20) item.position(-leadPosition + 5 * (imageNumber - 10), -8);
+                if (imageNumber >= 10 & imageNumber < 20) item.position(-leadPosition + 5 * (imageNumber - 10), -7);
                 item.depth(10);
                 imageNumber++;
             }

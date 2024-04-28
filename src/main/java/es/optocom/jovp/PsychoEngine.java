@@ -3,6 +3,7 @@ package es.optocom.jovp;
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
+import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.VulkanManager;
@@ -68,10 +69,10 @@ public class PsychoEngine {
      * @since 0.0.1
      */
     public PsychoEngine(PsychoLogic psychoLogic, float distance) {
-        this(psychoLogic, distance, VALIDATION_LAYERS, API_DUMP);
+        this(psychoLogic, distance, Projection.ORTHOGRAPHIC, ViewMode.MONO, VALIDATION_LAYERS, API_DUMP);
     }
 
-        /**
+    /**
      * 
      * Main method for the JOVP with validation layers
      *
@@ -82,7 +83,36 @@ public class PsychoEngine {
      * @since 0.0.1
      */
     public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode) {
-        this(psychoLogic, distance, viewMode, VALIDATION_LAYERS, API_DUMP);
+        this(psychoLogic, distance, Projection.ORTHOGRAPHIC, viewMode, VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     * 
+     * Main method for the JOVP with validation layers
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance in mm
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, Projection projection) {
+        this(psychoLogic, distance, projection, ViewMode.MONO, VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     * 
+     * Main method for the JOVP with validation layers
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param distance Viewing distance in mm
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
+     * @param viewMode Whether it is monocular of stereoscopic view
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, Projection projection, ViewMode viewMode) {
+        this(psychoLogic, distance, projection, viewMode, VALIDATION_LAYERS, API_DUMP);
     }
 
     /**
@@ -97,7 +127,7 @@ public class PsychoEngine {
      * @since 0.0.1
      */
     public PsychoEngine(PsychoLogic psychoLogic, float distance, boolean validationLayers, boolean apiDump) {
-        this(psychoLogic, distance, ViewMode.MONO, validationLayers, apiDump);
+        this(psychoLogic, distance, Projection.ORTHOGRAPHIC, ViewMode.MONO, validationLayers, apiDump);
     }
 
     /**
@@ -106,18 +136,19 @@ public class PsychoEngine {
      *
      * @param psychoLogic Logic for the psychophysics experience
      * @param distance Viewing distance in mm
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
      * @param viewMode Whether it is monocular of stereoscopic view
      * @param validationLayers Whether to use validation layers
      * @param apiDump Whether to use the VK_LAYER_LUNARG_api_dump layer
      *
      * @since 0.0.1
      */
-    public PsychoEngine(PsychoLogic psychoLogic, float distance, ViewMode viewMode, boolean validationLayers, boolean apiDump) {
+    public PsychoEngine(PsychoLogic psychoLogic, float distance, Projection projection, ViewMode viewMode, boolean validationLayers, boolean apiDump) {
         glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
         if (!glfwInit()) throw new RuntimeException("Cannot initialize GLFW");
         this.psychoLogic = psychoLogic;
         window = new Window();
-        observer = new Observer(window, distance, viewMode);
+        observer = new Observer(window, distance, projection, viewMode);
         vulkanManager = new VulkanManager(observer, validationLayers, apiDump);
         physicalDevices = vulkanManager.getPhysicalDevices();
         getRunTimeInfo();

@@ -17,7 +17,6 @@ import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import es.optocom.jovp.definitions.EnvelopeType;
-import es.optocom.jovp.definitions.ProjectionType;
 import es.optocom.jovp.definitions.Units;
 import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ViewMode;
@@ -40,7 +39,7 @@ public class Item extends Renderable {
 
     /**
      * 
-     * Create an item for psychophysics experience with default projection
+     * Create an item for psychophysics experience with default units ANGLES
      *
      * @param model The model (square, circle, etc)
      * @param texture The texture
@@ -48,35 +47,7 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public Item(Model model, Texture texture) {
-        this(model, texture, ProjectionType.ORTHOGRAPHIC, Units.ANGLES);
-    }
-
-    /**
-     * 
-     * Create an item for psychophysics experience with default projection
-     *
-     * @param model The model (square, circle, etc)
-     * @param texture The texture
-     * @param projection Either ORTHOGRAPHIC or PERSPECTIVE
-     *
-     * @since 0.0.1
-     */
-    public Item(Model model, Texture texture, ProjectionType projection) {
-        this(model, texture, projection, Units.ANGLES);
-    }
-
-    /**
-     * 
-     * Create an item for psychophysics experience with default projection
-     *
-     * @param model The model (square, circle, etc)
-     * @param texture The texture
-     * @param units units of measurement (METERS, ANGLES of vision, PIXELS or angles on a SPHERICAL surface)
-     *
-     * @since 0.0.1
-     */
-    public Item(Model model, Texture texture, Units units) {
-        this(model, texture, ProjectionType.ORTHOGRAPHIC, units);
+        this(model, texture, Units.ANGLES);
     }
 
     /**
@@ -85,13 +56,12 @@ public class Item extends Renderable {
      *
      * @param model The model (square, circle, etc)
      * @param texture The texture
-     * @param projection Either ORTHOGRAPHIC or PERSPECTIVE
      * @param units units of measurement (METERS, ANGLES of vision, PIXELS or angles on a SPHERICAL surface)
      *
      * @since 0.0.1
      */
-    public Item(Model model, Texture texture, ProjectionType projection, Units units) {
-        super(model, texture, projection);
+    public Item(Model model, Texture texture, Units units) {
+        super(model, texture);
         this.units = units;
         this.position = new Vector2d(0, 0);
         this.depth = Observer.DEFAULT_DEPTH;
@@ -159,18 +129,29 @@ public class Item extends Renderable {
         updateModelMatrix();
     }
 
+
     /**
      * 
-     * Get item's distance in meters from the eye. For ORTHOGRAPHIC projection
-     * all objects are the same as the observer's distance for all computational
-     * purposes
+     * Get item's depth (distance in meters from the screen)
+     *
+     * @return depth in meters
+     *
+     * @since 0.0.1
+     */
+    public double getDepth() {
+        return depth;
+    }
+
+    /**
+     * 
+     * Get item's distance in meters from the eye
      *
      * @return distance in meters
      *
      * @since 0.0.1
      */
     public double getDistance() {
-        return switch (projectionType) {
+        return switch (VulkanSetup.observer.projection) {
             case ORTHOGRAPHIC -> VulkanSetup.observer.getDistanceM();
             case PERSPECTIVE -> depth + VulkanSetup.observer.getDistanceM();
         };
@@ -370,11 +351,6 @@ public class Item extends Renderable {
      * @since 0.0.1
      */
     public void envelope(EnvelopeType type, double x, double y, double angle) {
-        if (units == Units.ANGLES | units == Units.SPHERICAL) {
-            double distance = VulkanSetup.observer.getDistanceM();
-            x = distance * Math.tan(Math.toRadians(x));
-            y = distance * Math.tan(Math.toRadians(y));
-        }
         processing.envelope(type, x, y, angle);
     }
 
@@ -472,7 +448,7 @@ public class Item extends Renderable {
             case MONO -> VulkanSetup.observer.view;
             case STEREO -> passNumber == 0 ? VulkanSetup.observer.viewLeft : VulkanSetup.observer.viewRight;
         };
-        Matrix4f projection = switch(projectionType) {
+        Matrix4f projection = switch(VulkanSetup.observer.projection) {
             case ORTHOGRAPHIC -> projection = switch (VulkanSetup.observer.viewMode) {
                 case MONO -> VulkanSetup.observer.orthographic;
                 case STEREO -> passNumber == 0 ? VulkanSetup.observer.orthographicLeft : VulkanSetup.observer.orthographicRight;
