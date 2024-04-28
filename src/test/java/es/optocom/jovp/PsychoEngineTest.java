@@ -109,19 +109,6 @@ public class PsychoEngineTest {
         psychoEngine.cleanup();
     }
 
-        /**
-     * 
-     * Add Barrel and pincushion distortions using Brown-Conrady model
-     *
-     * @since 0.0.1
-     */
-    @Test
-    public void sphericalCoordinates() {
-        PsychoEngine psychoEngine = new PsychoEngine(new LogicSpherical());
-        psychoEngine.start("mouse", Paradigm.CLICKER);
-        psychoEngine.cleanup();
-    }
-
     /**
      * 
      * Stereo View
@@ -132,6 +119,19 @@ public class PsychoEngineTest {
     public void stereoMode() {
         PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic(), 500, ViewMode.STEREO);
         psychoEngine.start("mouse", Paradigm.CLICKER);
+        psychoEngine.cleanup();
+    }
+
+    /**
+     * 
+     * Spherical coordinates
+     *
+     * @since 0.0.1
+     */
+    @Test
+    public void sphericalCoordinates() {
+        PsychoEngine psychoEngine = new PsychoEngine(new LogicSpherical(), 100);
+        psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
         psychoEngine.cleanup();
     }
 
@@ -333,115 +333,203 @@ public class PsychoEngineTest {
     /** Psychophysics logic to play around different coordinate systems */
     class LogicSpherical implements PsychoLogic {
 
-            Timer timer = new Timer();
-            Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0.5, 0.5, 0.5, 1}), Units.ANGLES);
-            Item item1, item2, item3, item4, item5, item6, item7, item8, item9, item10;
-    
-            @Override
-            public void init(PsychoEngine psychoEngine) {
-    
-                psychoEngine.translateView(new Vector3f(0, 0, -100));
-                background.depth(10);
-                background.position(0, 0);
-                view.add(background);
+        private static final float STEP = 0.1f;
+        private static final float ANGLE = 3.0f;
+        private boolean distortion = false;
+        private boolean rotate = false;
 
-                Item center = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 0, 0, 1}), Units.METERS);
-                center.depth(1);
-                center.position(0, 0);
-                center.size(1);
-                view.add(center);
+        Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0.5, 0.5, 0.5, 1}), ProjectionType.ORTHOGRAPHIC, Units.ANGLES);
+        Item item1, item2, item3, item4, item5, item6, item7, item8, item9, item10;
+        double counter = 0;
+        @Override
+        public void init(PsychoEngine psychoEngine) {
+            ProjectionType projection = ProjectionType.PERSPECTIVE;
+            psychoEngine.translateView(new Vector3f(0, 0, -0.5f));
+            background.depth(50);
+            background.position(0, 0);
+            view.add(background);
+
+            Item center = new Item(new Model(ModelType.CROSS), new Texture(new double[] {1, 0, 0, 1}), ProjectionType.ORTHOGRAPHIC, Units.METERS);
+            center.depth(-psychoEngine.getDistanceM());
+            center.position(0, 0);
+            center.size(0.01);
+            view.add(center);
+            center = new Item(new Model(ModelType.CROSS), new Texture(new double[] {1, 0, 0, 1}), ProjectionType.ORTHOGRAPHIC, Units.METERS);
+            center.depth(-psychoEngine.getDistanceM());
+            center.position(0, 0);
+            center.size(0.01);
+            center.rotation(0, 90, 0);
+            view.add(center);
+
+            double depth = 0;
+            double size = 10;
+            item1 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item1.depth(depth);
+            item1.size(size);
+            view.add(item1);
     
-                item1 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item1.depth(1);
-                item1.position(0, 0);
-                item1.size(90, 90);
-                view.add(item1);
+            item2 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item2.depth(depth);
+            item2.position(0, 0);
+            item2.size(size);
+            view.add(item2);
     
-                item2 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item2.depth(1);
-                item2.position(0, 0);
-                item2.size(1, 1);
-                view.add(item2);
+            item3 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item3.depth(depth);
+            item3.position(0, 0);
+            item3.size(size);
+            view.add(item3);
     
-                item3 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item3.depth(1);
-                item3.position(0, 0);
-                item3.size(1, 1);
-                view.add(item3);
+            item4 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item4.depth(depth);
+            item4.position(0, 0);
+            item4.size(size);
+            view.add(item4);
     
-                item4 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item4.depth(1);
-                item4.position(0, 0);
-                item4.size(1, 1);
-                view.add(item4);
+            item5 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item5.depth(depth);
+            item5.position(0, 0);
+            item5.size(size);
+            view.add(item5);
     
-                item5 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item5.depth(1);
-                item5.position(0, 0);
-                item5.size(1, 1);
-                view.add(item5);
+            item6 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item6.depth(depth);
+            item6.position(0, 0);
+            item6.size(size);
+            view.add(item6);
     
-                item6 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item6.depth(1);
-                item6.position(0, 0);
-                item6.size(1, 1);
-                view.add(item6);
+            item7 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item7.depth(depth);
+            item7.position(0, 0);
+            item7.size(size);
+            view.add(item7);
     
-                item7 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item7.depth(1);
-                item7.position(0, 0);
-                item7.size(1, 1);
-                view.add(item7);
+            item8 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), projection, Units.SPHERICAL);
+            item8.depth(depth);
+            item8.position(0, 0);
+            item8.size(size);
+            view.add(item8);
     
-                item8 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 1, 1}), Units.SPHERICAL);
-                item8.depth(1);
-                item8.position(0, 0);
-                item8.size(1, 1);
-                view.add(item8);
+            item9 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0, 1, 1, 1}), projection, Units.SPHERICAL);
+            item9.depth(depth);
+            item9.position(0, 0);
+            item9.size(size);
+            view.add(item9);
     
-                item9 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0, 1, 1, 1}), Units.SPHERICAL);
-                item9.depth(1);
-                item9.position(0, 0);
-                item9.size(1, 1);
-                view.add(item9);
+            item10 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0, 1, 1, 1}), projection, Units.SPHERICAL);
+            item10.depth(depth);
+            item10.position(0, 0);
+            item10.size(size);
+            view.add(item10);
     
-                item10 = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {0, 1, 1, 1}), Units.SPHERICAL);
-                item10.depth(1);
-                item10.position(0, 0);
-                item10.size(1, 1);
-                view.add(item10);
-    
-                Text title = new Text();
-                title.setText("Spherical coordinates");
-                title.setColor(new double[] {0, 1, 0, 1});
-                title.setPosition(0.3, 0.05);
-                title.setSize(0.4);
-                view.add(title);
-                timer.start();
-            }
-        
-            @Override
-            public void input(PsychoEngine psychoEngine, Command command) {
-            }
-        
-            @Override
-            public void update(PsychoEngine psychoEngine) {
-                float[] fov = psychoEngine.getFieldOfView();
-                background.size(fov[0], fov[1]);
-                double angle = ((timer.getElapsedTime() / 20 + 180) % 360 + 360) % 360 - 180;
-                item1.position(0, angle);
-                item2.position(0, angle - 180);
-                item3.position(angle, 0);
-                item4.position(angle - 180, 0);
-                item5.position(angle, angle);
-                item6.position(angle - 180, angle - 180);
-                item7.position(angle, -angle);
-                item8.position(angle - 180, -angle - 180);
-                item9.position(30, angle);
-                item10.position(angle, 30);
-            }
-        
+            Text title = new Text();
+            title.setText("Spherical coordinates");
+            title.setColor(new double[] {0, 1, 0, 1});
+            title.setPosition(0.3, 0.05);
+            title.setSize(0.4);
+            view.add(title);
         }
+        
+        @Override
+        public void input(PsychoEngine psychoEngine, Command command) {
+            if (command == Command.NONE) return;
+            switch (command) {
+                case ITEM1 -> back(psychoEngine);
+                case ITEM2 -> up(psychoEngine);
+                case ITEM3 -> toggleDistortion(psychoEngine);
+                case ITEM4 -> left(psychoEngine);
+                case ITEM5 -> toggleRotation();
+                case ITEM6 -> right(psychoEngine);
+                case ITEM7 -> forward(psychoEngine);
+                case ITEM8 -> down(psychoEngine);
+                case ITEM9 -> toggleViewMode(psychoEngine);
+                default -> {}
+            };
+        }
+        
+        @Override
+        public void update(PsychoEngine psychoEngine) {
+            float[] fov = psychoEngine.getFieldOfView();
+            background.size(fov[0], fov[1]);
+            double angle = (counter++ % 360 + 360) % 360 - 180;
+            System.out.println(angle);
+            item1.position(0, angle);
+            item2.position(0, angle - 180);
+            item3.position(angle, 0);
+            item4.position(angle - 180, 0);
+            item5.position(angle, angle);
+            item6.position(angle - 180, angle - 180);
+            item7.position(angle, -angle);
+            item8.position(angle - 180, -angle - 180);
+            item9.position(30, angle);
+            item10.position(angle, 30);
+        }
+
+        private void forward(PsychoEngine psychoEngine) {
+            psychoEngine.translateView(new Vector3f(0, 0, -STEP));
+        }
+    
+        private void back(PsychoEngine psychoEngine) {
+            psychoEngine.translateView(new Vector3f(0, 0, STEP));
+        }
+    
+        private void left(PsychoEngine psychoEngine) {
+            if (rotate) {
+                psychoEngine.rotateView(new Vector3f(0, -ANGLE, 0));
+            } else {
+                psychoEngine.translateView(new Vector3f(STEP, 0, 0));
+            }
+        }
+    
+        private void right(PsychoEngine psychoEngine) {
+            if (rotate) {
+                psychoEngine.rotateView(new Vector3f(0, ANGLE, 0));
+            } else {
+                 psychoEngine.translateView(new Vector3f(-STEP, 0, 0));
+            }
+        }
+    
+        private void up(PsychoEngine psychoEngine) {
+            if (rotate) {
+                    psychoEngine.rotateView(new Vector3f(-ANGLE, 0, 0));
+            } else {
+                psychoEngine.translateView(new Vector3f(0, -STEP, 0));
+            }
+        }
+    
+        private void down(PsychoEngine psychoEngine) {
+            if (rotate) {
+                psychoEngine.rotateView(new Vector3f(ANGLE, 0, 0));
+            } else {
+                psychoEngine.translateView(new Vector3f(0, STEP, 0));
+            }
+        }
+
+        private void toggleRotation() {
+            rotate = !rotate;
+        }
+ 
+        private void toggleViewMode(PsychoEngine psychoEngine) {
+            if (psychoEngine.getViewMode() == ViewMode.MONO) {
+                psychoEngine.setViewMode(ViewMode.STEREO);
+                psychoEngine.setPupilDistance(0);
+            } else {
+                psychoEngine.setViewMode(ViewMode.MONO);
+            }
+            float[] fov = psychoEngine.getFieldOfView();
+            background.size(fov[0], fov[1]);
+        }
+
+        private void toggleDistortion(PsychoEngine psychoEngine) {
+            if (distortion) {
+                psychoEngine.setNoDistortion();
+            } else {
+                psychoEngine.setDistortion(0.01, -0.001);
+            }
+            distortion = !distortion;
+        };
+
+    }
     
     /** Psychophysics logic class */
     static class StereoLogic implements PsychoLogic {
@@ -557,13 +645,14 @@ public class PsychoEngineTest {
 
     static class WorldLogic implements PsychoLogic {
 
-        private static final float STEP = 5.0f;
+        private static final float STEP = 0.1f;
+        private static final float ANGLE = 3.0f;
         private boolean distortion = false;
         private boolean rotate = false;
 
         Item item;
         ArrayList<Item> eyePos = new ArrayList<Item>(2); 
-        Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }), Units.ANGLES);
+        Item background = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 0.5, 0.5, 0.5, 1 }), ProjectionType.PERSPECTIVE, Units.ANGLES);
         ArrayList<Item> items = new ArrayList<Item>();
 
         @Override
@@ -575,46 +664,47 @@ public class PsychoEngineTest {
             view.add(title);
             view.add(background);
             background.depth(10);
-            eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 })));
-            eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 })));
+            eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 }), ProjectionType.PERSPECTIVE, Units.METERS));
+            eyePos.add(new Item(new Model(ModelType.CROSS), new Texture(new double[] { 1, 0, 0, 1 }), ProjectionType.PERSPECTIVE, Units.METERS));
             view.add(eyePos.get(0));
             view.add(eyePos.get(1));
-            eyePos.get(0).depth(0.1);
-            eyePos.get(0).size(1);
-            eyePos.get(1).depth(0.1);
-            eyePos.get(1).size(1);
+            eyePos.get(0).depth(psychoEngine.getDistanceM());
+            eyePos.get(0).size(0.05);
+            eyePos.get(1).depth(psychoEngine.getDistanceM());
+            eyePos.get(1).size(0.05);
             eyePos.get(1).rotation(0, 90, 0);
             addItems();
         }
 
         private void addItems() {
-            Units projection = Units.ANGLES;
+            Units units = Units.SPHERICAL;
+            ProjectionType projection = ProjectionType.PERSPECTIVE;
             float angle = 180.0f;
-            if (projection == Units.ANGLES) angle = 80.0f;
+            if (units == Units.ANGLES) angle = 80.0f;
             for (int i = 0; i < 2 * angle + 1; i++) {
-                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection);
+                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection, units);
                 item.depth(5);
                 item.position(0, i - angle);
                 item.size(1);
                 view.add(item);
 
-                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection);
+                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection, units);
                 item.depth(5);
                 item.position(i - angle, 0);
                 item.size(1);
                 view.add(item);
             }
 
-            for (int i = 0; i < 2 * Math.sqrt(2) * angle - 1; i++) {
-                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection);
+            for (int i = 0; i < 2 * angle + 1; i++) {
+                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection, units);
                 item.depth(5);
-                item.position((i - angle) / Math.sqrt(2), (i - angle) / Math.sqrt(2));
+                item.position(i - angle, i - angle);
                 item.size(1);
                 view.add(item);
 
-                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection);
+                item = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] { 1, 1, 1, 1 }), projection, units);
                 item.depth(5);
-                item.position((i - angle) / Math.sqrt(2), (angle - i) / Math.sqrt(2));
+                item.position(i - angle, angle - i);
                 item.size(1);
                 view.add(item);
             }
@@ -637,10 +727,6 @@ public class PsychoEngineTest {
             };
         }
 
-        private void toggleRotation() {
-			rotate = !rotate;
-		}
-
 		@Override
         public void update(PsychoEngine psychoEngine) {
             float[] fov = psychoEngine.getFieldOfView();
@@ -657,7 +743,7 @@ public class PsychoEngineTest {
 
         private void left(PsychoEngine psychoEngine) {
             if (rotate) {
-                psychoEngine.rotateView(new Vector3f(0, -STEP, 0));
+                psychoEngine.rotateView(new Vector3f(0, -ANGLE, 0));
             } else {
                 psychoEngine.translateView(new Vector3f(STEP, 0, 0));
             }
@@ -665,7 +751,7 @@ public class PsychoEngineTest {
 
         private void right(PsychoEngine psychoEngine) {
             if (rotate) {
-                psychoEngine.rotateView(new Vector3f(0, STEP, 0));
+                psychoEngine.rotateView(new Vector3f(0, ANGLE, 0));
             } else {
                 psychoEngine.translateView(new Vector3f(-STEP, 0, 0));
             }
@@ -673,7 +759,7 @@ public class PsychoEngineTest {
 
         private void up(PsychoEngine psychoEngine) {
             if (rotate) {
-                psychoEngine.rotateView(new Vector3f(-STEP, 0, 0));
+                psychoEngine.rotateView(new Vector3f(-ANGLE, 0, 0));
             } else {
                 psychoEngine.translateView(new Vector3f(0, -STEP, 0));
             }
@@ -681,11 +767,15 @@ public class PsychoEngineTest {
 
         private void down(PsychoEngine psychoEngine) {
             if (rotate) {
-                psychoEngine.rotateView(new Vector3f(STEP, 0, 0));
+                psychoEngine.rotateView(new Vector3f(ANGLE, 0, 0));
             } else {
                 psychoEngine.translateView(new Vector3f(0, STEP, 0));
             }
         }
+
+        private void toggleRotation() {
+			rotate = !rotate;
+		}
 
         private void toggleViewMode(PsychoEngine psychoEngine) {
             if (psychoEngine.getViewMode() == ViewMode.MONO) {

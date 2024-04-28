@@ -134,20 +134,13 @@ public class Item extends Renderable {
      * @param x x-axis position in item's units
      * @param y y-axis position in meters of degrees of visual angle
      *
-     * Computing meters from visual angles needs special consideration as d is
-     * interpreted in different ways
-     * 
-     * For orthographic projection the distance is always between the observer
-     * and the screen. d is only to account for occlusion accounting for
-     * different depths.
-     *
-     * For perspective projection the distance is between the observer
-     * and the object. d is the z-postion (depth) so the distance between
-     * screen and observer needs to be subtracted.
-     *
      * @since 0.0.1
      */
     public void position(double x, double y) {
+        if (units == Units.ANGLES | units == Units.SPHERICAL) { // from 0 to 360
+            x = ((x + 180) % 360 + 360) % 360 - 180;
+            y = ((y + 180) % 360 + 360) % 360 - 180;
+        }
         position.x = x;
         position.y = y;
         updateModelMatrix();
@@ -199,12 +192,12 @@ public class Item extends Renderable {
      * 
      * Set item size
      *
-     * @param x Size along the x and y axes in degrees fo visual angle
+     * @param size Size along the x and y axes in degrees fo visual angle
      *
      * @since 0.0.1
      */
-    public void size(double x) {
-        size(x, x, 0);
+    public void size(double s) {
+        size(s, s, 0);
     }
 
     /**
@@ -216,8 +209,8 @@ public class Item extends Renderable {
      *
      * @since 0.0.1
      */
-    public void size(double x, double y) {
-        size(x, y, 0);
+    public void size(double sx, double sy) {
+        size(sx, sy, 0);
     }
 
     /**
@@ -534,32 +527,35 @@ public class Item extends Renderable {
 
     /** update model matrix */
     private void updateModelMatrix() {
-        Vector3d scale  = switch (units) {
-            case ANGLES, SPHERICAL -> new Vector3d(sizeAnglesToMeters(size.x), sizeAnglesToMeters(size.y), size.z);
-            case PIXELS -> new Vector3d(xPixelsToMeters(size.x), yPixelsToMeters(size.y), size.z);
-            case METERS -> new Vector3d(size.x, size.y, size.z);
-        };
-        scale.mul(0.5);
-        Vector3d pos = switch (units) {
-            case ANGLES, SPHERICAL -> new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth);
+        Vector3d pos = worldPosition();
+        Quaterniond quaternion = new Quaterniond();
+        if (units == Units.SPHERICAL)
+            quaternion.rotationTo(new Vector3d(0, 0, 1), new Vector3d(pos).add(0, 0, VulkanSetup.observer.getDistanceM()));
+        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
+        modelMatrix.translationRotateScale(pos, quaternion, getScale());
+    }
+
+    /** get position within the world */
+    private Vector3d worldPosition() {
+        return switch (units) {
+            case ANGLES -> new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth);
+            case SPHERICAL -> {
+                double phi = Math.toRadians(position.x);
+                double theta = phi == 0 ? Math.toRadians(position.y) : Math.atan(Math.cos(phi) * Math.tan(Math.toRadians(position.y)));
+                yield new Vector3d(Math.cos(theta) * Math.sin(phi), Math.sin(theta), Math.cos(theta) * Math.cos(phi)).mul(depth + VulkanSetup.observer.getDistanceM()).add(0, 0, -VulkanSetup.observer.getDistanceM());
+            }
             case PIXELS -> new Vector3d(xPixelsToMeters(position.x), yPixelsToMeters(position.y), depth);
             case METERS -> new Vector3d(position.x, position.y, depth);
         };
+    }
 
-
-        //x = Math.toRadians(((x + 180) % 360 + 360) % 360 - 180);
-        //y = Math.toRadians(((y + 180) % 360 + 360) % 360 - 180);
-        //double theta;
-        //if (x == 0) theta = y;
-        //else theta = Math.atan(Math.cos(x) * Math.tan(y));
-        //position.x = distance * Math.cos(theta) * Math.sin(x);
-        //position.y = distance * Math.sin(theta);
-        Quaterniond quaternion = new Quaterniond();
-        if (units == Units.SPHERICAL)
-            quaternion.rotationTo(new Vector3d(0, 0, VulkanSetup.observer.getDistanceM()),
-                                  new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth));
-        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
-        modelMatrix.translationRotateScale(pos, quaternion, scale);
+    /** get scale factor for the item */
+    private Vector3d getScale() {
+        return (switch (units) {
+            case ANGLES, SPHERICAL -> new Vector3d(sizeAnglesToMeters(size.x), sizeAnglesToMeters(size.y), size.z);
+            case PIXELS -> new Vector3d(xPixelsToMeters(size.x), yPixelsToMeters(size.y), size.z);
+            case METERS -> new Vector3d(size.x, size.y, size.z);
+        }).mul(0.5);
     }
 
     /** from visual angles to meters */
