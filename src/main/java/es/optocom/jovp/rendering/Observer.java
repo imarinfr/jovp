@@ -21,7 +21,7 @@ import org.joml.Vector3f;
 public class Observer {
 
     public static final float ZNEAR = 0.1f; // Near and far planes in in meters
-    public static final float ZFAR = 100.1f;
+    public static final float ZFAR = 101.0f;
     public static final float DEFAULT_DEPTH = 50.0f; // default depth: distance between item and screen
     private static final float PD = 62.35f / 2000.0f; // Default pupillary distance (PD) in meters:
                                                      
@@ -200,18 +200,6 @@ public class Observer {
 
     /**
      * 
-     * Get projection type
-     *
-     * @return Projection type: ORTHOGRAPHIC or PERSPECTIVE
-     *
-     * @since 0.0.1
-     */
-    public Projection getProjection() {
-        return projection;
-    }
-
-    /**
-     * 
      * Set projection type
      *
      * @param projection Projection type: ORTHOGRAPHIC or PERSPECTIVE
@@ -220,6 +208,18 @@ public class Observer {
      */
     public void setProjection(Projection projection) {
         this.projection = projection;
+    }
+
+    /**
+     * 
+     * Get projection type
+     *
+     * @return Projection type: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public Projection getProjection() {
+        return projection;
     }
 
     /**
@@ -315,8 +315,8 @@ public class Observer {
         view.lookAt(eye, center, up);
         viewLeft = new Matrix4f(view);
         viewRight = new Matrix4f(view);
-        translateViewMatrix(viewLeft, new Vector3f(-pd, 0.0f, 0.0f));
-        translateViewMatrix(viewRight, new Vector3f(pd, 0.0f, 0.0f));
+        translateViewMatrix(viewLeft, new Vector3f(pd, 0.0f, 0.0f));
+        translateViewMatrix(viewRight, new Vector3f(-pd, 0.0f, 0.0f));
     }
 
     /**
@@ -347,11 +347,11 @@ public class Observer {
         fovxhalf = (float) (2 * Math.atan(width / distance / 4));
         fovy = (float) (2 * Math.atan(height / distance / 2));
         perspective.setPerspective(fovy, aspect, ZNEAR, ZFAR, true);
-        perspectiveLeft.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(-pd);
-        perspectiveRight.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(pd);
+        perspectiveLeft.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(pd * (float) Math.tan(fovy / 2));
+        perspectiveRight.setPerspective(fovy, aspect / 2, ZNEAR, ZFAR, true).m20(-pd * (float) Math.tan(fovy / 2));
         orthographic.setOrtho(-width / 2, width / 2, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthographicLeft.setOrtho(-width / 4 - pd, width / 4 - pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
-        orthographicRight.setOrtho(-width / 4 + pd, width / 4 + pd, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicLeft.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
+        orthographicRight.setOrtho(-width / 4, width / 4, -height / 2, height / 2, ZNEAR, ZFAR, true);
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */

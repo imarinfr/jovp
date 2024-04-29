@@ -17,6 +17,7 @@ import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 import es.optocom.jovp.definitions.EnvelopeType;
+import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.Units;
 import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ViewMode;
@@ -86,18 +87,6 @@ public class Item extends Renderable {
 
     /**
      * 
-     * Get position in item's units
-     *
-     * @return return position x, y in item's units
-     *
-     * @since 0.0.1
-     */
-    public Vector2d getPosition() {
-        return position;
-    }
-
-    /**
-     * 
      * Position the item in meters or degrees of visual angle
      * depending on the mode of projection
      *
@@ -118,6 +107,18 @@ public class Item extends Renderable {
 
     /**
      * 
+     * Get position in item's units
+     *
+     * @return return position x, y in item's units
+     *
+     * @since 0.0.1
+     */
+    public Vector2d getPosition() {
+        return position;
+    }
+
+    /**
+     * 
      * Change the depth position of the item
      *
      * @param depth
@@ -128,7 +129,6 @@ public class Item extends Renderable {
         this.depth = depth;
         updateModelMatrix();
     }
-
 
     /**
      * 
@@ -444,22 +444,23 @@ public class Item extends Renderable {
     /** Update uniforms for the image to be rendered */
     private void draw(MemoryStack stack, VkCommandBuffer commandBuffer, int image, int passNumber) {
         ViewPass viewPass = VulkanSetup.swapChain.viewPasses.get(passNumber);
-        Matrix4f view = switch (VulkanSetup.observer.viewMode) {
-            case MONO -> VulkanSetup.observer.view;
-            case STEREO -> passNumber == 0 ? VulkanSetup.observer.viewLeft : VulkanSetup.observer.viewRight;
+        Observer observer = VulkanSetup.observer;
+        Matrix4f view = switch (observer.viewMode) {
+            case MONO -> observer.view;
+            case STEREO -> observer.projection == Projection.ORTHOGRAPHIC ? observer.view : passNumber == 0 ? observer.viewLeft : observer.viewRight;
         };
-        Matrix4f projection = switch(VulkanSetup.observer.projection) {
-            case ORTHOGRAPHIC -> projection = switch (VulkanSetup.observer.viewMode) {
-                case MONO -> VulkanSetup.observer.orthographic;
-                case STEREO -> passNumber == 0 ? VulkanSetup.observer.orthographicLeft : VulkanSetup.observer.orthographicRight;
+        Matrix4f projection = switch(observer.projection) {
+            case ORTHOGRAPHIC -> projection = switch (observer.viewMode) {
+                case MONO -> observer.orthographic;
+                case STEREO -> passNumber == 0 ? observer.orthographicLeft : observer.orthographicRight;
             };
-            case PERSPECTIVE -> projection = switch (VulkanSetup.observer.viewMode) {
-                case MONO -> VulkanSetup.observer.perspective;
-                case STEREO -> passNumber == 0 ? VulkanSetup.observer.perspectiveLeft : VulkanSetup.observer.perspectiveRight;
+            case PERSPECTIVE -> projection = switch (observer.viewMode) {
+                case MONO -> observer.perspective;
+                case STEREO -> passNumber == 0 ? observer.perspectiveLeft : observer.perspectiveRight;
             };
         };
 
-        Optics optics = passNumber == 0 ? VulkanSetup.observer.opticsLeft : VulkanSetup.observer.opticsRight;
+        Optics optics = passNumber == 0 ? observer.opticsLeft : observer.opticsRight;
         updateUniforms(image, passNumber, view, projection, optics);
         draw(stack, commandBuffer, image, passNumber, viewPass.graphicsPipeline, viewPass.graphicsPipelineLayout);
     }
@@ -504,11 +505,15 @@ public class Item extends Renderable {
     /** update model matrix */
     private void updateModelMatrix() {
         Vector3d pos = worldPosition();
-        Quaterniond quaternion = new Quaterniond();
-        if (units == Units.SPHERICAL)
-            quaternion.rotationTo(new Vector3d(0, 0, 1), new Vector3d(pos).add(0, 0, VulkanSetup.observer.getDistanceM()));
-        quaternion.rotateZYX(rotation.z, rotation.y, rotation.x);
+        new Quaterniond();
+        Quaterniond quaternion = (units == Units.SPHERICAL ? sphericalRotation(pos) : new Quaterniond()).rotateZYX(rotation.z, rotation.y, rotation.x);
         modelMatrix.translationRotateScale(pos, quaternion, getScale());
+    }
+
+    /** Spherical rotation */
+    private Quaterniond sphericalRotation(Vector3d position) {
+        return new Quaterniond().rotationTo(new Vector3d(0, 0, 1), new Vector3d(position)
+                                .add(0, 0, VulkanSetup.observer.getDistanceM()).normalize());
     }
 
     /** get position within the world */
@@ -517,7 +522,7 @@ public class Item extends Renderable {
             case ANGLES -> new Vector3d(anglesToMeters(position.x), anglesToMeters(position.y), depth);
             case SPHERICAL -> {
                 double phi = Math.toRadians(position.x);
-                double theta = phi == 0 ? Math.toRadians(position.y) : Math.atan(Math.cos(phi) * Math.tan(Math.toRadians(position.y)));
+                double theta = position.x == 0 ? Math.toRadians(position.y) : Math.atan(Math.cos(phi) * Math.tan(Math.toRadians(position.y)));
                 yield new Vector3d(Math.cos(theta) * Math.sin(phi), Math.sin(theta), Math.cos(theta) * Math.cos(phi)).mul(depth + VulkanSetup.observer.getDistanceM()).add(0, 0, -VulkanSetup.observer.getDistanceM());
             }
             case PIXELS -> new Vector3d(xPixelsToMeters(position.x), yPixelsToMeters(position.y), depth);

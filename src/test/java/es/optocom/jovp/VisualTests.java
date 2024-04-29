@@ -95,7 +95,7 @@ public class VisualTests {
      */
     @Test
     public void stressTest() {
-        PsychoEngine psychoEngine = new PsychoEngine(new StressLogic());
+        PsychoEngine psychoEngine = new PsychoEngine(new StressLogic(), 500);
         psychoEngine.start("mouse", Paradigm.CLICKER);
         psychoEngine.cleanup();
     }
@@ -955,13 +955,14 @@ public class VisualTests {
             psychoEngine.setViewMode(ViewMode.STEREO);
             float[] fov = psychoEngine.getFieldOfView();
             background = new Item(new Model(ModelType.CIRCLE), new Texture(filenames[0]));
+            background.depth(50);
             background.position(0, 0);
             background.size(fov[0], fov[1]); 
             view.add(background);
 
             fixation = new Item(new Model(ModelType.MALTESE), new Texture(fixationColor)); // fixation
             fixation.size(2);
-            fixation.depth(50);
+            fixation.depth(10);
             view.add(fixation);
 
             text = new Text();

@@ -74,6 +74,19 @@ public class PsychoEngine {
 
     /**
      * 
+     * Main method for the JOVP MONO with validation layers
+     *
+     * @param psychoLogic Logic for the psychophysics experience
+     * @param projection Type of projection: ORTHOGRAPHIC or PERSPECTIVE
+     *
+     * @since 0.0.1
+     */
+    public PsychoEngine(PsychoLogic psychoLogic, Projection projection) {
+        this(psychoLogic, DISTANCE, projection, ViewMode.MONO, VALIDATION_LAYERS, API_DUMP);
+    }
+
+    /**
+     * 
      * Main method for the JOVP with validation layers
      *
      * @param psychoLogic Logic for the psychophysics experience
@@ -336,6 +349,31 @@ public class PsychoEngine {
      */
     public void setViewMode(ViewMode viewMode) {
         vulkanManager.setViewMode(viewMode);
+    }
+
+    /**
+     * 
+     * Get the projection type
+     *
+     * @return The projection type
+     *
+     * @since 0.0.1
+     */
+    public Projection getProjection() {
+        return observer.getProjection();
+    }
+
+
+    /**
+     * 
+     * Set projection
+     *
+     * @param projection The projection type
+     *
+     * @since 0.0.1
+     */
+    public void setProjection(Projection projection) {
+        observer.setProjection(projection);
     }
 
     /**
