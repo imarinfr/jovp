@@ -190,16 +190,16 @@ public class PsychoEngineTest {
     /** Psychophysics logic to show a simple triangle */
     static class LogicTriangle implements PsychoLogic {
 
-        Item item;
         @Override
         public void init(PsychoEngine psychoEngine) {
-            item = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
+            Item item = new Item(new Model(ModelType.TRIANGLE), new Texture(TextureType.CHECKERBOARD), Units.ANGLES);
             item.setColors(new double[] { 1, 1, 1, 1 }, new double[] { 0, 0, 1, 1 });
             item.frequency(90, 0.2);
             item.depth(90);
             item.position(0, 0);
             item.size(10);
             view.add(item);
+
             Text title = new Text();
             title.setText("Hello Triangle");
             title.setPosition(0.3, 0.05);

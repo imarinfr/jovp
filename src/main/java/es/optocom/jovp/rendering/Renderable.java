@@ -4,7 +4,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_SHADER_READ_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_READ_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_WRITE_BIT;
-import static org.lwjgl.vulkan.VK10.VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+import static org.lwjgl.vulkan.VK10.VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 import static org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -105,7 +105,7 @@ abstract class Renderable {
     static final int UNIFORM_TEXTSIZEOF = 44 * Float.BYTES;
     static final int SAMPLER_FILTER = VK_FILTER_NEAREST;
     static final int SAMPLER_ADDRESS_MODE = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    static final int SAMPLER_BORDER_COLOR = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
     static final int SAMPLER_COMPARISONS = VK_COMPARE_OP_ALWAYS;
     static final int SAMPLER_MIPMAP_MODE = VK_SAMPLER_MIPMAP_MODE_NEAREST;
     static final int SAMPLER_MIPMAP_FILTER = VK_FILTER_LINEAR;

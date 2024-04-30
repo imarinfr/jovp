@@ -6,8 +6,29 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
 
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
+import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
+import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_1_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_2_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_4_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_8_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_16_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_32_BIT;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLE_COUNT_64_BIT;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK13.*;
+import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorSetLayout;
+import static org.lwjgl.vulkan.VK10.vkDestroyDevice;
+import static org.lwjgl.vulkan.VK10.vkCreateDevice;
+import static org.lwjgl.vulkan.VK10.vkGetDeviceQueue;
+import static org.lwjgl.vulkan.VK10.vkCreateDescriptorSetLayout;
+import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceProperties;
 
 /**
  * Class to handle the logical device. Needs to be recreated if physical device

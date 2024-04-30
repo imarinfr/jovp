@@ -184,7 +184,6 @@ public class VisualTests {
         int refreshTime = 500;
 
         public void init(PsychoEngine psychoEngine) {
-            // TODO: check the texture to avoid edge problems
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1);
             item.depth(10);

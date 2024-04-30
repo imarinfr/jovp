@@ -23,24 +23,36 @@ layout(location = 0) out vec2 uv_out;
 layout(location = 1) out flat ivec3 settings;
 layout(location = 2) out flat vec4 centers;
 layout(location = 3) out flat vec4 coefficients;
-layout(location = 4) out flat vec4 frequency;
-layout(location = 5) out flat vec3 rotation;
-layout(location = 6) out flat vec4 rgba0;
-layout(location = 7) out flat vec4 rgba1;
-layout(location = 8) out flat vec4 contrast;
-layout(location = 9) out flat vec3 envelope;
-layout(location = 10) out flat vec3 defocus;
+layout(location = 4) out flat vec4 rgba0;
+layout(location = 5) out flat vec4 rgba1;
+layout(location = 6) out flat vec4 contrast;
+layout(location = 7) out flat vec3 envelope;
+layout(location = 8) out flat vec3 defocus;
+layout(location = 9) out flat vec2 uvmax;
+
+// Functions on texture: spatial frequency
+vec2 spatial(vec2 uv) {
+    return(ubo.frequency.xy + ubo.frequency.zw * uv);
+}
+
+// Functions on texture: rotate
+vec2 rotate(vec2 uv) {
+    if (ubo.rotation.z == 0) return(uv);
+    float s = sin(ubo.rotation.z);
+    float c = cos(ubo.rotation.z);
+    uv -= ubo.rotation.xy;
+    uv = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c);
+    uv += ubo.rotation.xy;
+    return uv;
+}
 
 void main() {
-    // apply distortion as necessary
-    vec4 position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
-    gl_Position = position;
-    uv_out = uv;
+    gl_Position = ubo.projection * ubo.view * ubo.model * vec4(position, 1.0);
+    uv_out = rotate(spatial(uv));
+    uvmax = ubo.frequency.xy + ubo.frequency.zw;
     settings = ubo.settings;
     centers = ubo.centers;
     coefficients = ubo.coefficients;
-    frequency = ubo.frequency;
-    rotation = ubo.rotation;
     rgba0 = ubo.rgba0;
     rgba1 = ubo.rgba1;
     contrast = ubo.contrast;

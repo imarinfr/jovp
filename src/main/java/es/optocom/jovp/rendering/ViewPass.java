@@ -105,8 +105,7 @@ class ViewPass {
     static final int CULL_MODE = VK_CULL_MODE_BACK_BIT;
     static final int FRONT_FACE = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     static final boolean DEPTH_BIAS_ENABLE = false;
-    static final boolean SAMPLE_SHADING_ENABLE = true;
-    static final float MIN_SAMPLE_SHADING = 0.2f;
+    static final boolean SAMPLE_SHADING_ENABLE = false;
     static final boolean DEPTH_TEST_ENABLE = true;
     static final boolean DEPTH_WRITE_ENABLE = true;
     static final int DEPTH_COMPARE_OPERATION = VK_COMPARE_OP_LESS;
@@ -360,8 +359,10 @@ class ViewPass {
         return VkPipelineMultisampleStateCreateInfo.calloc(stack)
             .sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
             .sampleShadingEnable(SAMPLE_SHADING_ENABLE)
-            .minSampleShading(MIN_SAMPLE_SHADING)
-            .rasterizationSamples(VulkanSetup.logicalDevice.msaaSamples);
+            .rasterizationSamples(VulkanSetup.logicalDevice.msaaSamples)
+            .minSampleShading(1.0f)
+            .alphaToCoverageEnable(false)
+            .alphaToOneEnable(false);
     }
 
     /** create graphics depth stencil */

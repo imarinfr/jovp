@@ -6,31 +6,14 @@ layout(location = 0) in vec2 uv;
 layout(location = 1) in flat ivec3 settings;
 layout(location = 2) in flat vec4 centers;
 layout(location = 3) in flat vec4 coefficients;
-layout(location = 4) in flat vec4 frequency;
-layout(location = 5) in flat vec3 rotation;
-layout(location = 6) in flat vec4 rgba0;
-layout(location = 7) in flat vec4 rgba1;
-layout(location = 8) in flat vec4 contrast;
-layout(location = 9) in flat vec3 envelope;
-layout(location = 10) in flat vec3 defocus;
+layout(location = 4) in flat vec4 rgba0;
+layout(location = 5) in flat vec4 rgba1;
+layout(location = 6) in flat vec4 contrast;
+layout(location = 7) in flat vec3 envelope;
+layout(location = 8) in flat vec3 defocus;
+layout(location = 9) in flat vec2 uvmax;
 
 layout(location = 0) out vec4 color;
-
-// Functions on texture: spatial frequency
-vec2 spatial(vec2 uv, vec4 frequency) {
-    return(frequency.xy + frequency.zw * uv);
-}
-
-// Functions on texture: rotate
-vec2 rotate(vec2 uv, vec3 rotation) {
-    if (rotation.z == 0) return(uv);
-    float s = sin(rotation.z);
-    float c = cos(rotation.z);
-    uv -= rotation.xy;
-    uv = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c);
-    uv += rotation.xy;
-    return uv;
-}
 
 vec4 gaussianEnvelope(vec2 uv, vec4 color, vec3 envelope) {
     float s = sin(envelope.z);
@@ -66,21 +49,17 @@ vec4 blur(vec2 uv, vec4 color, vec3 defocus) {
 }
 
 void main() {
-    vec2 uvmax = frequency.xy + frequency.zw;
-    vec2 uvsp = rotate(spatial(uv, frequency), rotation);
-    color = texture(texSampler, uvsp);
-    // for images do nothing
+    float res = 0.999; // uv mapping resolution to avoid edge problems
+    color = texture(texSampler, uv);
+    if (settings.x == 2) return; // for images do nothing
     if (settings.x == 0) color = rgba0; // flat
     if (settings.x == 1) color = rgba0 + color * (rgba1 - rgba0); // contrast
     // Post-processing: envelope
-    if (settings.y == 1) color = squareEnvelope(uvsp / uvmax, color, envelope);
-    if (settings.y == 2) color = circleEnvelope(uvsp / uvmax, color, envelope);
-    if (settings.y == 3) color = gaussianEnvelope(uvsp / uvmax, color, envelope);
+    if (settings.y == 1) color = squareEnvelope(uv / uvmax, color, envelope);
+    if (settings.y == 2) color = circleEnvelope(uv / uvmax, color, envelope);
+    if (settings.y == 3) color = gaussianEnvelope(uv / uvmax, color, envelope);
     // Post-processing: defocus
-    if (settings.z == 1) color = blur(uvsp, color, defocus);
+    if (settings.z == 1) color = blur(uv, color, defocus);
     color = clamp(contrast * (color - 0.5) + 0.5, 0, 1); // apply contrast and clamp
-    //if(uvsp.x < 0) color = vec4(1, 0, 0, 1);
-    //if(uvsp.x / uvmax.x > 1) color = vec4(1, 0, 0, 1);
-    //if(uvsp.y < 0) color = vec4(1, 0, 0, 1);
-    //if(uvsp.y / uvmax.y > 1) color = vec4(1, 0, 0, 1);
+    if(uv.x < 0 || uv.x / uvmax.x > res || uv.y < 0 || uv.y / uvmax.y > res) color = vec4(0, 0, 0, 0);
 }
