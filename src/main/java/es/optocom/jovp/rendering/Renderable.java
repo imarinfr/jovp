@@ -609,8 +609,8 @@ abstract class Renderable {
                     .descriptorCount(1)
                     .pImageInfo(imageInfo);
             for (int eye = 0; eye < 2; eye++) {
-                for (int frame = 0; frame < 3; frame++) {
-                    int index = eye * 3 + frame;
+                for (int frame = 0; frame < VulkanSetup.swapChain.frameBuffers.size(); frame++) {
+                    int index = eye * VulkanSetup.swapChain.frameBuffers.size() + frame;
                     long descriptorSet = pDescriptorSets.get(index);
                     bufferInfo.buffer(uniformBuffers.get(index));
                     uboDescriptorWrite.dstSet(descriptorSet);
