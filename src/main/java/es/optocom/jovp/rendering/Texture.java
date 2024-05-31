@@ -317,6 +317,51 @@ public class Texture {
         return rgba1;
     }
 
+    /** 
+     * Updates the pixels for an image texture.
+     * If the new image is the same size as the current image, then overwrite pixels, otherwise
+     * create a new pixels array.
+     * TODO: Would it be better to make pixels an ArrayList so that resizing is possible?
+    */
+    public void updateImage(String fileName) {
+        if (type != TextureType.IMAGE)
+            throw new RuntimeException("Cannot updateImage for a Texture whose 'type' is not IMAGE.");
+
+        String path;
+        URL resource = getSystemClassLoader().getResource("es/optocom/jovp/samplers/" + fileName);
+        if (resource == null)
+            path = fileName;
+        else
+            try {
+                path = String.valueOf(Paths.get(new URI(resource.toExternalForm())));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Cannot load texture image.", e);
+            }
+
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer pWidth = stack.mallocInt(1);
+            IntBuffer pHeight = stack.mallocInt(1);
+            IntBuffer pChannels = stack.mallocInt(1);
+            stbi_ldr_to_hdr_gamma(1.0f);
+            FloatBuffer floats = stbi_loadf(path, pWidth, pHeight, pChannels, STBI_rgb_alpha);
+            if (floats == null)
+                throw new RuntimeException("Failed to load texture image " + path);
+
+            if (pixels.length != floats.capacity())
+                pixels = new float[floats.capacity()];
+
+            for (int i = 0; i < floats.capacity(); i++)
+                pixels[i] = floats.get(i);
+
+            stbi_image_free(floats);
+
+            width = pWidth.get(0);
+            height = pHeight.get(0);
+            size = PIXEL_SIZE * width * height;
+            mipLevels = (int) Math.floor(log2(Math.max(width, height))) + 1;
+        }
+    }
+
     /** creates a sampler for a flat surface */
     private void flat() {
         pixels = new float[4];
