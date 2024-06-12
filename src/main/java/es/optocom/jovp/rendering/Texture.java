@@ -274,7 +274,7 @@ public class Texture {
 
     /**
      * 
-     * Set texture minimum color for grids
+     * Set texture minimum color for grids. Reuse memory if possible.
      *
      * @param rgba0 The RGBA values of color 0 (background or minimum color
      *              depending on context)
@@ -285,10 +285,22 @@ public class Texture {
      * 
      */
     public void setColors(double[] rgba0, double[] rgba1) {
-        this.rgba0 = type == TextureType.IMAGE ? TRANSPARENT
-                : new Vector4f((float) rgba0[0], (float) rgba0[1], (float) rgba0[2], (float) rgba0[3]);
-        this.rgba1 = type == TextureType.IMAGE ? TRANSPARENT
-                : new Vector4f((float) rgba1[0], (float) rgba1[1], (float) rgba1[2], (float) rgba1[3]);
+        if (type == TextureType.IMAGE) {
+            this.rgba0 = TRANSPARENT;
+            this.rgba1 = TRANSPARENT;
+        } else {
+            if (this.rgba0 == null) this.rgba0 = new Vector4f();
+            if (this.rgba1 == null) this.rgba1 = new Vector4f();
+
+            this.rgba0.x = (float)rgba0[0];
+            this.rgba0.y = (float)rgba0[1];
+            this.rgba0.z = (float)rgba0[2];
+            this.rgba0.w = (float)rgba0[3];
+            this.rgba1.x = (float)rgba1[0];
+            this.rgba1.y = (float)rgba1[1];
+            this.rgba1.z = (float)rgba1[2];
+            this.rgba1.w = (float)rgba1[3];
+        }
     }
 
     /**
