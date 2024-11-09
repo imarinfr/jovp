@@ -268,7 +268,7 @@ public class Texture {
      * @since 0.0.1
      * 
      */
-    public void setColor(double[] rgba) {
+    public final void setColor(double[] rgba) {
         setColors(rgba, rgba);
     }
 
@@ -284,7 +284,7 @@ public class Texture {
      * @since 0.0.1
      * 
      */
-    public void setColors(double[] rgba0, double[] rgba1) {
+    public final void setColors(double[] rgba0, double[] rgba1) {
         if (type == TextureType.IMAGE) {
             this.rgba0 = TRANSPARENT;
             this.rgba1 = TRANSPARENT;

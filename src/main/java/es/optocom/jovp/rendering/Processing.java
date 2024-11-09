@@ -1,9 +1,9 @@
 package es.optocom.jovp.rendering;
 
-import org.joml.Vector3i;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.joml.Vector4f;
 
 import es.optocom.jovp.definitions.EnvelopeType;
@@ -58,7 +58,7 @@ class Processing {
      *
      * @since 0.0.1
      */
-    public void setType(TextureType type) {
+    public final void setType(TextureType type) {
         this.type = type;
         settings.x = switch (type) {
             case FLAT -> 0;

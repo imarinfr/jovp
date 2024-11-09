@@ -1,5 +1,12 @@
 package es.optocom.jovp.rendering;
 
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_SHADER_READ_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_TRANSFER_READ_BIT;
@@ -70,14 +77,6 @@ import static org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFormatProperties;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
-
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkBufferCopy;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkBufferImageCopy;
@@ -96,8 +95,8 @@ import org.lwjgl.vulkan.VkMemoryRequirements;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
-import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.Vertex;
+import es.optocom.jovp.definitions.ViewEye;
 
 abstract class Renderable {
 
@@ -302,18 +301,6 @@ abstract class Renderable {
 
     /**
      * 
-     * Render item or text
-     *
-     * @param stack Memory stack
-     * @param commandBuffer Command buffer
-     * @param image in-flight frame to render
-     *
-     * @since 0.0.1
-     */
-    abstract void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image);
-
-    /**
-     * 
      * Render item for a specific eye
      * 
      * @param stack  stack
@@ -351,7 +338,7 @@ abstract class Renderable {
      *
      * @since 0.0.1
      */
-    void createBuffers() {
+    final void createBuffers() {
         // only if psychoEngine has started and have not yet been created
         if (VulkanSetup.physicalDevice == null | VulkanSetup.commandPool == 0) return;
         createModelObjects();

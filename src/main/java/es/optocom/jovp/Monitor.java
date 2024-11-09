@@ -1,8 +1,10 @@
 package es.optocom.jovp;
 
+import static org.lwjgl.glfw.GLFW.glfwGetMonitorName;
+import static org.lwjgl.glfw.GLFW.glfwGetMonitorPhysicalSize;
+import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
+import static org.lwjgl.glfw.GLFW.glfwGetVideoModes;
 import org.lwjgl.glfw.GLFWVidMode;
-
-import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * 
@@ -26,7 +28,7 @@ public class Monitor {
     private float pixelWidth; // pixel width in mm
     private float pixelHeight; // pixel height in mm
     private float pixelAspect; // Aspect ratio between pixels
-    private int[] colorDepth = new int[3]; // Bit depths for all channels
+    private final int[] colorDepth = new int[3]; // Bit depths for all channels
     private GLFWVidMode.Buffer videoModes;
 
     /**
@@ -308,7 +310,8 @@ public class Monitor {
      * 
      * @see java.lang.Object#toString()
      */
-    public String toString() {
+    @Override
+     public String toString() {
         String pixelSizeTxt = "[" + String.format("%.1f", 1000 * pixelWidth) + ", " +
                 String.format("%.1f", 1000 * pixelHeight) + "]";
         String dpiTxt = "[" + String.format("%.1f", getDpi()[0]) + ", " + String.format("%.1f", getDpi()[1]) + "]";
@@ -353,10 +356,10 @@ public class Monitor {
      * wrong or because the driver does not report it accurately
      */
     private void setPhysicalSize() {
-        int[] widthMM = new int[1], heightMM = new int[1];
-        glfwGetMonitorPhysicalSize(monitor, widthMM, heightMM);
-        this.widthMM = widthMM[0];
-        this.heightMM = heightMM[0];
+        int[] wMM = new int[1], hMM = new int[1];
+        glfwGetMonitorPhysicalSize(monitor, wMM, hMM);
+        this.widthMM = wMM[0];
+        this.heightMM = hMM[0];
         aspect = (float) this.widthMM / this.heightMM;
         computePixelSize(); // update pixel size
     }

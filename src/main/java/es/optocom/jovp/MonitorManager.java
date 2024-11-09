@@ -1,11 +1,10 @@
 package es.optocom.jovp;
 
-import static org.lwjgl.glfw.GLFW.*;
-
-import org.lwjgl.PointerBuffer;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.lwjgl.PointerBuffer;
+import static org.lwjgl.glfw.GLFW.glfwGetMonitors;
 
 /**
  * Retrieves all attached monitors and manages them.
@@ -52,7 +51,8 @@ public class MonitorManager {
      * 
      * @see java.lang.Object#toString()
      */
-    public String toString() {
+    @Override
+     public String toString() {
         StringBuilder monitorInformation = new StringBuilder("Number of monitors: " + numberOfMonitors + "\n");
         // get string with Monitor's info
         for (int monitor = 0; monitor < numberOfMonitors; monitor++) {

@@ -1,5 +1,25 @@
 package es.optocom.jovp;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import org.joml.Vector3f;
+import static org.lwjgl.glfw.GLFW.GLFW_PLATFORM_COCOA;
+import static org.lwjgl.glfw.GLFW.GLFW_PLATFORM_NULL;
+import static org.lwjgl.glfw.GLFW.GLFW_PLATFORM_WAYLAND;
+import static org.lwjgl.glfw.GLFW.GLFW_PLATFORM_WIN32;
+import static org.lwjgl.glfw.GLFW.GLFW_PLATFORM_X11;
+import static org.lwjgl.glfw.GLFW.glfwGetPlatform;
+import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwPlatformSupported;
+import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwTerminate;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import static org.lwjgl.system.Configuration.DEBUG;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
@@ -8,18 +28,6 @@ import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Observer;
 import es.optocom.jovp.rendering.VulkanManager;
 import jssc.SerialPortException;
-
-import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.vulkan.VkPhysicalDevice;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.Configuration.DEBUG;
-import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
 
 /**
  * 
@@ -513,35 +521,6 @@ public class PsychoEngine {
 
     /**
      *
-     * Set Brown-Conrady model distortion coefficients
-     * 
-     * @param k1 coefficient k1
-     * @param k2 coefficient k2
-     * @param k3 coefficient k3
-     *
-     * @since 0.0.1
-     */
-    void setDistortion(double k1, double k2, double k3) {
-        observer.setCoefficients(k1, k2, k3, 0.0f);
-    }
-
-    /**
-     *
-     * Set Brown-Conrady model distortion coefficients
-     * 
-     * @param k1 coefficient k1
-     * @param k2 coefficient k2
-     * @param k3 coefficient k3
-     * @param k4 coefficient k4
-     *
-     * @since 0.0.1
-     */
-    void setDistortion(double k1, double k2, double k3, double k4) {
-        observer.setCoefficients(k1, k2, k3, k4);
-    }
-
-    /**
-     *
      * Set default Brown-Conrady model distortion coefficients
      *
      * @since 0.0.1
@@ -637,6 +616,7 @@ public class PsychoEngine {
     }
 
     /** convert to string */
+    @Override
     public String toString() {
         String freeMemoryTxt = String.format("%.1f", (float) freeMemory / 1048576);
         String maxMemoryTxt = String.format("%.1f", (float) maxMemory / 1048576);

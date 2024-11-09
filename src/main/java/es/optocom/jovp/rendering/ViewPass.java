@@ -1,7 +1,16 @@
 package es.optocom.jovp.rendering;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
+import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import org.lwjgl.system.NativeResource;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_compilation_status_success;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_compile_into_spv;
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_compiler_initialize;
@@ -52,16 +61,6 @@ import static org.lwjgl.vulkan.VK10.vkCreateShaderModule;
 import static org.lwjgl.vulkan.VK10.vkDestroyPipeline;
 import static org.lwjgl.vulkan.VK10.vkDestroyPipelineLayout;
 import static org.lwjgl.vulkan.VK10.vkDestroyShaderModule;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.IOUtils;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
 import org.lwjgl.vulkan.VkOffset2D;
@@ -126,7 +125,6 @@ class ViewPass {
     static final float BLEND_CONSTANTS_Z = 0.0f;
     static final float BLEND_CONSTANTS_W = 0.0f;
 
-    final VkExtent2D extent;
     long graphicsPipelineLayout;
     long graphicsPipeline;
     long textPipelineLayout;
@@ -143,7 +141,6 @@ class ViewPass {
      * @since 0.0.1
      */
     ViewPass(long renderPass, int offset, VkExtent2D extent) {
-        this.extent = extent;
         createGraphicsPipeline(renderPass, offset, extent);
         createTextPipeline(renderPass, offset, extent);
     }

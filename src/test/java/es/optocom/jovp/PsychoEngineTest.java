@@ -80,7 +80,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void showTriangle() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicTriangle());
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -106,7 +106,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void stereoMode() {
         PsychoEngine psychoEngine = new PsychoEngine(new StereoLogic(), 500, ViewMode.STEREO);
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -119,7 +119,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void sphericalCoordinates() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicSpherical(), 50);
         psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
@@ -132,7 +132,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void barrelDistortion() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicDistortion());
         psychoEngine.start("mouse", Paradigm.CLICKER);

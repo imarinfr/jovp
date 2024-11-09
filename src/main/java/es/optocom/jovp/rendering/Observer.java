@@ -1,11 +1,11 @@
 package es.optocom.jovp.rendering;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import es.optocom.jovp.Window;
 import es.optocom.jovp.definitions.Projection;
 import es.optocom.jovp.definitions.ViewMode;
-
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 /**
  * 
@@ -339,7 +339,7 @@ public class Observer {
      *
      * @since 0.0.1
      */
-    public void computeProjections() {
+    public final void computeProjections() {
         width = window.getWidthM();
         height = window.getHeightM();
         aspect = width / height;
@@ -355,7 +355,7 @@ public class Observer {
     }
 
     /** Compute aspect ratio, update FOVX and FOVY, and set the projection matrix */
-    public void resetViewMatrices() {
+    public final void resetViewMatrices() {
         view = new Matrix4f();
         viewLeft = new Matrix4f();
         viewRight = new Matrix4f();

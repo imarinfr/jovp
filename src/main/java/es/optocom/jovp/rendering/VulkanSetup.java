@@ -869,5 +869,4 @@ class VulkanSetup {
 
     }
 
-
 }

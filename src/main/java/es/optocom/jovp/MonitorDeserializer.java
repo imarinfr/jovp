@@ -14,7 +14,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 public class MonitorDeserializer implements JsonDeserializer<Monitor> {
-    
+
+    @Override
      public Monitor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
 

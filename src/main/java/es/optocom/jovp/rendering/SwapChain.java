@@ -1,19 +1,23 @@
 package es.optocom.jovp.rendering;
 
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
-
-import es.optocom.jovp.definitions.ViewMode;
-
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.KHRSurface.*;
-import static org.lwjgl.vulkan.KHRSwapchain.*;
+import static org.lwjgl.vulkan.KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
+import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkCreateSwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkDestroySwapchainKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkGetSwapchainImagesKHR;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 import static org.lwjgl.vulkan.VK10.VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -46,6 +50,18 @@ import static org.lwjgl.vulkan.VK10.vkDestroyImage;
 import static org.lwjgl.vulkan.VK10.vkDestroyImageView;
 import static org.lwjgl.vulkan.VK10.vkDestroyRenderPass;
 import static org.lwjgl.vulkan.VK10.vkFreeMemory;
+import org.lwjgl.vulkan.VkAttachmentDescription;
+import org.lwjgl.vulkan.VkAttachmentReference;
+import org.lwjgl.vulkan.VkExtent2D;
+import org.lwjgl.vulkan.VkFramebufferCreateInfo;
+import org.lwjgl.vulkan.VkRenderPassCreateInfo;
+import org.lwjgl.vulkan.VkSubpassDependency;
+import org.lwjgl.vulkan.VkSubpassDescription;
+import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
+import org.lwjgl.vulkan.VkSurfaceFormatKHR;
+import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
+
+import es.optocom.jovp.definitions.ViewMode;
 
 /**
  * SwapChain specifications
@@ -57,7 +73,6 @@ class SwapChain {
     static final int COMPOSITE_ALPHA_MODE = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     static final int MIP_LEVELS = 1;
     static final int COLOR_ATTACHMENT_SAMPLES = VK_SAMPLE_COUNT_1_BIT;
-    static final int PIPELINE_ACCESS = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     static final int SURFACE_FORMAT = VK_FORMAT_B8G8R8_SRGB;
     static final int COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     static final int PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -139,7 +154,7 @@ class SwapChain {
             VulkanSetup.SwapChainSupportDetails swapChainSupport = VulkanSetup.swapChainSupport(stack);
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
             int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-            VkExtent2D extent = chooseSwapExtent(VulkanSetup.observer.window.getHandle(),
+            VkExtent2D ext = chooseSwapExtent(VulkanSetup.observer.window.getHandle(),
                     swapChainSupport.capabilities);
             IntBuffer imageCount = stack.ints(swapChainSupport.capabilities.minImageCount());
             if (swapChainSupport.capabilities.maxImageCount() > 0 &&
@@ -151,7 +166,7 @@ class SwapChain {
                     .minImageCount(imageCount.get(0))
                     .imageFormat(surfaceFormat.format())
                     .imageColorSpace(surfaceFormat.colorSpace())
-                    .imageExtent(extent)
+                    .imageExtent(ext)
                     .imageArrayLayers(1)
                     .imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
             VulkanSetup.QueueFamilyIndices indices = VulkanSetup.queueFamilies();
@@ -177,7 +192,7 @@ class SwapChain {
             for (int i = 0; i < pSwapchainImages.capacity(); i++)
                 images.add(pSwapchainImages.get(i));
             imageFormat = surfaceFormat.format();
-            this.extent = VkExtent2D.create().set(extent);
+            this.extent = VkExtent2D.create().set(ext);
         }
     }
 

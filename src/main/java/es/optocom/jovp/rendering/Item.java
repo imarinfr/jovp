@@ -10,11 +10,10 @@ import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkCommandBuffer;
-
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkMapMemory;
 import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
+import org.lwjgl.vulkan.VkCommandBuffer;
 
 import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.Projection;
@@ -80,7 +79,8 @@ public class Item extends Renderable {
      * 
      * @since 0.0.1
      */
-    public void update(Texture texture) {
+    @Override
+     public void update(Texture texture) {
         super.update(texture);
         processing.setType(texture.getType());
     }
@@ -423,7 +423,6 @@ public class Item extends Renderable {
      *
      * @since 0.0.1
      */
-    @Override
      void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
         if (viewEye == ViewEye.NONE) return;
         if (VulkanSetup.observer.viewMode == ViewMode.MONO) {
@@ -505,7 +504,6 @@ public class Item extends Renderable {
     /** update model matrix */
     private void updateModelMatrix() {
         Vector3d pos = worldPosition();
-        new Quaterniond();
         Quaterniond quaternion = (units == Units.SPHERICAL ? sphericalRotation(pos) : new Quaterniond()).rotateZYX(rotation.z, rotation.y, rotation.x);
         modelMatrix.translationRotateScale(pos, quaternion, getScale());
     }

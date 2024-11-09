@@ -1,15 +1,10 @@
 package es.optocom.jovp.rendering;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.assimp.*;
-
-import es.optocom.jovp.definitions.ModelType;
-import es.optocom.jovp.definitions.Optotype;
-import es.optocom.jovp.definitions.Vertex;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import static java.lang.Math.PI;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,12 +12,26 @@ import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Math.PI;
 import static java.util.Objects.requireNonNull;
+
 import static org.joml.Math.cos;
 import static org.joml.Math.sin;
-import static org.lwjgl.assimp.Assimp.*;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.assimp.AIFace;
+import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AINode;
+import org.lwjgl.assimp.AIScene;
+import org.lwjgl.assimp.AIVector3D;
+import static org.lwjgl.assimp.Assimp.aiGetErrorString;
+import static org.lwjgl.assimp.Assimp.aiImportFile;
+import static org.lwjgl.assimp.Assimp.aiProcess_DropNormals;
+import static org.lwjgl.assimp.Assimp.aiProcess_FlipUVs;
+
+import es.optocom.jovp.definitions.ModelType;
+import es.optocom.jovp.definitions.Optotype;
+import es.optocom.jovp.definitions.Vertex;
 
 /**
  * Model class and methods
@@ -482,8 +491,8 @@ public class Model {
                     }
                 }
             }
-            vertices = vertexArrayList.toArray(new Vertex[0]);
-            indices = indicesArrayList.toArray(new Integer[0]);
+            vertices = vertexArrayList.toArray(Vertex[]::new);
+            indices = indicesArrayList.toArray(Integer[]::new);
         } catch (IOException e) {
             throw new RuntimeException("Could not load Optotype", e);
         }

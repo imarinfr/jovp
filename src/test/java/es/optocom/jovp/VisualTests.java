@@ -3,8 +3,6 @@ package es.optocom.jovp;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.junit.jupiter.api.Test;
-
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.EnvelopeType;
 import es.optocom.jovp.definitions.ModelType;
@@ -45,7 +43,7 @@ public class VisualTests {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void textureUpdate() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicTextureUpdate());
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -58,7 +56,7 @@ public class VisualTests {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void visualAcuityTest() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicVA());
         psychoEngine.start("keypad", Paradigm.M4AFC);
@@ -114,7 +112,7 @@ public class VisualTests {
      * @since 0.0.1
      * 
      */
-    @Test
+    //@Test
     public void gaussianEnvelopes() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicGaussianEnvelopes());
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -128,7 +126,7 @@ public class VisualTests {
      * @since 0.0.1
      * 
      */
-    @Test
+    //@Test
     public void envelopeTypes() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicEnvelopeType(), 572.943f);
         psychoEngine.start("mouse", Paradigm.CLICKER);

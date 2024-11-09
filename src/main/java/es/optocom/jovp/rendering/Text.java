@@ -16,17 +16,16 @@ import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import org.lwjgl.system.MemoryUtil;
+import static org.lwjgl.vulkan.VK10.vkMapMemory;
+import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import es.optocom.jovp.definitions.FontType;
 import es.optocom.jovp.definitions.Vertex;
 import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ViewMode;
-
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.vkMapMemory;
-import static org.lwjgl.vulkan.VK10.vkUnmapMemory;
 
 /**
  * Text manager for rendering text
@@ -350,7 +349,6 @@ public class Text extends Renderable {
      *
      * @since 0.0.1
      */
-    @Override
      void render(MemoryStack stack, VkCommandBuffer commandBuffer, int image) {
         if (viewEye == ViewEye.NONE) return;
         if (VulkanSetup.observer.viewMode == ViewMode.MONO) {
