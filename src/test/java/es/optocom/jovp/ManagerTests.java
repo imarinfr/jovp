@@ -21,15 +21,6 @@ import java.util.List;
 public class ManagerTests {
 
     /**
-     * 
-     * Unitary tests for the Vulkan manager
-     *
-     * @since 0.0.1
-     */
-    public ManagerTests() {
-    }
-
-    /**
      *
      * List device extension support
      *

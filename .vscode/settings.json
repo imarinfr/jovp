@@ -3,12 +3,21 @@
   "maven.view": "hierarchical",
   "java.dependency.syncWithFolderExplorer": true,
   "java.dependency.packagePresentation": "hierarchical",
-  "java.test.config": {
-    "name" : "config",
-     //"vmArgs": ["-Djava.library.path=lwjgl"] // Windows
-     "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"] // Not Windows
-  },
-  "java.test.defaultConfig" : "config",
+  "java.test.config": [
+    {
+      "name": "macConfig",
+      "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"]
+    },
+    {
+        "name": "windowsConfig",
+        "vmArgs": ["-Djava.library.path=lwjgl"]
+    },
+    {
+        "name": "unixConfig",
+        "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.so"]
+    }
+  ],
+  "java.test.defaultConfig" : "macConfig",
   "glsl-linter.validatorPath": "/usr/local/bin/glslangValidator",
   "glsl-linter.fileExtensions": {
     ".fs.glsl": "frag",

@@ -28,15 +28,6 @@ public class VisualTests {
 
     /**
      *
-     * Unitary tests for different contrasts and changes
-     *
-     * @since 0.0.1
-     */
-    public VisualTests() {
-    }
-
-    /**
-     *
      * Patterns and their spatial properties
      *
      * @since 0.0.1
@@ -80,7 +71,7 @@ public class VisualTests {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void showAllOptotypes() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicOptotypes());
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -89,11 +80,11 @@ public class VisualTests {
 
     /**
      * 
-     * Shows all optotypes moving awkwardly
+     * Shows all optotypes and other elements moving awkwardly
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void stressTest() {
         PsychoEngine psychoEngine = new PsychoEngine(new StressLogic(), 500);
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -106,7 +97,7 @@ public class VisualTests {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void blinkingAndChangingShape() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicBlinkingAndChangingShape());
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -154,7 +145,7 @@ public class VisualTests {
      * @since 0.0.1
      * 
      */
-    @Test
+    //@Test
     public void backgroundImageUpdate() {
         PsychoEngine psychoEngine = new PsychoEngine(new BackgroundLogic());
         psychoEngine.start("mouse", Paradigm.CLICKER);

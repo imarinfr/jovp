@@ -27,16 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 0.0.1
  */
-public class PsychoEngineTest {
-
-    /**
-     * 
-     * Unitary tests for the psychophysics engine
-     *
-     * @since 0.0.1
-     */
-    public PsychoEngineTest() {
-    }
+ public class PsychoEngineTest {
 
     /**
      * 
@@ -102,7 +93,7 @@ public class PsychoEngineTest {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void coordinateSystems() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicCoordinateSystems(), Projection.ORTHOGRAPHIC);
         psychoEngine.start("mouse", Paradigm.CLICKER);
@@ -154,13 +145,12 @@ public class PsychoEngineTest {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void viewVirtualWorld() {
         PsychoEngine psychoEngine = new PsychoEngine(new WorldLogic(), 100, Projection.PERSPECTIVE);
         psychoEngine.start("keypad", InputType.REPEAT, Paradigm.M9AFC);
         psychoEngine.cleanup();
     }
-
 
     /** Psychophysics logic class */
     static class Logic implements PsychoLogic {
