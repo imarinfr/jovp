@@ -6,7 +6,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>23</java.version>
+        <java.version>22</java.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <surefire.plugin.version>3.5.2</surefire.plugin.version>
         <lwjgl.version>3.3.4</lwjgl.version>

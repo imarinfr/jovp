@@ -1,15 +1,44 @@
 package es.optocom.jovp;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
+import static org.lwjgl.glfw.GLFW.GLFW_CLIENT_API;
+import static org.lwjgl.glfw.GLFW.GLFW_COCOA_GRAPHICS_SWITCHING;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
+import static org.lwjgl.glfw.GLFW.GLFW_DOUBLEBUFFER;
+import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
+import static org.lwjgl.glfw.GLFW.GLFW_FLOATING;
+import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
+import static org.lwjgl.glfw.GLFW.GLFW_FOCUS_ON_SHOW;
+import static org.lwjgl.glfw.GLFW.GLFW_NO_API;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_SCALE_TO_MONITOR;
+import static org.lwjgl.glfw.GLFW.GLFW_SRGB_CAPABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
+import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
+import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetMonitorWorkarea;
+import static org.lwjgl.glfw.GLFW.glfwHideWindow;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowPosCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowSizeCallback;
+import static org.lwjgl.glfw.GLFW.glfwShowWindow;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import org.lwjgl.glfw.GLFWVidMode;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.InputType;
 import es.optocom.jovp.definitions.Paradigm;
 import jssc.SerialPortException;
-
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  * 
@@ -393,16 +422,17 @@ public class Window {
     }
 
     /** Window resize callbacks */
+    @SuppressWarnings("unused")
     private void setCallbacks() {
-        glfwSetWindowSizeCallback(window, (window, width, height) -> {
-            this.width = width;
-            this.height = height;
+        glfwSetWindowSizeCallback(window, (win, w, h) -> {
+            this.width = w;
+            this.height = h;
             resized(true);
         });
-        glfwSetWindowPosCallback(window, (window, x, y) -> {
+        glfwSetWindowPosCallback(window, (win, xval, yval) -> {
             int[] workingArea = getWorkingArea(monitor);
-            this.x = x - workingArea[0];
-            this.y = y - workingArea[1];
+            this.x = xval - workingArea[0];
+            this.y = yval - workingArea[1];
         });
 
     }
@@ -411,15 +441,15 @@ public class Window {
     private int[] getWorkingArea(Monitor monitor) {
         int[] workingArea = new int[4];
         // get working area
-        int[] x = new int[1];
-        int[] y = new int[1];
-        int[] width = new int[1];
-        int[] height = new int[1];
-        glfwGetMonitorWorkarea(monitor.getHandle(), x, y, width, height);
-        workingArea[0] = x[0];
-        workingArea[1] = y[0];
-        workingArea[2] = width[0];
-        workingArea[3] = height[0];
+        int[] xval = new int[1];
+        int[] yval = new int[1];
+        int[] w = new int[1];
+        int[] h = new int[1];
+        glfwGetMonitorWorkarea(monitor.getHandle(), xval, yval, w, h);
+        workingArea[0] = xval[0];
+        workingArea[1] = yval[0];
+        workingArea[2] = w[0];
+        workingArea[3] = h[0];
         return workingArea;
     }
 

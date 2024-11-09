@@ -1,22 +1,22 @@
 package es.optocom.jovp;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.junit.jupiter.api.Test;
+
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.EnvelopeType;
-import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ModelType;
 import es.optocom.jovp.definitions.Optotype;
 import es.optocom.jovp.definitions.Paradigm;
 import es.optocom.jovp.definitions.TextureType;
+import es.optocom.jovp.definitions.ViewEye;
 import es.optocom.jovp.definitions.ViewMode;
 import es.optocom.jovp.rendering.Item;
 import es.optocom.jovp.rendering.Model;
 import es.optocom.jovp.rendering.Text;
 import es.optocom.jovp.rendering.Texture;
-
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -160,7 +160,6 @@ public class VisualTests {
         double[] white = new double[] { 1, 1, 1, 1 };
         double[] red = new double[] { 1, 0, 0, 1 };
         double[] green = new double[] { 0, 1, 0, 1 };
-        double[] blue = new double[] { 0, 0, 1, 1 };
         double[] redSemi = new double[] { 1, 0, 0, 0.5 };
         double[] blackSemi = new double[] { 0, 0, 0, 0.5 };
         double[] whiteSemi = new double[] { 1, 1, 1, 0.8 };
@@ -174,6 +173,7 @@ public class VisualTests {
         Text text;
         int refreshTime = 500;
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
             Item item = new Item(new Model(ModelType.MALTESE), new Texture(fixation));
             item.size(1);
@@ -248,10 +248,12 @@ public class VisualTests {
             timerFps.start();
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             stimulus1.rotation(time / 10);
@@ -281,6 +283,7 @@ public class VisualTests {
             int texture_type;
             String prefix;
     
+            @Override
             public void init(PsychoEngine psychoEngine) {
                 prefix = "FLAT vs ";
                 stimuli[0] = new Item(new Model(ModelType.CIRCLE), new Texture(new double[] {1, 1, 0, 1}));
@@ -307,30 +310,38 @@ public class VisualTests {
                 frames = 0;
                 texture_type = 0;
             }
-    
+
+            @Override
             public void input(PsychoEngine psychoEngine, Command command) {
                 if (command != Command.NONE) System.out.println(command);
             }
-    
+
+            @Override
             public void update(PsychoEngine psychoEngine) {
                 frames++;
                 if (frames % 100 == 0) {
-                    if (texture_type == 0) {
-                        stimuli[0].setColor(new double[] {0.5, 0.5, 1, 1});
-                        stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
-                        text.setText(prefix + "SINE white-blue");
-                        texture_type = 1;
-                    } else if (texture_type == 1) {
-                        stimuli[0].setColor(new double[] {0.5, 0.5, 0.5, 1});
-                        stimuli[1].update(new Texture("ecceIvanito.jpeg"));
-                        text.setText(prefix + "IMAGE");
-                        texture_type = 2;
-                    } else if (texture_type == 2) {
-                        stimuli[0].setColor(new double[] {1, 1, 0, 1});
-                        stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1}));
-                        text.setText(prefix + "SINE red-green");
-                        texture_type = 0;
-                    } 
+                    switch (texture_type) {
+                        case 0 -> {
+                            stimuli[0].setColor(new double[] {0.5, 0.5, 1, 1});
+                            stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 1, 1, 1}, new double[] {0, 0, 1, 1}));
+                            text.setText(prefix + "SINE white-blue");
+                            texture_type = 1;
+                        }
+                        case 1 -> {
+                            stimuli[0].setColor(new double[] {0.5, 0.5, 0.5, 1});
+                            stimuli[1].update(new Texture("ecceIvanito.jpeg"));
+                            text.setText(prefix + "IMAGE");
+                            texture_type = 2;
+                        }
+                        case 2 -> {
+                            stimuli[0].setColor(new double[] {1, 1, 0, 1});
+                            stimuli[1].update(new Texture(TextureType.SINE, new double[] {1, 0, 0, 1}, new double[] {0, 1, 0, 1})); 
+                            text.setText(prefix + "SINE red-green");
+                            texture_type = 0;
+                        }
+                        default -> {
+                        }
+                    }
                 }
             }
         }
@@ -353,6 +364,7 @@ public class VisualTests {
         int reversals = 0;
         Text info;
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
             // Background
             Item bg = new Item(new Model(ModelType.SQUARE), new Texture(white)); // background
@@ -384,6 +396,7 @@ public class VisualTests {
             view.add(info);
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command == Command.NONE) return;
             switch (command) {
@@ -392,9 +405,10 @@ public class VisualTests {
                 case ITEM3 -> nextDeltaSize(0);
                 case ITEM4 -> nextDeltaSize(270);
                 default -> {}
-            };
+            }
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
             optotype.size(size);
             optotype.rotation(theta);
@@ -453,6 +467,7 @@ public class VisualTests {
         double[] colorYellow = new double[] { 1, 1, 0, 1 };
         double[] colorBlue = new double[] { 0, 0, 1, 1 };
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
             view.add(new Item(new Model(Optotype.A), new Texture(TextureType.SINE, colorBlue, colorYellow)));
             view.add(new Item(new Model(Optotype.B), new Texture(TextureType.CHECKERBOARD, colorRed, colorGreen)));
@@ -501,11 +516,13 @@ public class VisualTests {
             timer.start();
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE)
                 System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
             theta -= 5;
             float xpos = initialPos;
@@ -568,6 +585,7 @@ public class VisualTests {
         double ypos = 3;
         double zpos = 5;
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
             addOptotypes();
             for (int i = 0; i < 15; i++) addPolygon(i);
@@ -590,10 +608,12 @@ public class VisualTests {
             timerFps.start();
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
             double time = timer.getElapsedTime();
             if (time > 13425) {
@@ -621,8 +641,8 @@ public class VisualTests {
             // process optotypes
             for (Item item : view.items()) {
                 if (item.getModel().getType() != ModelType.OPTOTYPE) continue;
-                double ypos = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1) * timer.getElapsedTime()) / 500);
-                item.position(xpos, ypos);
+                double yp = amplitude * Math.sin((2 * Math.PI * frequency * number / (view.size() - 1) * timer.getElapsedTime()) / 500);
+                item.position(xpos, yp);
                 item.rotation(theta);
                 xpos += 1.25;
                 number++;
@@ -723,10 +743,10 @@ public class VisualTests {
             String fileName = null;
             if (i % 2 == 0) fileName = "ecceIvanito.jpeg";
             if (i % 2 == 1) fileName = "ivanito.jpeg";
-            Item circle = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
+            Item cc = new Item(new Model(ModelType.CIRCLE), new Texture(fileName));
             circle.size(2.25, 2.25);
             circle.show(ViewEye.NONE);
-            view.add(circle);
+            view.add(cc);
         }
 
         private void addTriangle() {
@@ -787,6 +807,7 @@ public class VisualTests {
         double[] color0 = new double[] { 1, 1, 1, 1 };
         double[] color1 = new double[] { 0, 0, 0.5, 1 };
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
             // Background
             background = new Item(new Model(ModelType.CIRCLE), new Texture(backgroundColor));
@@ -826,10 +847,12 @@ public class VisualTests {
             timerFps.start();
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
             float[] fov = psychoEngine.getFieldOfView();
             background.size(fov[0], fov[1]);
@@ -864,7 +887,8 @@ public class VisualTests {
 
         double[] white = new double[] { 1, 1, 1, 1 };
         double[] black = new double[] { 0, 0, 0, 1 };
-        
+
+        @Override
         public void init(PsychoEngine psychoEngine) {
             System.out.println(psychoEngine.getFieldOfView()[0] + " " + psychoEngine.getFieldOfView()[1]);
             double x;
@@ -885,10 +909,12 @@ public class VisualTests {
             }
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
         }
     }
@@ -898,7 +924,8 @@ public class VisualTests {
 
         double[] white = new double[] { 1, 1, 1, 1 };
         double[] black = new double[] { 0, 0, 0, 1 };
-        
+
+        @Override
         public void init(PsychoEngine psychoEngine) {
             Item stimuli = new Item(new Model(ModelType.CIRCLE), new Texture(TextureType.SINE, white, black));
             stimuli.position(-8, 0);
@@ -920,10 +947,12 @@ public class VisualTests {
             view.add(stimuli);
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
             if (command != Command.NONE) System.out.println(command);
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
         }
     }
@@ -931,7 +960,6 @@ public class VisualTests {
     // Psychophysics logic class - does using an image as background cause flicker?
     static class BackgroundLogic implements PsychoLogic {
         double[] fixationColor = new double[] { 0, 1, 0, 1 };
-        double[] backgroundColor = new double[] { 0, 0, 1, 1 };
 
         Item background, fixation;
         Text text;

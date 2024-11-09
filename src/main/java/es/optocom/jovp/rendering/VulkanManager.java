@@ -1,23 +1,27 @@
 package es.optocom.jovp.rendering;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWVulkan;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.Pointer;
-import org.lwjgl.vulkan.*;
-
-import es.optocom.jovp.definitions.ViewMode;
-
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFW;
 import static org.lwjgl.glfw.GLFW.glfwWaitEvents;
+import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import org.lwjgl.system.Pointer;
 import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
-import static org.lwjgl.vulkan.KHRSwapchain.*;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkAcquireNextImageKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.vkQueuePresentKHR;
 import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 import static org.lwjgl.vulkan.VK10.VK_FENCE_CREATE_SIGNALED_BIT;
 import static org.lwjgl.vulkan.VK10.VK_MAKE_VERSION;
@@ -50,6 +54,26 @@ import static org.lwjgl.vulkan.VK10.vkFreeCommandBuffers;
 import static org.lwjgl.vulkan.VK10.vkQueueSubmit;
 import static org.lwjgl.vulkan.VK10.vkResetFences;
 import static org.lwjgl.vulkan.VK10.vkWaitForFences;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
+import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkFenceCreateInfo;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkOffset2D;
+import org.lwjgl.vulkan.VkPhysicalDevice;
+import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
+import org.lwjgl.vulkan.VkPresentInfoKHR;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkRenderPassBeginInfo;
+import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
+import org.lwjgl.vulkan.VkSubmitInfo;
+
+import es.optocom.jovp.definitions.ViewMode;
 
 /**
  * 
@@ -63,8 +87,8 @@ public class VulkanManager {
     static final int MAX_FRAMES_IN_FLIGHT = 2;
 
     private VulkanCommands vulkanCommands;
-    private List<VulkanSetup.Frame> inFlightFrames;
-    private Map<Integer, VulkanSetup.Frame> imagesInFlight;
+    private List<Frame> inFlightFrames;
+    private Map<Integer, Frame> imagesInFlight;
     private int currentFrame;
 
     /**
@@ -132,7 +156,7 @@ public class VulkanManager {
     public void drawFrame() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer pImageIndex = stack.mallocInt(1);
-            VulkanSetup.Frame thisFrame = inFlightFrames.get(currentFrame);
+            Frame thisFrame = inFlightFrames.get(currentFrame);
             vkWaitForFences(VulkanSetup.logicalDevice.device, thisFrame.pFence(), true, VulkanSetup.UINT64_MAX);
             int result = vkAcquireNextImageKHR(VulkanSetup.logicalDevice.device, VulkanSetup.swapChain.swapChain,
                     VulkanSetup.UINT64_MAX,
@@ -349,7 +373,7 @@ public class VulkanManager {
                     VulkanSetup.physicalDevices.add(device);
             }
         }
-        if (VulkanSetup.physicalDevices.size() == 0)
+        if (VulkanSetup.physicalDevices.isEmpty())
             throw new RuntimeException("Failed to find a suitable GPU");
     }
 
@@ -390,7 +414,7 @@ public class VulkanManager {
                         || vkCreateFence(VulkanSetup.logicalDevice.device, fenceInfo, null, pFence) != VK_SUCCESS) {
                     throw new RuntimeException("Failed to create synchronization objects for the frame " + i);
                 }
-                inFlightFrames.add(new VulkanSetup.Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
+                inFlightFrames.add(new Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
             }
         }
     }
@@ -487,6 +511,26 @@ public class VulkanManager {
             PointerBuffer buffer = stack.mallocPointer(list.size());
             list.forEach(buffer::put);
             return buffer.rewind();
+        }
+
+    }
+
+    /** handle frames */
+    record Frame(long imageAvailableSemaphore, long renderFinishedSemaphore, long fence) {
+
+    /** return available semaphores for an image */
+        LongBuffer pImageAvailableSemaphore() {
+            return stackGet().longs(imageAvailableSemaphore);
+        }
+
+        /** return render finished semaphores */
+        LongBuffer pRenderFinishedSemaphore() {
+            return stackGet().longs(renderFinishedSemaphore);
+        }
+
+        /** return fences */
+        LongBuffer pFence() {
+            return stackGet().longs(fence);
         }
 
     }

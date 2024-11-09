@@ -1,9 +1,26 @@
 package es.optocom.jovp;
 
-import static org.lwjgl.glfw.GLFW.*;
-
 import java.util.Arrays;
 import java.util.regex.Pattern;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_0;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_1;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_2;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_3;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_4;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_5;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_6;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_7;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_8;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_KP_9;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowCloseCallback;
 
 import es.optocom.jovp.definitions.Command;
 import es.optocom.jovp.definitions.Input;
@@ -82,7 +99,7 @@ public class Controller implements SerialPortEventListener {
     public static String searchByName(String name) {
         return Arrays.stream(getSuitableControllers())
                 .filter(Pattern.compile(name).asPredicate())
-                .findFirst().orElse(null).toString();
+                .findFirst().orElse(null);
     }
 
     /** Input device */
@@ -109,6 +126,7 @@ public class Controller implements SerialPortEventListener {
      *
      * @since 0.0.1
      */
+    @SuppressWarnings("unused")
     Controller(long windowHandle, String input, InputType inputType, Paradigm paradigm) throws NullPointerException {
         switch (input.toUpperCase()) {
             case "MOUSE" -> {
@@ -196,7 +214,8 @@ public class Controller implements SerialPortEventListener {
      *
      * @since 0.0.1
      */
-    public void serialEvent(SerialPortEvent event) {
+    @Override
+     public void serialEvent(SerialPortEvent event) {
 //System.out.println(event);
 //System.out.println("bytes in buffer (for RXCHAR): " + event.getEventValue());
 //System.out.println("is RXCHAR: " + event.isRXCHAR());
@@ -259,11 +278,13 @@ public class Controller implements SerialPortEventListener {
     }
 
     /** add callbacks to keys in the specified window */
+    @SuppressWarnings("unused")
     private void mouseCallbacks(long windowHandle) {
         glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> processButton(button, action));
     }
 
     /** add callbacks to keys in the specified window */
+    @SuppressWarnings("unused")
     private void keypadCallbacks(long windowHandle) {
         glfwSetMouseButtonCallback(windowHandle, null);
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> processKey(key, action));

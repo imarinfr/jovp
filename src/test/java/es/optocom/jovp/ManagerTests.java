@@ -1,16 +1,15 @@
 package es.optocom.jovp;
 
-import es.optocom.jovp.definitions.Command;
-import es.optocom.jovp.rendering.VulkanManager;
+import java.util.Arrays;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
-import java.util.Arrays;
-import java.util.List;
+import es.optocom.jovp.definitions.Command;
+import es.optocom.jovp.rendering.VulkanManager;
 
 /**
  * 
@@ -241,12 +240,15 @@ public class ManagerTests {
     // Psychophysics logic that does nothing
     static class Logic implements PsychoLogic {
 
+        @Override
         public void init(PsychoEngine psychoEngine) {
         }
 
+        @Override
         public void input(PsychoEngine psychoEngine, Command command) {
         }
 
+        @Override
         public void update(PsychoEngine psychoEngine) {
         }
 
