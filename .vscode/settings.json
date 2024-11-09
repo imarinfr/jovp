@@ -9,7 +9,7 @@
       "vmArgs": ["-XstartOnFirstThread", "-Dorg.lwjgl.vulkan.libname=${env:VULKAN_SDK}/lib/libvulkan.dylib"]
     },
     {
-        "name": "windowsConfig",
+        "name": "winConfig",
         "vmArgs": ["-Djava.library.path=lwjgl"]
     },
     {
