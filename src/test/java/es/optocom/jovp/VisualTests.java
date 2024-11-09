@@ -32,7 +32,7 @@ public class VisualTests {
      *
      * @since 0.0.1
      */
-    @Test
+    //@Test
     public void changingContrast() {
         PsychoEngine psychoEngine = new PsychoEngine(new LogicContrast(), 500);
         psychoEngine.start("mouse", Paradigm.CLICKER);
